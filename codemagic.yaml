@@ -11,13 +11,32 @@ workflows:
         script: npm install
       - name: Install Capacitor iOS
         script: npm install @capacitor/ios
-      - name: Sync Capacitor (generate iOS project)
+      - name: Generate iOS project
+        script: npx cap add ios
+      - name: Sync Capacitor
         script: npx cap sync ios
+      - name: List iOS files (debug)
+        script: ls -la ios/App/
+      - name: Create exportOptions.plist
+        script: |
+          cat > ios/App/exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>S67PVB76PN</string>
+            <key>provisioningProfiles</key>
+            <dict/>
+          </dict>
+          </plist>
+          EOF
       - name: Build iOS app
         script: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath ./build/App.xcarchive
-          mkdir -p ./build
-          xcodebuild -exportArchive -archivePath ./build/App.xcarchive -exportPath ./build -exportOptionsPlist ./exportOptions.plist
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive
+          xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build -exportOptionsPlist exportOptions.plist
     artifacts:
       - ios/App/build/*.ipa
