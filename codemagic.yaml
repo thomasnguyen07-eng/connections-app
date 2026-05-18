@@ -3,24 +3,19 @@ workflows:
     name: iOS App
     environment:
       xcode: latest
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-        BUNDLE_ID: "com.connectionsfinder.app"
+      node: 20
     scripts:
       - name: Install dependencies
         script: npm install
-      - name: Sync Capacitor
+      - name: Install Capacitor iOS
+        script: npm install @capacitor/ios
+      - name: Sync Capacitor (generate iOS project)
         script: npx cap sync ios
       - name: Build iOS app
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath ./build/App.xcarchive
+          mkdir -p ./build
           xcodebuild -exportArchive -archivePath ./build/App.xcarchive -exportPath ./build -exportOptionsPlist ./exportOptions.plist
     artifacts:
-      - build/*.ipa
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_API_KEY
-        key_id: $APP_STORE_CONNECT_KEY_ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+      - ios/App/build/*.ipa
