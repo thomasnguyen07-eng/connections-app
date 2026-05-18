@@ -11,8 +11,6 @@ workflows:
         script: npm install
       - name: Install Capacitor iOS
         script: npm install @capacitor/ios
-      - name: Generate iOS project
-        script: npx cap add ios
       - name: Sync Capacitor
         script: npx cap sync ios
       - name: List iOS files (debug)
