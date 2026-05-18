@@ -1,0 +1,13 @@
+{
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true,
+    "**/AppData/**": true
+  },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.vscode": false
+  }
+}

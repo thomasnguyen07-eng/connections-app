@@ -1,0 +1,87 @@
+﻿<!doctype html>
+<html>
+  <head>
+    <!-- ===== STANDARD FACEBOOK TAGS ===== -->
+    <meta property="fb:app_id" content="1192380645773075" />
+    <meta property="fb:pages" content="101628931705282" />
+
+    <!-- Open Graph Tags (COMPLETE, NO DUPLICATES) -->
+    <meta
+      property="og:title"
+      content="Connections - Find Missing People, Lost Items & Events"
+    />
+    <meta
+      property="og:description"
+      content="Help find missing persons, lost items, & events. Community platform for reuniting people."
+    />
+    <meta
+      property="og:image"
+      content="https://connectionsfinder.com/images/logo-new.png"
+    />
+    <meta property="og:image:width" content="300" />
+    <meta property="og:image:height" content="300" />
+    <meta property="og:image:type" content="image/png" />
+    <meta
+      property="og:image:secure_url"
+      content="https://connectionsfinder.com/images/logo-new.png"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Connections" />
+    <meta
+      property="og:url"
+      content="https://connectionsfinder.com/dashboard.html"
+    />
+    <!-- ADD THESE NEW TAGS FOR BETTER MULTI-LANGUAGE SUPPORT -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="vi_VN" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <meta property="og:locale:alternate" content="ar_AR" />
+    <link rel="canonical" href="https://connectionsfinder.com/dashboard.html" />
+
+    <!-- Cache control - helps with Facebook scraping -->
+    <meta property="og:ttl" content="1209600" />
+
+    <!-- Link to your Facebook Page -->
+    <meta
+      property="article:publisher"
+      content="https://www.facebook.com/101628931705282"
+    />
+    <!-- ===== END OF STANDARD TAGS ===== -->
+
+    <meta
+      name="facebook-domain-verification"
+      content="ygxuypgq3l5zpgye0a6nazk0w9yhbg"
+    />
+    <script>
+      // Only redirect REAL users, not Facebook crawler
+      (function () {
+        const isFacebookCrawler = /facebookexternalhit|Facebot/i.test(
+          navigator.userAgent,
+        );
+
+        if (!isFacebookCrawler) {
+          // ✅ ADD THIS LINE - Save language before redirect
+          localStorage.setItem(
+            "preSignoutLanguage",
+            localStorage.getItem("appLanguage") || "en",
+          );
+          // Real user - redirect to dashboard immediately
+          window.location.href = "dashboard.html";
+        } else {
+          // Facebook crawler - show static content
+          document.title = "Connections Finder";
+          document.body.innerHTML = `
+        <h1 style="text-align: center; padding: 40px;">Connections Finder</h1>
+        <p style="text-align: center;">Community platform for finding missing people and lost items.</p>
+        <p style="text-align: center;">Instant sharing across multiple platforms.</p>
+      `;
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Welcome to Connections! Redirecting to our app...</p>
+  </body>
+</html>

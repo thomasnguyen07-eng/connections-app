@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Connections</string>
+    <string name="title_activity_main">Connections</string>
+    <string name="package_name">com.connectionsfinder.app</string>
+    <string name="custom_url_scheme">com.connectionsfinder.app</string>
+</resources>

@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Manual - Connections</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .lang-bar {
+        background: #4caf50;
+        padding: 10px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .lang-btn {
+        background: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+      .lang-btn:hover,
+      .lang-btn.active {
+        background: #333;
+        color: white;
+      }
+      .content {
+        padding: 30px;
+      }
+      h1 {
+        color: #4caf50;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      h2 {
+        color: #333;
+        margin: 25px 0 15px 0;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #4caf50;
+      }
+      h3 {
+        color: #4caf50;
+        margin: 15px 0 10px 0;
+      }
+      .step {
+        margin: 10px 0 10px 20px;
+      }
+      .tip {
+        background: #e8f5e9;
+        padding: 10px;
+        border-radius: 8px;
+        margin: 10px 0;
+      }
+      .warning {
+        background: #ffebee;
+        padding: 10px;
+        border-radius: 8px;
+        margin: 10px 0;
+        border-left: 4px solid #f44336;
+      }
+      footer {
+        text-align: center;
+        padding: 20px;
+        background: #f5f5f5;
+        color: #666;
+      }
+      @media (max-width: 768px) {
+        .content {
+          padding: 20px;
+        }
+        .lang-btn {
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="lang-bar" id="langBar">
+        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn" data-lang="vi">Tiếng Việt</button>
+        <button class="lang-btn" data-lang="zh">中文</button>
+        <button class="lang-btn" data-lang="es">Español</button>
+        <button class="lang-btn" data-lang="hi">हिन्दी</button>
+        <button class="lang-btn" data-lang="ar">العربية</button>
+      </div>
+      <div class="content" id="content"></div>
+      <footer>
+        <p id="footerText">© 2026 Connections. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <script>
+      const translations = {
+        en: {
+          title: "Connections User Manual",
+          sections: [
+            {
+              title: "1. Getting Started",
+              steps: [
+                "Create an Account: Click 'Sign Up' and enter your email and password.",
+                "Sign In: If you already have an account, click 'Sign In'.",
+                "Subscribe for Full Features: To enjoy all functions, please 'Subscribe'. If you are sponsored, your organization will send you a passcode.",
+              ],
+              tips: [
+                "Use a valid email address.",
+                "Keep your password secure.",
+              ],
+            },
+            {
+              title: "2. Creating a Report",
+              steps: [
+                "New Report Tab: Click the 'New Report' tab to start.",
+                "Select Report Type: Missing Person, Lost Item, Found Person, Found Item, or Event.",
+                "Enter Details: Add title, description, location, and contact.",
+                "Add Images: Upload up to 5 images (Premium feature).",
+                "Submit Report: Click 'Submit' to publish.",
+                "Save a Report: After creating, click 'Save Report'.",
+              ],
+              tips: ["Be as detailed as possible.", "Clear images help a lot."],
+              warnings: ["Do not share personal banking information."],
+            },
+            {
+              title: "3. Sharing Reports",
+              steps: [
+                "Share on WhatsApp",
+                "Share on Twitter",
+                "Share on Facebook",
+                "Share via Email",
+                "Share on Zalo",
+                "Share on Telegram",
+              ],
+              tips: ["All shares include image links."],
+            },
+            {
+              title: "4. Resharing Reports",
+              steps: [
+                "Access Saved Reports: Click the 'Saved Reports' tab.",
+                "Click Reshare: Below each saved report, click 'Reshare'.",
+                "Select Platform: Enter 1-6 for different platforms.",
+                "Complete Share: Follow the prompts.",
+              ],
+              tips: [
+                "You can reshare any saved report anytime.",
+                "Image links are preserved when resharing.",
+              ],
+              deleteNote: "Click 'Delete' to remove a saved report.",
+            },
+            {
+              title: "5. Premium Features",
+              steps: [
+                "Individual & Organization Plans: Premium features available.",
+                "Organization Benefits: Organizations can have logos fixed on sponsored accounts.",
+                "Upload Images: Up to 5 images per report.",
+                "Unlimited Reports: No monthly limits.",
+                "Custom Avatar: Upload your own profile picture.",
+              ],
+              tips: [
+                "Premium starts at $4.99/month.",
+                "Organization plans available.",
+              ],
+            },
+            {
+              title: "6. Sponsored Accounts",
+              steps: [
+                "What is Sponsored? Accounts provided by organizations.",
+                "Fixed Avatar: Cannot be changed.",
+                "Premium Benefits: All premium features included.",
+              ],
+              tips: ["Your sponsor will provide a passcode."],
+            },
+          ],
+          violations: {
+            title: "⚠️ Content Guidelines",
+            warnings: [
+              "❌ No bomb threats, violence, or terrorism",
+              "❌ No pornography, nude, or adult content",
+              "❌ No bank accounts, credit cards, or financial info",
+              "❌ No hate speech, discrimination, or harassment",
+              "❌ No lottery, scam, or fraud",
+              "❌ No inappropriate filenames",
+            ],
+            consequences: "⚠️ Violations = Immediate account blocking.",
+            appeal: "📧 Contact: support@connectionsfinder.com",
+          },
+          footer: "© 2026 Connections. All rights reserved.",
+        },
+        vi: {
+          title: "Hướng Dẫn Sử Dụng Connections",
+          sections: [
+            {
+              title: "1. Bắt Đầu",
+              steps: [
+                "Tạo tài khoản: Nhấn 'Đăng ký' và nhập email, mật khẩu.",
+                "Đăng nhập: Nhấn 'Đăng nhập'.",
+                "Đăng ký gói Premium: Nhấn 'Đăng ký'. Nếu được tài trợ, tổ chức sẽ gửi mã.",
+              ],
+              tips: ["Dùng email hợp lệ.", "Giữ mật khẩu an toàn."],
+            },
+            {
+              title: "2. Tạo Báo Cáo",
+              steps: [
+                "Tab 'Tin Nhắn Mới': Bắt đầu tạo báo cáo.",
+                "Chọn loại: Người mất tích, Đồ bị mất, Tìm thấy người, Tìm thấy đồ, Sự kiện.",
+                "Nhập chi tiết: Tiêu đề, mô tả, địa điểm, liên hệ.",
+                "Thêm ảnh: Tối đa 5 ảnh (tính năng Premium).",
+                "Gửi báo cáo: Nhấn 'Gửi báo cáo'.",
+                "Lưu báo cáo: Nhấn 'Lưu báo cáo'.",
+              ],
+              tips: ["Chi tiết càng rõ càng tốt.", "Ảnh rõ giúp ích nhiều."],
+              warnings: ["Không chia sẻ thông tin ngân hàng cá nhân."],
+            },
+            {
+              title: "3. Chia Sẻ Báo Cáo",
+              steps: [
+                "Chia sẻ qua WhatsApp",
+                "Chia sẻ qua Twitter",
+                "Chia sẻ qua Facebook",
+                "Chia sẻ qua Email",
+                "Chia sẻ qua Zalo",
+                "Chia sẻ qua Telegram",
+              ],
+              tips: ["Chia sẻ bao gồm liên kết ảnh."],
+            },
+            {
+              title: "4. Chia Sẻ Lại Báo Cáo",
+              steps: [
+                "Vào 'Tin Nhắn Đã Lưu'.",
+                "Nhấn 'Chia sẻ lại'.",
+                "Chọn nền tảng (1-6).",
+                "Hoàn tất chia sẻ.",
+              ],
+              tips: [
+                "Có thể chia sẻ lại bất kỳ lúc nào.",
+                "Liên kết ảnh được giữ nguyên.",
+              ],
+              deleteNote: "Nhấn 'Xóa' để xóa báo cáo đã lưu.",
+            },
+            {
+              title: "5. Tính Năng Premium",
+              steps: [
+                "Gói Cá Nhân & Tổ Chức",
+                "Tổ chức có logo cố định trên tài khoản được tài trợ.",
+                "Tải lên đến 5 ảnh mỗi báo cáo.",
+                "Báo cáo không giới hạn.",
+                "Avatar tùy chỉnh.",
+              ],
+              tips: ["Premium từ $4.99/tháng.", "Có gói tổ chức."],
+            },
+            {
+              title: "6. Tài Khoản Được Tài Trợ",
+              steps: [
+                "Tài khoản do tổ chức cung cấp.",
+                "Avatar cố định, không thể thay đổi.",
+                "Đầy đủ tính năng Premium.",
+              ],
+              tips: ["Nhà tài trợ sẽ cung cấp mã."],
+            },
+          ],
+          violations: {
+            title: "⚠️ Nội dung bị cấm",
+            warnings: [
+              "❌ Không đe dọa bom, bạo lực, khủng bố",
+              "❌ Không khiêu dâm, ảnh nude",
+              "❌ Không chia sẻ tài khoản ngân hàng, thẻ tín dụng",
+              "❌ Không ngôn từ thù ghét, phân biệt",
+              "❌ Không lừa đảo, gian lận",
+              "❌ Không tên tệp không phù hợp",
+            ],
+            consequences: "⚠️ Vi phạm = Khóa tài khoản ngay lập tức.",
+            appeal: "📧 Liên hệ: support@connectionsfinder.com",
+          },
+          footer: "© 2026 Connections. Đã đăng ký bản quyền.",
+        },
+        zh: {
+          title: "Connections 用户手册",
+          sections: [
+            {
+              title: "1. 开始使用",
+              steps: [
+                "创建账户: 点击'注册'并输入邮箱和密码。",
+                "登录: 点击'登录'。",
+                "订阅高级功能: 点击'订阅'。如被赞助，组织会提供密码。",
+              ],
+              tips: ["使用有效的电子邮件地址。", "保护密码安全。"],
+            },
+            {
+              title: "2. 创建报告",
+              steps: [
+                "新报告标签: 点击'新报告'开始。",
+                "选择报告类型: 失踪人员、丢失物品、找到人员、找到物品、活动。",
+                "输入详情: 标题、描述、位置、联系方式。",
+                "添加图片: 最多5张（高级功能）。",
+                "提交报告: 点击'提交'。",
+                "保存报告: 点击'保存报告'。",
+              ],
+              tips: ["尽可能详细。", "清晰的图片很有帮助。"],
+              warnings: ["请勿分享个人银行信息。"],
+            },
+            {
+              title: "3. 分享报告",
+              steps: [
+                "分享到 WhatsApp",
+                "分享到 Twitter",
+                "分享到 Facebook",
+                "通过邮件分享",
+                "分享到 Zalo",
+                "分享到 Telegram",
+              ],
+              tips: ["所有分享包含图片链接。"],
+            },
+            {
+              title: "4. 再次分享报告",
+              steps: [
+                "访问'已保存报告'。",
+                "点击'再次分享'。",
+                "选择平台 (1-6)。",
+                "完成分享。",
+              ],
+              tips: ["可以随时再次分享任何保存的报告。", "图片链接会被保留。"],
+              deleteNote: "点击'删除'移除保存的报告。",
+            },
+            {
+              title: "5. 高级功能",
+              steps: [
+                "个人及组织套餐",
+                "组织可在赞助账户上显示固定标志。",
+                "每份报告最多上传5张图片。",
+                "无限报告。",
+                "自定义头像。",
+              ],
+              tips: ["高级版每月 $4.99起。", "提供组织套餐。"],
+            },
+            {
+              title: "6. 赞助账户",
+              steps: [
+                "组织提供的账户。",
+                "头像固定，无法更改。",
+                "包含所有高级功能。",
+              ],
+              tips: ["赞助商会提供密码。"],
+            },
+          ],
+          violations: {
+            title: "⚠️ 内容准则",
+            warnings: [
+              "❌ 禁止炸弹威胁、暴力、恐怖主义",
+              "❌ 禁止色情、裸体或成人内容",
+              "❌ 禁止银行账户、信用卡等财务信息",
+              "❌ 禁止仇恨言论、歧视、骚扰",
+              "❌ 禁止彩票、诈骗、欺诈",
+              "❌ 禁止不合适的文件名",
+            ],
+            consequences: "⚠️ 违规 = 立即封禁账户。",
+            appeal: "📧 联系: support@connectionsfinder.com",
+          },
+          footer: "© 2026 Connections. 版权所有。",
+        },
+        es: {
+          title: "Manual de Usuario de Connections",
+          sections: [
+            {
+              title: "1. Primeros Pasos",
+              steps: [
+                "Crear cuenta: Haga clic en 'Registrarse'.",
+                "Iniciar sesión: Haga clic en 'Iniciar sesión'.",
+                "Suscribirse: Haga clic en 'Suscribirse'. Si es patrocinado, recibirá un código.",
+              ],
+              tips: ["Use un correo válido.", "Mantenga segura su contraseña."],
+            },
+            {
+              title: "2. Crear un Informe",
+              steps: [
+                "Pestaña 'Nuevo Informe'.",
+                "Seleccione tipo: Persona desaparecida, Objeto perdido, Persona encontrada, Objeto encontrado, Evento.",
+                "Ingrese detalles: título, descripción, ubicación, contacto.",
+                "Agregue imágenes: hasta 5 (Premium).",
+                "Enviar informe: haga clic en 'Enviar'.",
+                "Guardar informe: haga clic en 'Guardar'.",
+              ],
+              tips: [
+                "Sea lo más detallado posible.",
+                "Las imágenes claras ayudan mucho.",
+              ],
+              warnings: ["No comparta información bancaria personal."],
+            },
+            {
+              title: "3. Compartir Informes",
+              steps: [
+                "Compartir en WhatsApp",
+                "Compartir en Twitter",
+                "Compartir en Facebook",
+                "Compartir por Email",
+                "Compartir en Zalo",
+                "Compartir en Telegram",
+              ],
+              tips: ["Todas las comparticiones incluyen enlaces de imágenes."],
+            },
+            {
+              title: "4. Re-compartir Informes",
+              steps: [
+                "Acceda a 'Informes Guardados'.",
+                "Haga clic en 'Re-compartir'.",
+                "Seleccione plataforma (1-6).",
+                "Complete la compartición.",
+              ],
+              tips: [
+                "Puede re-compartir cualquier informe guardado.",
+                "Los enlaces de imágenes se conservan.",
+              ],
+              deleteNote: "Haga clic en 'Eliminar' para borrar.",
+            },
+            {
+              title: "5. Funciones Premium",
+              steps: [
+                "Planes Individuales y Organizaciones",
+                "Las organizaciones pueden tener logotipos fijos.",
+                "Subir hasta 5 imágenes por informe.",
+                "Informes ilimitados.",
+                "Avatar personalizado.",
+              ],
+              tips: [
+                "Premium desde $4.99/mes.",
+                "Planes para organizaciones disponibles.",
+              ],
+            },
+            {
+              title: "6. Cuentas Patrocinadas",
+              steps: [
+                "Cuentas proporcionadas por organizaciones.",
+                "Avatar fijo, no se puede cambiar.",
+                "Todas las funciones Premium incluidas.",
+              ],
+              tips: ["Su patrocinador le proporcionará un código."],
+            },
+          ],
+          violations: {
+            title: "⚠️ Pautas de contenido",
+            warnings: [
+              "❌ No amenazas de bomba, violencia, terrorismo",
+              "❌ No pornografía, desnudos",
+              "❌ No cuentas bancarias, tarjetas de crédito",
+              "❌ No discurso de odio, discriminación",
+              "❌ No lotería, estafas, fraudes",
+              "❌ No nombres de archivo inapropiados",
+            ],
+            consequences: "⚠️ Violación = Bloqueo inmediato de cuenta.",
+            appeal: "📧 Contacto: support@connectionsfinder.com",
+          },
+          footer: "© 2026 Connections. Todos los derechos reservados.",
+        },
+        hi: {
+          title: "Connections उपयोगकर्ता पुस्तिका",
+          sections: [
+            {
+              title: "1. शुरू करना",
+              steps: [
+                "खाता बनाएँ: 'साइन अप' पर क्लिक करें।",
+                "साइन इन करें: 'साइन इन' पर क्लिक करें।",
+                "सदस्यता लें: पूर्ण सुविधाओं के लिए 'सदस्यता लें'।",
+              ],
+              tips: ["मान्य ईमेल पते का उपयोग करें।", "पासवर्ड सुरक्षित रखें।"],
+            },
+            {
+              title: "2. रिपोर्ट बनाना",
+              steps: [
+                "'नई रिपोर्ट' टैब पर क्लिक करें।",
+                "प्रकार चुनें: लापता व्यक्ति, खोई वस्तु, मिला व्यक्ति, मिली वस्तु, कार्यक्रम।",
+                "विवरण भरें: शीर्षक, विवरण, स्थान, संपर्क।",
+                "छवियाँ जोड़ें: अधिकतम 5 (प्रीमियम सुविधा)।",
+                "'रिपोर्ट सबमिट करें' पर क्लिक करें।",
+                "'रिपोर्ट सहेजें' पर क्लिक करें।",
+              ],
+              tips: [
+                "जितना विस्तृत हो उतना अच्छा।",
+                "स्पष्ट छवियाँ बहुत मददगार होती हैं।",
+              ],
+              warnings: ["व्यक्तिगत बैंकिंग जानकारी साझा न करें।"],
+            },
+            {
+              title: "3. रिपोर्ट साझा करना",
+              steps: [
+                "WhatsApp पर साझा करें",
+                "Twitter पर साझा करें",
+                "Facebook पर साझा करें",
+                "ईमेल द्वारा साझा करें",
+                "Zalo पर साझा करें",
+                "Telegram पर साझा करें",
+              ],
+              tips: ["सभी साझाकरण में छवि लिंक शामिल हैं।"],
+            },
+            {
+              title: "4. रिपोर्ट पुनः साझा करना",
+              steps: [
+                "'सहेजी गई रिपोर्टें' टैब पर जाएँ।",
+                "'पुनः साझा करें' पर क्लिक करें।",
+                "प्लेटफ़ॉर्म चुनें (1-6)।",
+                "साझाकरण पूरा करें।",
+              ],
+              tips: [
+                "किसी भी सहेजी गई रिपोर्ट को कभी भी पुनः साझा कर सकते हैं।",
+                "छवि लिंक सुरक्षित रहते हैं।",
+              ],
+              deleteNote: "'हटाएँ' पर क्लिक करके रिपोर्ट हटाएँ।",
+            },
+            {
+              title: "5. प्रीमियम सुविधाएँ",
+              steps: [
+                "व्यक्तिगत और संगठन योजनाएँ",
+                "संगठन प्रायोजित खातों पर लोगो लगा सकते हैं।",
+                "प्रति रिपोर्ट 5 छवियाँ अपलोड करें।",
+                "असीमित रिपोर्ट।",
+                "कस्टम अवतार।",
+              ],
+              tips: ["प्रीमियम $4.99/माह से शुरू।", "संगठन योजनाएँ उपलब्ध।"],
+            },
+            {
+              title: "6. प्रायोजित खाते",
+              steps: [
+                "संगठनों द्वारा प्रदान किए गए खाते।",
+                "अवतार स्थिर, बदला नहीं जा सकता।",
+                "सभी प्रीमियम सुविधाएँ शामिल।",
+              ],
+              tips: ["आपका प्रायोजक एक कोड प्रदान करेगा।"],
+            },
+          ],
+          violations: {
+            title: "⚠️ सामग्री दिशानिर्देश",
+            warnings: [
+              "❌ बम की धमकी, हिंसा, आतंकवाद नहीं",
+              "❌ अश्लीलता, नग्नता नहीं",
+              "❌ बैंक खाते, क्रेडिट कार्ड नहीं",
+              "❌ घृणा भाषण, भेदभाव नहीं",
+              "❌ लॉटरी, घोटाला, धोखाधड़ी नहीं",
+              "❌ अनुचित फ़ाइल नाम नहीं",
+            ],
+            consequences: "⚠️ उल्लंघन = तत्काल खाता अवरोधन।",
+            appeal: "📧 संपर्क करें: support@connectionsfinder.com",
+          },
+          footer: "© 2026 Connections. सभी अधिकार सुरक्षित।",
+        },
+        ar: {
+          title: "دليل مستخدم Connections",
+          sections: [
+            {
+              title: "1. البدء",
+              steps: [
+                "إنشاء حساب: انقر 'التسجيل'.",
+                "تسجيل الدخول: انقر 'تسجيل الدخول'.",
+                "الاشتراك: انقر 'اشتراك' للميزات الكاملة.",
+              ],
+              tips: [
+                "استخدم بريدًا إلكترونيًا صالحًا.",
+                "احتفظ بكلمة المرور آمنة.",
+              ],
+            },
+            {
+              title: "2. إنشاء تقرير",
+              steps: [
+                "انقر علامة تبويب 'تقرير جديد'.",
+                "اختر النوع: شخص مفقود، عنصر مفقود، شخص تم العثور عليه، عنصر تم العثور عليه، حدث.",
+                "أدخل التفاصيل: العنوان، الوصف، الموقع، جهة الاتصال.",
+                "أضف صورًا: حتى 5 صور (ميزة Premium).",
+                "انقر 'إرسال التقرير'.",
+                "انقر 'حفظ التقرير'.",
+              ],
+              tips: ["كن مفصلاً قدر الإمكان.", "الصور الواضحة مفيدة جدًا."],
+              warnings: ["لا تشارك معلومات مصرفية شخصية."],
+            },
+            {
+              title: "3. مشاركة التقارير",
+              steps: [
+                "مشاركة عبر WhatsApp",
+                "مشاركة عبر Twitter",
+                "مشاركة عبر Facebook",
+                "مشاركة عبر البريد الإلكتروني",
+                "مشاركة عبر Zalo",
+                "مشاركة عبر Telegram",
+              ],
+              tips: ["جميع المشاركات تشمل روابط الصور."],
+            },
+            {
+              title: "4. إعادة مشاركة التقارير",
+              steps: [
+                "انتقل إلى 'التقارير المحفوظة'.",
+                "انقر 'إعادة مشاركة'.",
+                "اختر المنصة (1-6).",
+                "أكمل المشاركة.",
+              ],
+              tips: [
+                "يمكنك إعادة مشاركة أي تقرير محفوظ في أي وقت.",
+                "يتم الاحتفاظ بروابط الصور.",
+              ],
+              deleteNote: "انقر 'حذف' لإزالة تقرير محفوظ.",
+            },
+            {
+              title: "5. ميزات Premium",
+              steps: [
+                "خطط للأفراد والمنظمات",
+                "يمكن للمنظمات وضع شعارات ثابتة.",
+                "تحميل حتى 5 صور لكل تقرير.",
+                "تقارير غير محدودة.",
+                "صورة رمزية مخصصة.",
+              ],
+              tips: ["يبدأ Premium من $4.99/شهر.", "خطط المنظمات متاحة."],
+            },
+            {
+              title: "6. الحسابات المدعومة",
+              steps: [
+                "حسابات مقدمة من المنظمات.",
+                "الصورة الرمزية ثابتة ولا يمكن تغييرها.",
+                "جميع ميزات Premium مضمنة.",
+              ],
+              tips: ["سيزودك الراعي برمز."],
+            },
+          ],
+          violations: {
+            title: "⚠️ إرشادات المحتوى",
+            warnings: [
+              "❌ لا تهديدات بالقنابل أو عنف أو إرهاب",
+              "❌ لا إباحية أو محتوى للبالغين",
+              "❌ لا حسابات بنكية أو بطاقات ائتمان",
+              "❌ لا خطاب كراهية أو تمييز",
+              "❌ لا يانصيب أو احتيال",
+              "❌ لا أسماء ملفات غير مناسبة",
+            ],
+            consequences: "⚠️ المخالفة = حظر فوري للحساب.",
+            appeal: "📧 اتصل: support@connectionsfinder.com",
+          },
+          footer: "© 2026 Connections. جميع الحقوق محفوظة.",
+        },
+      };
+
+      let currentLang = "en";
+
+      function setLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
+        if (!t) return;
+
+        let html = `<h1>${t.title}</h1>`;
+
+        t.sections.forEach((section) => {
+          html += `<h2>${section.title}</h2>`;
+          html += `<div class="step"><ul>`;
+          section.steps.forEach((step) => {
+            html += `<li>${step}</li>`;
+          });
+          html += `</ul></div>`;
+          if (section.tips) {
+            html += `<div class="tip"><strong>💡 Tips:</strong><ul>`;
+            section.tips.forEach((tip) => {
+              html += `<li>${tip}</li>`;
+            });
+            html += `</ul></div>`;
+          }
+          if (section.warnings) {
+            html += `<div class="warning"><strong>⚠️ Warnings:</strong><ul>`;
+            section.warnings.forEach((warning) => {
+              html += `<li>${warning}</li>`;
+            });
+            html += `</ul></div>`;
+          }
+          if (section.deleteNote) {
+            html += `<div class="tip"><strong>🗑️ Delete:</strong> ${section.deleteNote}</div>`;
+          }
+        });
+
+        html += `<h2>${t.violations.title}</h2>`;
+        html += `<div class="warning"><ul>`;
+        t.violations.warnings.forEach((warning) => {
+          html += `<li>${warning}</li>`;
+        });
+        html += `</ul>`;
+        html += `<p><strong>${t.violations.consequences}</strong></p>`;
+        html += `<p>${t.violations.appeal}</p></div>`;
+
+        document.getElementById("content").innerHTML = html;
+        document.getElementById("footerText").textContent = t.footer;
+
+        document.querySelectorAll(".lang-btn").forEach((btn) => {
+          if (btn.dataset.lang === lang) btn.classList.add("active");
+          else btn.classList.remove("active");
+        });
+      }
+
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+      });
+
+      const savedLang = localStorage.getItem("manualLanguage") || "en";
+      setLanguage(savedLang);
+
+      document.getElementById("langBar").addEventListener("click", (e) => {
+        if (e.target.dataset.lang)
+          localStorage.setItem("manualLanguage", e.target.dataset.lang);
+      });
+    </script>
+  </body>
+</html>

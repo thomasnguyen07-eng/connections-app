@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script>
+  // ULTRA crawler detection at page load
+  (function() {
+    const ua = navigator.userAgent || '';
+    const isCrawler = /facebookexternalhit|Facebot|bot|crawler|spider/i.test(ua) || !ua;
+    
+    if (isCrawler) {
+      console.log("🔍 Crawler detected, minimizing JavaScript execution");
+      // Remove ALL event listeners from document
+      document.addEventListener = function() { console.log("Event listener blocked for crawler"); };
+      window.addEventListener = function() { console.log("Window event listener blocked"); };
+    }
+  })();
+</script>
+
+<!-- ============================================ -->
+<!-- ✅ MOBILE LOG CAPTURE - PUT RIGHT HERE -->
+<!-- ============================================ -->
+<script>
+function captureMobileLogs() {
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        console.log("📱 Mobile log capture initialized");
+        
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            try {
+                const logs = JSON.parse(localStorage.getItem('mobileLogs') || '[]');
+                logs.push({ 
+                    time: Date.now(), 
+                    type: 'log', 
+                    message: args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                    ).join(' ') 
+                });
+                localStorage.setItem('mobileLogs', JSON.stringify(logs.slice(-50)));
+            } catch(e) {}
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            try {
+                const logs = JSON.parse(localStorage.getItem('mobileLogs') || '[]');
+                logs.push({ 
+                    time: Date.now(), 
+                    type: 'error', 
+                    message: args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                    ).join(' ') 
+                });
+                localStorage.setItem('mobileLogs', JSON.stringify(logs.slice(-50)));
+            } catch(e) {}
+        };
+        
+        window.addEventListener('error', function(event) {
+            try {
+                const logs = JSON.parse(localStorage.getItem('mobileLogs') || '[]');
+                logs.push({ 
+                    time: Date.now(), 
+                    type: 'uncaught', 
+                    message: event.message + ' at ' + event.filename + ':' + event.lineno 
+                });
+                localStorage.setItem('mobileLogs', JSON.stringify(logs.slice(-50)));
+            } catch(e) {}
+        });
+    }
+}
+captureMobileLogs();
+console.log("🚀 App started - logging initialized");
+</script>
+
+    <!-- ===== STANDARD FACEBOOK TAGS ===== -->
+<meta property="fb:app_id" content="1192380645773075">
+<meta property="fb:pages" content="101628931705282">
+
+<!-- Open Graph Tags (COMPLETE, NO DUPLICATES) -->
+<meta property="og:title" content="Connections - Find Missing People, Lost Items & Events">
+<meta property="og:description" content="Help find missing persons, lost items, & events. Community platform for reuniting people.">
+<meta property="og:image" content="https://connectionsfinder.com/images/logo-new.png">
+<meta property="og:image:width" content="300">
+<meta property="og:image:height" content="300">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:secure_url" content="https://connectionsfinder.com/images/logo-new.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Connections">
+<meta property="og:url" content="https://connectionsfinder.com/dashboard.html">
+<!-- ADD THESE NEW TAGS FOR BETTER MULTI-LANGUAGE SUPPORT -->
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="ar_AR">
+<link rel="canonical" href="https://connectionsfinder.com/dashboard.html">
+
+<!-- Cache control - helps with Facebook scraping -->
+<meta property="og:ttl" content="1209600">
+
+<!-- Link to your Facebook Page -->
+<meta property="article:publisher" content="https://www.facebook.com/101628931705282">
+<!-- ===== END OF STANDARD TAGS ===== -->
+<!-- Add this after your existing Open Graph tags -->
+<meta property="og:updated_time" content="2024-12-01T00:00:00Z">
+<meta property="article:published_time" content="2024-01-01T00:00:00Z">
+<meta property="article:modified_time" content="2024-12-01T00:00:00Z">
+
+    <link rel="stylesheet" href="./css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <!-- Load Zalo SDK -->
+<script src="https://sp.zalo.me/plugins/sdk.js"></script>
+ </head>
+  <body>
+
+<script>
+// Restore language on every page load
+(function() {
+    let savedLang = localStorage.getItem("preSignoutLanguage");
+    if (!savedLang) {
+        savedLang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
+    }
+    localStorage.setItem("userLanguage", savedLang);
+    localStorage.setItem("appLanguage", savedLang);
+    console.log("🌐 Language restored on page load:", savedLang);
+})();
+</script>
+
+ <header>
+  <!-- Top Bar with Controls -->
+  <div class="header-controls">
+    <!-- Left side: User controls -->
+    <div class="controls-left">
+  <!-- NEW: Auth buttons for users WITH language switcher -->
+  <div id="usersAuthButtons" class="auth-buttons">
+    <button id="usersSignInBtn" class="control-btn auth-btn">
+      <i class="fas fa-sign-in-alt"></i>
+      <span>Sign In</span>
+    </button>
+    <button id="usersSignUpBtn" class="control-btn auth-btn">
+      <i class="fas fa-user-plus"></i>
+      <span>Sign Up</span>
+    </button>
+    <!-- ADD LANGUAGE SWITCHER FOR GUESTS -->
+    <select id="usersLanguageSwitcher" class="language-switcher control-btn">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="zh">中文</option>
+      <option value="vi">Tiếng Việt</option>
+      <option value="hi">हिन्दी</option>
+      <option value="ar">العربية</option>
+    </select>
+  </div>
+
+  <a href="/manual.html" class="control-btn" target="_blank">
+    <i class="fas fa-book"></i>
+    <span id="guide-text">Guide</span>
+</a>
+
+  <!-- EXISTING: Your current controls (will be hidden initially) -->
+  <div id="userControls" class="user-controls" style="display: none;">
+    <button id="logoutBtn" class="control-btn">
+      <i class="fas fa-sign-out-alt"></i>
+      <span data-lang-key="buttons.logout">Logout</span>
+    </button>
+    <select id="language-switcher" class="language-switcher control-btn">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="zh">中文</option>
+      <option value="vi">Tiếng Việt</option>
+      <option value="hi">हिन्दी</option>
+      <option value="ar">العربية</option>
+    </select>
+    <button id="subscribeBtn" class="control-btn subscribe-btn">
+      <i class="fas fa-crown"></i>
+      <span>Subscribe</span>
+    </button>
+  </div>
+</div>
+
+    <!-- Center: App Logo + Title -->
+<div class="header-center">
+  <div class="app-branding">
+    <img src="./images/logo-new.png" alt="Logo" class="app-logo-image">
+    <h1 class="app-title">Connections</h1>
+</div>
+</div>
+
+    <!-- Right side: Avatar -->
+<div class="controls-right">
+  <div class="avatar-section">
+    <img id="userAvatar" src="./images/default-avatar.png" alt="Avatar" class="avatar-image">
+    <button id="uploadAvatarBtn" class="avatar-upload-btn">
+      <i class="fas fa-camera"></i>
+    </button>
+    <!-- Single hidden file input for avatar upload -->
+    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+  </div>
+</div>
+  </div>
+
+  <!-- App Intro Section -->
+  <section id="app-intro" class="app-intro-section">
+    <p id="intro-text" class="intro-text"></p>
+  </section>
+</header>
+
+    <!-- WARNING BANNER (Standardized) -->
+    <div class="warning-banner abuse-warning">
+      ⚠️ <span data-warning="fraud"></span> 🔄 <span data-warning="spam"></span>
+    </div>
+
+    <div class="dashboard-container">
+  <!-- Tabs (keep exactly as you have them now) -->
+  <div class="tabs">
+    <button class="tab active" data-tab="new-report" onclick="switchTab('new-report')">
+      <i class="fas fa-plus"></i> New Report
+    </button>
+    <button class="tab" data-tab="saved-reports" onclick="switchTab('saved-reports')">
+      <i class="fas fa-save"></i> Saved Reports
+    </button>
+  </div>
+
+  <!-- New Report Section (will be visible by default) -->
+  <div class="tab-content active" id="new-report">
+    <!-- Your existing new report form stays exactly as is -->
+  </div>
+
+  <!-- Saved Reports Section (will show below when active) -->
+  <div class="tab-content" id="saved-reports">
+    <div id="saved-reports-section">
+      
+      <h3 id="saved-reports-heading">Your Saved Reports</h3> <!-- Added ID -->
+      <div id="saved-reports-container" class="reports-grid"></div>
+      <button onclick="clearAllReports()" class="clear-all-btn" id="clear-all-btn">
+  <i class="fas fa-trash"></i>
+  <span class="clear-all-text">Clear All</span>
+</button>
+      
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+
+      <div id="new-report" class="tab-content active">
+        <form id="report-form" novalidate>
+          <!-- Single Report Type Selector -->
+    <div class="form-group">
+      <label for="report-type" data-translate="reportTypeLabel">Report Type*</label>
+      <select id="report-type" class="form-control" required>
+  <option value="" data-translate="reportTypes.select">-- Select Type --</option>
+  <option value="missing_person" data-translate="reportTypes.missing_person">🚨 Missing Person</option>
+  <option value="lost_item" data-translate="reportTypes.lost_item">🔍 Lost Item</option>
+  <option value="found_person" data-translate="reportTypes.found_person">🙏 Found Person</option>
+  <option value="found_item" data-translate="reportTypes.found_item">🔄 Found Item</option>
+  <option value="event" data-translate="reportTypes.event">🎉 Event</option>
+</select>
+    </div>
+
+          <div class="form-group">
+            <label for="report-title" data-translate="titleLabel">Title:</label>
+            <input
+              type="text"
+              id="report-title"
+              placeholder="e.g. Missing boy, Lost wallet"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="report-description" data-translate="descriptionLabel"
+              >Description:</label
+            >
+            <textarea id="report-description" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="location-text-input" data-translate="locationLabel"
+              >Location Details:</label
+            >
+            <input
+              type="text"
+              id="location-text-input"
+              placeholder="Specific place"
+              required
+            />
+            <input
+              type="text"
+              id="address-input"
+              placeholder="Search address"
+            />
+            <button
+              type="button"
+              onclick="findAddress()"
+              data-translate="buttons.showOnMap"
+            >
+              Show on Map
+            </button>
+            <button
+              type="button"
+              onclick="useCurrentLocation()"
+              class="location-btn"
+            >
+              <i class="fas fa-location-arrow"></i>
+              <span>Use My Location</span>
+              <!-- Will be translated by JavaScript -->
+            </button>
+            <input type="hidden" id="selected-coordinates" />
+          </div>
+
+          <div id="map"></div>
+
+          <div class="form-group">
+            <label for="reporter-contact" data-translate="contactLabel"
+              >Your Contact:</label
+            >
+            <input type="text" id="reporter-contact" required />
+          </div>
+
+          <div class="form-group">
+  <label for="report-image">Upload Images:</label>
+  <div class="custom-file-input" onclick="document.getElementById('report-image').click()">
+    <span class="file-input-text" id="file-input-label">Choose files (max 5)</span>
+    <input type="file" id="report-image" accept="image/*" multiple style="display: none">
+  </div>
+  <div id="image-previews" class="image-previews-container"></div>
+  <div id="image-count" class="image-count" style="display: none;"></div>
+</div>
+
+          <button type="submit" data-translate="buttons.submit">
+            Submit Report
+          </button>
+
+          <!-- PRIVACY WARNING (Standardized) -->
+          <div class="warning-banner privacy-warning">
+            🔒 <span data-warning="privacy"></span> 📸
+            <span data-warning="images"></span>
+          </div>
+
+          <div id="share-section" style="display: none">
+            <h3 id="share-subheading">Share This Report</h3>
+            <!-- Add this line here -->
+            <div
+              id="current-report-title"
+              style="margin: 10px 0; font-weight: bold; color: #2c3e50"
+            ></div>
+
+            <div class="share-buttons">
+    <!-- WhatsApp button - fixed color -->
+<button id="whatsapp-share" type="button" class="share-btn" style="background-color: #25D366;">
+    <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/whatsapp.svg" 
+         alt="WhatsApp" style="width: 20px; height: 20px; filter: brightness(0) invert(1);">
+</button>
+
+<!-- Twitter button -->
+<button id="twitter-share" type="button" class="share-btn" style="background-color: #1DA1F2;">
+    <i class="fab fa-twitter"></i>
+</button>
+
+<!-- Facebook button -->
+<button id="facebook-share" type="button" class="share-btn" style="background-color: #4267B2;">
+    <i class="fab fa-facebook"></i>
+</button>
+
+<!-- Email button -->
+<button id="email-share" type="button" class="share-btn" style="background-color: #D44638;">
+    <i class="fas fa-envelope"></i>
+</button>
+
+<!-- Zalo button - fixed size -->
+<button id="zalo-share" type="button" class="share-btn" style="background-color: #0180C3;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" 
+         alt="Zalo" style="width: 18px; height: 18px; filter: brightness(0) invert(1);">
+</button>
+
+<!-- Option B: Bootstrap Icons -->
+<button id="telegram-share" type="button" class="share-btn" style="background-color: #7faad9;">
+    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/telegram.svg" 
+         alt="Telegram" 
+         style="width: 20px; height: 20px; filter: brightness(0) invert(1);">
+</button>
+
+<!-- Save Report button -->
+<button id="save-report-btn" type="button" class="share-btn" style="background-color: #4CAF50;">
+    <i class="fas fa-save"></i> Save Report
+</button>
+</div>
+
+          </div>
+          <!-- Improved Saved Reports Section -->
+          <!-- Modify your saved-reports-section (remove display:none) -->
+          <div
+            id="saved-reports-section"
+            style="
+              margin-top: 30px;
+              padding: 15px;
+              background: #f8f9fa;
+              border-radius: 8px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+              "
+            >
+              
+            </div>
+            <div
+              id="saved-reports-container"
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 15px;
+              "
+            >
+              <!-- Reports will appear here automatically -->
+            </div>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+
+    <!-- LEGAL WARNINGS (Standardized) -->
+    <div class="legal-warnings">
+      📜 <span data-warning="tos"></span> 👮 <span data-warning="legal"></span>
+    </div>
+
+     // Admin Panel - Only visible to app owner
+<!-- In dashboard.html, find your admin panel div and add this button -->
+<div id="adminPanel" style="display: none; position: fixed; bottom: 20px; right: 120px; z-index: 9999;">
+    <button onclick="toggleAdminPanel()" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+        ⚙️ Admin
+    </button>
+    <div id="adminContent" style="display: none; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-top: 5px; width: 300px; max-height: 400px; overflow: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <h4 style="margin-top: 0;">Admin Tools</h4>
+        <button onclick="viewMobileLogs()" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            📱 View Mobile Logs
+        </button>
+        <!-- ✅ ADD THIS NEW BUTTON -->
+        <button onclick="checkLogsDirectly()" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🔍 Force Check Logs
+        </button>
+        <button onclick="clearMobileLogs()" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🗑️ Clear Logs
+        </button>
+        <div id="logDisplay" style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-size: 12px; max-height: 250px; overflow: auto; white-space: pre-wrap;"></div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// ADMIN PANEL FUNCTIONS
+// ============================================
+
+// Show/hide admin panel
+function toggleAdminPanel() {
+    const content = document.getElementById('adminContent');
+    if (content) {
+        content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Initialize admin panel visibility
+function initAdminPanel() {
+    const user = window.fb?.auth?.currentUser;
+    if (user?.email === 'thomasnguyen07@gmail.com') {
+        document.getElementById('adminPanel').style.display = 'block';
+    }
+    
+    if (window.fb?.auth) {
+        window.fb.auth.onAuthStateChanged((user) => {
+            document.getElementById('adminPanel').style.display = 
+                user?.email === 'thomasnguyen07@gmail.com' ? 'block' : 'none';
+        });
+    }
+}
+
+// View mobile logs
+async function viewMobileLogs() {
+    const display = document.getElementById('logDisplay');
+    if (!display) return;
+    
+    display.innerHTML = 'Loading logs...';
+    
+    try {
+        const { collection, query, orderBy, limit, getDocs } = 
+            await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
+        
+        const db = window.fb.firestore.db;
+        const logsQuery = query(
+            collection(db, "mobile_logs"),
+            orderBy("receivedAt", "desc"),
+            limit(20)
+        );
+        
+        const snapshot = await getDocs(logsQuery);
+        
+        if (snapshot.empty) {
+            display.innerHTML = 'No logs found. Make sure mobile users have generated some logs.';
+            return;
+        }
+        
+        let html = '';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const time = data.receivedAt?.toDate 
+                ? data.receivedAt.toDate().toLocaleString() 
+                : 'Unknown';
+            
+            html += `<div style="border-bottom: 1px solid #ddd; padding: 5px; margin-bottom: 5px;">`;
+            html += `<small style="color: #666;">${time}</small><br>`;
+            html += `<small>User: ${data.userId || 'anonymous'}</small><br>`;
+            
+            if (data.logs && data.logs.length > 0) {
+                data.logs.slice(-5).forEach(log => {
+                    const color = log.type === 'error' ? '#f44336' : '#333';
+                    html += `<div style="color: ${color}; font-size: 11px; margin-left: 10px;">`;
+                    html += `[${log.type}] ${log.message.substring(0, 100)}`;
+                    html += log.message.length > 100 ? '...' : '';
+                    html += `</div>`;
+                });
+            }
+            html += `</div>`;
+        });
+        
+        display.innerHTML = html;
+    } catch (error) {
+        display.innerHTML = `Error: ${error.message}`;
+    }
+}
+
+// Clear mobile logs
+async function clearMobileLogs() {
+    if (!confirm('Clear all mobile logs?')) return;
+    
+    try {
+        const { collection, getDocs, deleteDoc } = 
+            await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
+        
+        const db = window.fb.firestore.db;
+        const snapshot = await getDocs(collection(db, "mobile_logs"));
+        
+        const deletePromises = [];
+        snapshot.forEach(doc => deletePromises.push(deleteDoc(doc.ref)));
+        await Promise.all(deletePromises);
+        
+        document.getElementById('logDisplay').innerHTML = 'Logs cleared';
+    } catch (error) {
+        alert('Error clearing logs: ' + error.message);
+    }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminPanel);
+} else {
+    initAdminPanel();
+}
+</script>
+
+<script>
+async function checkLogsDirectly() {
+    try {
+        const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
+        const db = window.fb.firestore.db;
+        
+        const snapshot = await getDocs(collection(db, "mobile_logs"));
+        console.log("📊 Total logs in Firestore:", snapshot.size);
+        
+        if (snapshot.empty) {
+            alert("No logs found in Firestore");
+        } else {
+            let count = 0;
+            snapshot.forEach(doc => {
+                console.log(`Log ${++count}:`, doc.data());
+            });
+            alert(`Found ${count} logs. Check console for details.`);
+        }
+    } catch (error) {
+        console.error("Error checking logs:", error);
+        alert("Error: " + error.message);
+    }
+}
+</script>
+
+    <script>
+      // Debugging helper
+      window.debugFirebase = () => {
+        return {
+          auth: !!window.fb?.auth,
+          db: !!window.fb?.db,
+          firestore: window.fb?.firestore
+            ? Object.keys(window.fb.firestore)
+            : "none",
+          storage: !!window.fb?.storage,
+        };
+      };
+    </script>
+
+    <script>
+      window.firebase = { __esModule: true };
+    </script>
+
+<div id="ownerPassPanel" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h3>👑 Generate Complimentary Pass Code</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="email" id="passEmail" placeholder="Friend's email" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <select id="passPlan" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <option value="monthly">1 Month</option>
+            <option value="three_months">3 Months</option>
+            <option value="six_months">6 Months</option>
+            <option value="yearly">1 Year</option>
+        </select>
+        <button id="generatePassBtn" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Generate</button>
+    </div>
+    <div id="passResult" style="margin-top: 10px;"></div>
+</div>
+
+    <script type="module">
+      // 1. Firebase Core
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+
+      // 2. Authentication
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
+      // 3. Firestore (Database)
+      import {
+        getFirestore,
+        collection,
+        doc,
+        deleteDoc,
+        getDocs,
+        writeBatch,
+        addDoc,
+        setDoc,  // ← ADD THIS
+      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+      // 4. Storage (Files)
+      import {
+        getStorage,
+        ref,
+        uploadBytes,
+        getDownloadURL,
+      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
+
+      // Firebase Configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0",
+        authDomain: "connectionsfinder.com",
+        projectId: "connectionsfinder-app",
+        storageBucket: "connectionsfinder-app.firebasestorage.app",
+        messagingSenderId: "503658774852",
+        appId: "1:503658774852:web:6ef3a8f506f36ca2c3d711"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
+
+      // Make available globally
+      window.fb = { auth, db, storage };
+
+      // ============================================
+      // OWNER PANEL - COMPLIMENTARY PASS CODES
+      // ============================================
+
+      // Function to generate pass code
+      window.generatePassCode = async function(email, plan) {
+        const user = auth.currentUser;
+        if (!user || user.email !== "thomasnguyen07@gmail.com") {
+          console.error("Unauthorized");
+          return null;
+        }
+        
+        const code = Math.random().toString(36).substring(2, 12).toUpperCase();
+        const expiryDate = new Date();
+        switch(plan) {
+          case 'monthly': expiryDate.setMonth(expiryDate.getMonth() + 1); break;
+          case 'three_months': expiryDate.setMonth(expiryDate.getMonth() + 3); break;
+          case 'six_months': expiryDate.setMonth(expiryDate.getMonth() + 6); break;
+          case 'yearly': expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
+        }
+        
+        await setDoc(doc(db, "pass_codes", code), {
+          code: code,
+          recipientEmail: email,
+          plan: plan,
+          used: false,
+          createdBy: user.uid,
+          createdAt: new Date(),
+          expiresAt: expiryDate
+        });
+        
+        return code;
+      };
+
+      // Show owner panel after page loads
+      setTimeout(() => {
+        const panel = document.getElementById("ownerPassPanel");
+        if (panel && auth.currentUser && auth.currentUser.email === "thomasnguyen07@gmail.com") {
+          panel.style.display = "block";
+        }
+      }, 1000);
+
+      // Generate button handler (will work after panel is visible)
+      document.addEventListener('DOMContentLoaded', () => {
+        const generateBtn = document.getElementById("generatePassBtn");
+        if (generateBtn) {
+          generateBtn.addEventListener("click", async () => {
+            const email = document.getElementById("passEmail")?.value;
+            const plan = document.getElementById("passPlan")?.value;
+            
+            if (!email) {
+              alert("Please enter recipient email");
+              return;
+            }
+            
+            const code = await window.generatePassCode(email, plan);
+            const resultDiv = document.getElementById("passResult");
+            if (code && resultDiv) {
+              resultDiv.innerHTML = `
+                ✅ Pass Code Created!<br>
+                <strong style="font-size: 1.2rem;">${code}</strong><br>
+                Give this code to ${email}.
+              `;
+              document.getElementById("passEmail").value = "";
+            } else if (resultDiv) {
+              resultDiv.innerHTML = "❌ Failed to create pass code";
+            }
+          });
+        }
+      });
+    
+  // ============================================
+  // AUTO CACHE CLEANUP
+  // ============================================
+  function setupAutoCacheCleanup() {
+      if (Math.random() > 0.01) return;
+      console.log("🧹 Running automatic cache cleanup...");
+      
+      const keysToRemove = [];
+      const now = Date.now();
+      
+      for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          
+          if (key && key.startsWith('img_')) {
+              try {
+                  const timestamp = parseInt(key.split('_')[1]) || 0;
+                  if (now - timestamp > 30 * 24 * 60 * 60 * 1000) {
+                      keysToRemove.push(key);
+                  }
+              } catch(e) {}
+          }
+          
+          if (key && (key.includes('temp_') || key.includes('cache_'))) {
+              keysToRemove.push(key);
+          }
+      }
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`✅ Cleaned up ${keysToRemove.length} cached items`);
+  }
+  
+  // ============================================
+  // INDEXEDDB CLEANUP
+  // ============================================
+  async function cleanupIndexedDB() {
+      if (Math.random() > 0.05) return;
+      
+      try {
+          console.log("🗄️ Checking IndexedDB for old caches...");
+          const databases = await indexedDB.databases?.() || [];
+          
+          for (const db of databases) {
+              if (db.name && db.name.includes('firestore')) {
+                  console.log(`🗑️ Clearing cache: ${db.name}`);
+                  indexedDB.deleteDatabase(db.name);
+              }
+          }
+      } catch(e) {
+          console.log("IndexedDB cleanup skipped:", e.message);
+      }
+  }
+  
+  // Call cleanup after auth
+  onAuthStateChanged(auth, (user) => {
+      if (user) {
+          setupAutoCacheCleanup();
+          setTimeout(cleanupIndexedDB, 10000);
+      }
+  });
+          // Logout Handler - ULTRA-PROTECTED from ALL crawlers
+    // Logout Handler - DISABLED REDIRECT for Facebook debugging
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        try {
+            // Save current language before sign out
+            const currentLang = localStorage.getItem("appLanguage") || localStorage.getItem("userLanguage") || "en";
+            localStorage.setItem("preSignoutLanguage", currentLang);
+            console.log("📝 Saved language before sign out:", currentLang);
+            
+            await window.fb.auth.signOut();
+            window.location.href = "/index.html";
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    });
+}
+
+      // Map Initialization (Keep your existing)
+      function initMap() {
+        const mapContainer = document.getElementById("map");
+        if (!mapContainer || mapContainer._leaflet_id) return;
+        window.map = L.map("map").setView([10.7610112, 106.6893312], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+          window.map
+        );
+      }
+      function loadMap() {
+        if (typeof L === "undefined") setTimeout(loadMap, 100);
+        else initMap();
+      }
+      if (document.readyState === "complete") loadMap();
+      else window.addEventListener("load", loadMap);
+    </script>
+
+    <script></script>
+
+    <!-- Load Scripts (Keep your existing order) -->
+    <!-- Firebase Loader (MUST COME FIRST) -->
+    <script type="module" src="./js/firebase-loader.js"></script>
+
+<!-- DEBUG: Check what firebase-loader.js provides -->
+<script>
+// Debug what firebase-loader.js provides
+setTimeout(() => {
+    console.log("🔍 DEBUG: Checking firebase-loader.js exports");
+    console.log("window.firebaseLoader:", window.firebaseLoader);
+    console.log("window.firebase:", window.firebase);
+    console.log("window.initializedFirebase:", window.initializedFirebase);
+    
+    // Check if firebase-loader.js exposes anything
+    for (let key in window) {
+        if (key.includes('firebase') || key.includes('Firebase') || key.includes('fb')) {
+            console.log("Firebase-related global:", key, "=", window[key]);
+        }
+    }
+    
+    // Also check for any custom exports from firebase-loader.js
+    console.log("=== Checking for module exports ===");
+    console.log("window.firebaseModules:", window.firebaseModules);
+    console.log("window.fbApp:", window.fbApp);
+    console.log("window.fbAuth:", window.fbAuth);
+    console.log("window.fbFirestore:", window.fbFirestore);
+}, 3000);
+</script>
+
+ <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>© 2026 Connections. All rights reserved.</p>
+            <p>📧 Support: <a href="mailto:support@connectionsfinder.com">support@connectionsfinder.com</a></p>
+        </div>
+    </footer>
+
+<script src="./js/premium-iap.js"></script>
+
+<script src="./js/sightengine.js"></script>
+
+    <!-- Make sure this is included AFTER firebase-loader.js -->
+<script src="./js/avatar-upload.js"></script>
+
+    <!-- Other dependencies -->
+    <script src="./js/language-switcher.js"></script>
+    <script src="./js/sharing.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- NEW: Load the image compression library and our compressor code -->
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
+<script src="./js/image-compressor.js"></script> <!-- Add this line -->
+
+<!-- Now load storage.js, which uses the function from the file above -->
+<script type="module" src="./js/storage.js"></script>
+
+    <!-- Main app code (loads last) -->
+    <script src="./js/reports.js" defer></script>
+
+    <script>
+      // Initialize empty map
+      function initMap() {
+        if (!window.map && typeof L !== "undefined") {
+          window.map = L.map("map").setView([0, 0], 2);
+          L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          ).addTo(window.map);
+        }
+      }
+      // Load when both DOM and Leaflet are ready
+      if (document.readyState === "complete") initMap();
+      else window.addEventListener("load", initMap);
+    </script>
+ <a href="#" id="floating-dashboard-btn" class="floating-back-btn">
+  <i class="fas fa-home"></i>
+  <span class="back-text">Dashboard</span>
+</a>
+
+<script>
+  // SAFE GETREPORT FALLBACK
+  function getReport() {
+    try {
+      return JSON.parse(localStorage.getItem('currentReport')) || {};
+    } catch {
+      return {};
+    }
+  }
+</script>
+
+<!-- ============================================ -->
+<!-- WHATSAPP OPTIMIZATION HELPER FUNCTIONS -->
+<!-- ============================================ -->
+<script>
+<!-- WhatsApp Share Solution - REPLACES ALL PREVIOUS VERSIONS -->
+
+document.getElementById('whatsapp-share').addEventListener('click', async function(e) {
+  e.preventDefault();
+  
+  // 1. Get report data
+  let report;
+  try {
+    report = {
+      title: document.getElementById("report-title")?.value || "",
+      description: document.getElementById("report-description")?.value || "",
+      location: document.getElementById("location-text-input")?.value || "",
+      coordinates: document.getElementById("selected-coordinates")?.value || "",
+      contact: document.getElementById("reporter-contact")?.value || "",
+      type: document.getElementById("report-type")?.value || "event",
+      imageUrls: window.lastUploadedImages || []
+    };
+  } catch {
+    report = {
+      title: "", description: "", location: "", contact: "", type: "other", imageUrls: []
+    };
+  }
+
+  // 2. Get language
+  const lang = localStorage.getItem("userLanguage") || "en";
+
+  // ============================================
+// ✅ ADD WHATSAPP NOTICE TRANSLATIONS HERE
+// ============================================
+const whatsappNotice = {
+    en: "ℹ️ WhatsApp may shorten long messages. Title, images, and link are preserved.",
+    vi: "ℹ️ WhatsApp có thể rút gọn tin nhắn dài. Tiêu đề, hình ảnh và liên kết vẫn được giữ nguyên.",
+    zh: "ℹ️ WhatsApp可能会缩短长消息。标题、图片和链接仍然保留。",
+    es: "ℹ️ WhatsApp puede acortar mensajes largos. El título, las imágenes y el enlace se conservan.",
+    hi: "ℹ️ WhatsApp लंबे संदेशों को छोटा कर सकता है। शीर्षक, चित्र और लिंक सुरक्षित रहते हैं।",
+    ar: "ℹ️ قد يقوم واتساب بتقصير الرسائل الطويلة. العنوان والصور والرابط محفوظة."
+};
+// ============================================
+  
+  // 3. Get image package
+  let imagePart = '';
+  try {
+    const imageResult = await ImageProvider.getImagesForPlatform(report.imageUrls, 'whatsapp');
+    if (imageResult.type === 'single') {
+      imagePart = `\n\n*${t('fieldLabels.image', lang)}:* ${imageResult.url}`;
+    } else if (imageResult.type === 'package') {
+      imagePart = `\n\n*${t('fieldLabels.images', lang)} (${imageResult.count}):* ${imageResult.url}`;
+    }
+  } catch (error) {
+    if (report.imageUrls.length > 0) {
+      imagePart = `\n\n*${t('fieldLabels.image', lang)}:* ${report.imageUrls[0]}`;
+    }
+  }
+  
+  // 4. Build message
+  const messageParts = [];
+  messageParts.push(`_${t('greetings', lang)}_`);
+  if (report.title) messageParts.push(`\n\n*${report.title}*`);
+  if (report.description) messageParts.push(`\n\n*${t('fieldLabels.description', lang)}:* ${report.description}`);
+  if (report.location) {
+    let locationLine = `\n\n*${t('fieldLabels.location', lang)}:* ${report.location}`;
+    if (report.coordinates) locationLine += ` (${report.coordinates})`;
+    messageParts.push(locationLine);
+  }
+  if (report.contact) messageParts.push(`\n\n*${t('fieldLabels.contact', lang)}:* ${report.contact}`);
+  if (imagePart) messageParts.push(imagePart);
+  messageParts.push(`\n\n_${t(`closingLines.${report.type}`, lang)}_`);
+  messageParts.push(`\n_${t('closingLines.thank_you', lang)}_`);
+  messageParts.push(`\n\n_${t('reportSharedVia', lang)} ${window.location.href}_`);
+
+  const message = messageParts.filter(Boolean).join('');
+  console.log("📱 WhatsApp message length:", message.length);
+  
+  // ============================================
+// HINDI NOTICE (or notice in user's language)
+// ============================================
+if (lang === 'hi') {
+    alert(whatsappNotice[lang]);
+}
+// ============================================
+  
+  shareToWhatsApp(message, report.title);
+});
+
+</script>
+<!-- Add this to check if avatar-upload.js is loaded -->
+<script>
+  console.log('🔍 Checking if avatar-upload.js is loaded...');
+  setTimeout(() => {
+    if (typeof SimpleAvatarUpload === 'undefined') {
+      console.error('❌ avatar-upload.js NOT LOADED!');
+    } else {
+      console.log('✅ avatar-upload.js is loaded');
+    }
+  }, 1000);
+</script>
+
+<!-- INITIALIZATION: Actually use it -->
+<script>
+  // Initialize avatar upload when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing avatar upload...');
+    
+    // Wait a bit longer to ensure script is loaded
+    setTimeout(function() {
+      if (typeof SimpleAvatarUpload !== 'undefined') {
+        window.avatarUploader = new SimpleAvatarUpload();
+        window.avatarUploader.setup();
+        console.log('✅ Avatar upload initialized');
+      } else {
+        console.error('❌ SimpleAvatarUpload not found - will retry');
+        // Retry once after 2 seconds
+        setTimeout(function() {
+          if (typeof SimpleAvatarUpload !== 'undefined') {
+            window.avatarUploader = new SimpleAvatarUpload();
+            window.avatarUploader.setup();
+            console.log('✅ Avatar upload initialized (retry)');
+          }
+        }, 2000);
+      }
+    }, 500); // Initial wait
+  });
+</script>
+<!-- ISOLATED USER AUTH SYSTEM - LOADS LAST -->
+<script type="module" src="./js/firebase-config-users.js"></script>
+<script src="./js/users-auth.js"></script>
+
+<script>
+// Add this at the bottom of dashboard.html
+function monitorFirestoreUsage() {
+    console.log("📊 Firestore Stats:");
+    
+    // Track reads/writes in localStorage
+    let reads = parseInt(localStorage.getItem('firestoreReads') || '0');
+    let writes = parseInt(localStorage.getItem('firestoreWrites') || '0');
+    
+    console.log("- Reads today:", reads);
+    console.log("- Writes today:", writes);
+    console.log("- Active users:", localStorage.getItem('activeUsers') || 0);
+    
+    // Reset daily stats at midnight
+    const lastReset = localStorage.getItem('statsResetDate');
+    const today = new Date().toDateString();
+    
+    if (lastReset !== today) {
+        localStorage.setItem('firestoreReads', '0');
+        localStorage.setItem('firestoreWrites', '0');
+        localStorage.setItem('statsResetDate', today);
+        console.log("📊 Stats reset for new day");
+    }
+}
+
+// Call it every hour
+setInterval(monitorFirestoreUsage, 3600000);
+// Call it once on load
+monitorFirestoreUsage();
+</script>
+
+<script>
+// Test which icons work
+setTimeout(() => {
+    console.log("Testing icons:");
+    
+    const testIcons = {
+        'whatsapp': 'fab fa-whatsapp',
+        'whatsapp-square': 'fab fa-whatsapp-square',
+        'telegram': 'fab fa-telegram',
+        'telegram-plane': 'fab fa-telegram-plane',
+        'zalo': 'fab fa-zalo'
+    };
+    
+    for (let [name, className] of Object.entries(testIcons)) {
+        const i = document.createElement('i');
+        i.className = className;
+        document.body.appendChild(i);
+        console.log(name, className, window.getComputedStyle(i).fontFamily);
+        i.remove();
+    }
+}, 1000);
+</script>
+
+<script>
+// ============================================
+// SIGNED-OUT TRANSLATIONS ONLY
+// (Does NOT interfere with signed-in experience)
+// ============================================
+(function() {
+    // Check if user is signed in
+    const isSignedIn = !!(window.fb?.auth?.currentUser);
+    
+    // Only apply for signed-out users
+    if (isSignedIn) {
+        console.log("✅ User signed in - using main translation system");
+        return;
+    }
+    
+    console.log("🌐 Applying signed-out translations");
+    
+    const lang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
+    
+    const signedOutTranslations = {
+        en: {
+            shareHeading: "Share This Report",
+            dashboard: "Dashboard",
+            useMyLocation: "Use My Location",
+            chooseFiles: "Choose files (max 5)",
+            titlePlaceholder: "e.g. Missing boy, Lost wallet",
+            locationPlaceholder: "Specific place",
+            addressPlaceholder: "Search address",
+            submitReport: "Submit Report",
+            saveReport: "Save Report",
+            newReport: "New Report",
+            savedReports: "Saved Reports"
+        },
+        vi: {
+            shareHeading: "Chia sẻ báo cáo này",
+            dashboard: "Bảng điều khiển",
+            useMyLocation: "Dùng vị trí của tôi",
+            chooseFiles: "Chọn tệp (tối đa 5)",
+            titlePlaceholder: "vd. Bé trai mất tích, Ví bị mất",
+            locationPlaceholder: "Địa điểm cụ thể",
+            addressPlaceholder: "Tìm kiếm địa chỉ",
+            submitReport: "Gửi báo cáo",
+            saveReport: "Lưu báo cáo",
+            newReport: "Tin Nhắn Mới",
+            savedReports: "Tin Nhắn Đã Lưu"
+        },
+        zh: {
+            shareHeading: "分享此报告",
+            dashboard: "仪表板",
+            useMyLocation: "使用我的位置",
+            chooseFiles: "选择文件（最多5个）",
+            titlePlaceholder: "例如：失踪男孩，丢失钱包",
+            locationPlaceholder: "具体地点",
+            addressPlaceholder: "搜索地址",
+            submitReport: "提交报告",
+            saveReport: "保存报告",
+            newReport: "新报告",
+            savedReports: "已保存报告"
+        },
+        es: {
+            shareHeading: "Compartir este informe",
+            dashboard: "Tablero",
+            useMyLocation: "Usar mi ubicación",
+            chooseFiles: "Elegir archivos (máx 5)",
+            titlePlaceholder: "Ej: Niño desaparecido, Cartera perdida",
+            locationPlaceholder: "Lugar específico",
+            addressPlaceholder: "Buscar dirección",
+            submitReport: "Enviar informe",
+            saveReport: "Guardar informe",
+            newReport: "Nuevo Informe",
+            savedReports: "Informes Guardados"
+        },
+        hi: {
+            shareHeading: "यह रिपोर्ट साझा करें",
+            dashboard: "डैशबोर्ड",
+            useMyLocation: "मेरा स्थान उपयोग करें",
+            chooseFiles: "फ़ाइलें चुनें (अधिकतम 5)",
+            titlePlaceholder: "जैसे: लापता लड़का, खोया हुआ बटुआ",
+            locationPlaceholder: "विशिष्ट स्थान",
+            addressPlaceholder: "पता खोजें",
+            submitReport: "रिपोर्ट सबमिट करें",
+            saveReport: "रिपोर्ट सहेजें",
+            newReport: "नई रिपोर्ट",
+            savedReports: "सहेजी गई रिपोर्टें"
+        },
+        ar: {
+            shareHeading: "مشاركة هذا التقرير",
+            dashboard: "لوحة التحكم",
+            useMyLocation: "استخدم موقعي",
+            chooseFiles: "اختر الملفات (حد أقصى 5)",
+            titlePlaceholder: "مثال: فتى مفقود، محفظة ضائعة",
+            locationPlaceholder: "مكان محدد",
+            addressPlaceholder: "ابحث عن العنوان",
+            submitReport: "إرسال التقرير",
+            saveReport: "حفظ التقرير",
+            newReport: "تقرير جديد",
+            savedReports: "التقارير المحفوظة"
+        }
+    };
+    
+    const t = signedOutTranslations[lang] || signedOutTranslations.en;
+    
+    // Update elements only if they exist (don't break signed-in view)
+    const shareHeading = document.getElementById("share-subheading");
+    if (shareHeading && shareHeading.textContent !== t.shareHeading) shareHeading.textContent = t.shareHeading;
+    
+    const dashboardBtn = document.querySelector("#floating-dashboard-btn .back-text");
+    if (dashboardBtn && dashboardBtn.textContent !== t.dashboard) dashboardBtn.textContent = t.dashboard;
+    
+    const locationBtn = document.querySelector('[onclick*="useCurrentLocation"] span');
+    if (locationBtn && locationBtn.textContent !== t.useMyLocation) locationBtn.textContent = t.useMyLocation;
+    
+    const fileLabel = document.querySelector(".file-input-text");
+    if (fileLabel && fileLabel.textContent !== t.chooseFiles) fileLabel.textContent = t.chooseFiles;
+    
+    const titleInput = document.getElementById("report-title");
+    if (titleInput && titleInput.placeholder !== t.titlePlaceholder) titleInput.placeholder = t.titlePlaceholder;
+    
+    const locationInput = document.getElementById("location-text-input");
+    if (locationInput && locationInput.placeholder !== t.locationPlaceholder) locationInput.placeholder = t.locationPlaceholder;
+    
+    const addressInput = document.getElementById("address-input");
+    if (addressInput && addressInput.placeholder !== t.addressPlaceholder) addressInput.placeholder = t.addressPlaceholder;
+    
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn && submitBtn.textContent !== t.submitReport) submitBtn.textContent = t.submitReport;
+    
+    const saveBtn = document.getElementById("save-report-btn");
+    if (saveBtn) {
+        const span = saveBtn.querySelector('span');
+        if (span && span.textContent !== t.saveReport) span.textContent = t.saveReport;
+    }
+    
+    const newReportTab = document.querySelector('[data-tab="new-report"]');
+    if (newReportTab) {
+        const icon = '<i class="fas fa-plus"></i> ';
+        if (newReportTab.innerHTML !== icon + t.newReport) newReportTab.innerHTML = icon + t.newReport;
+    }
+    
+    const savedReportsTab = document.querySelector('[data-tab="saved-reports"]');
+    if (savedReportsTab) {
+        const icon = '<i class="fas fa-save"></i> ';
+        if (savedReportsTab.innerHTML !== icon + t.savedReports) savedReportsTab.innerHTML = icon + t.savedReports;
+    }
+    
+    console.log("✅ Signed-out translations applied for:", lang);
+})();
+</script>
+
+<script>
+// Apply translations for signed-out users
+(function() {
+    const lang = localStorage.getItem("appLanguage") || localStorage.getItem("userLanguage") || "en";
+    console.log("🌐 Applying guest translations for:", lang);
+    
+    // Simple translations for guest view
+    const guestTexts = {
+        en: {
+            newReport: "New Report",
+            savedReports: "Saved Reports",
+            submit: "Submit Report",
+            shareHeading: "Share This Report",
+            saveReport: "Save Report",
+            dashboard: "Dashboard"
+        },
+        vi: {
+            newReport: "Tin Nhắn Mới",
+            savedReports: "Tin Nhắn Đã Lưu",
+            submit: "Gửi báo cáo",
+            shareHeading: "Chia sẻ báo cáo này",
+            saveReport: "Lưu báo cáo",
+            dashboard: "Bảng điều khiển"
+        },
+        zh: {
+            newReport: "新报告",
+            savedReports: "已保存报告",
+            submit: "提交报告",
+            shareHeading: "分享此报告",
+            saveReport: "保存报告",
+            dashboard: "仪表板"
+        },
+        es: {
+            newReport: "Nuevo Informe",
+            savedReports: "Informes Guardados",
+            submit: "Enviar informe",
+            shareHeading: "Compartir este informe",
+            saveReport: "Guardar informe",
+            dashboard: "Tablero"
+        },
+        hi: {
+            newReport: "नई रिपोर्ट",
+            savedReports: "सहेजी गई रिपोर्टें",
+            submit: "रिपोर्ट सबमिट करें",
+            shareHeading: "यह रिपोर्ट साझा करें",
+            saveReport: "रिपोर्ट सहेजें",
+            dashboard: "डैशबोर्ड"
+        },
+        ar: {
+            newReport: "تقرير جديد",
+            savedReports: "التقارير المحفوظة",
+            submit: "إرسال التقرير",
+            shareHeading: "مشاركة هذا التقرير",
+            saveReport: "حفظ التقرير",
+            dashboard: "لوحة التحكم"
+        }
+    };
+    
+    const t = guestTexts[lang] || guestTexts.en;
+    
+    // Update tab buttons
+    const newReportTab = document.querySelector('[data-tab="new-report"]');
+    const savedReportsTab = document.querySelector('[data-tab="saved-reports"]');
+    if (newReportTab) newReportTab.innerHTML = '<i class="fas fa-plus"></i> ' + t.newReport;
+    if (savedReportsTab) savedReportsTab.innerHTML = '<i class="fas fa-save"></i> ' + t.savedReports;
+    
+    // Update submit button
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = t.submit;
+    
+    // Update share heading
+    const shareHeading = document.getElementById("share-subheading");
+    if (shareHeading) shareHeading.textContent = t.shareHeading;
+    
+    // Update save button
+    const saveBtn = document.getElementById("save-report-btn");
+    if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> ' + t.saveReport;
+    
+    // Update dashboard button
+    const dashboardBtn = document.querySelector("#floating-dashboard-btn .back-text");
+    if (dashboardBtn) dashboardBtn.textContent = t.dashboard;
+})();
+</script>
+
+// ============================================
+// AUTO CLEANUP ON PAGE LOAD
+// ============================================
+(function autoCleanupLocalStorage() {
+    console.log("🧹 Running localStorage auto-cleanup...");
+    
+    const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+    const now = Date.now();
+    let cleanedCount = 0;
+    
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('img_') || key.startsWith('whatsapp_') || key.startsWith('imgpkg_'))) {
+            try {
+                const item = JSON.parse(localStorage.getItem(key));
+                if (item.timestamp && (now - item.timestamp) > maxAge) {
+                    localStorage.removeItem(key);
+                    cleanedCount++;
+                }
+            } catch (e) {
+                // If can't parse, remove it (corrupted)
+                localStorage.removeItem(key);
+                cleanedCount++;
+            }
+        }
+    }
+    
+    if (cleanedCount > 0) {
+        console.log(`🧹 Cleaned up ${cleanedCount} old image backup(s)`);
+    } else {
+        console.log("✅ No old backups to clean");
+    }
+})();
+
+</body>
+  </body>
+</html>

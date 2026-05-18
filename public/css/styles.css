@@ -1,0 +1,3472 @@
+/* Add this to the BOTTOM of your existing styles.css */
+#clear-all {
+  background: #ff4444;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  display: block; /* Ensures the button is clickable */
+}
+
+#clear-all:hover {
+  background: #cc0000;
+}
+
+#reports-list {
+  min-height: 100px; /* Prevents layout shifts */
+}
+#clear-all {
+  background: #ff4444 !important;
+  color: white !important;
+  padding: 10px 20px !important;
+  border: none !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  margin-top: 20px !important;
+  display: block !important;
+  transition: background 0.3s !important;
+}
+
+#clear-all:hover {
+  background: #cc0000 !important;
+}
+
+#clear-all:disabled {
+  background: #cccccc !important;
+  cursor: not-allowed !important;
+}
+/* Saved Reports */
+#reports-list {
+  min-height: 100px;
+}
+
+.report {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.loading, .empty, .error {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+#clear-all {
+  background: #ff4444;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+#clear-all:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+.empty-reports, .loading, .error {
+  text-align: center;
+  padding: 2rem;
+  border: 1px dashed #ccc;
+  margin: 1rem;
+}
+
+#create-test-report, .error button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-top: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 15px 0;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    td, th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+.share-buttons, .reshare-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.share-buttons button, .reshare-buttons button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.share-buttons button { background: #f0f0f0; }
+.reshare-buttons button { background: transparent; }
+
+/* Platform colors */
+.fa-whatsapp { color: #25D366; }
+.fa-twitter { color: #1DA1F2; }
+.fa-telegram { color: #0088CC; }
+.fa-facebook { color: #1877F2; }
+.fa-envelope { color: #EA4335; }
+/* Ensure share section is visible when enabled */
+#share-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.share-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.share-buttons button {
+  padding: 8px 15px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.share-buttons button:hover {
+  background: #3367d6;
+}
+
+.share-buttons button i {
+  margin-right: 5px;
+}
+/* Add to styles.css */
+#share-section {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Nuclear option to override all potential hiding */
+#share-section, #share-section * {
+  all: revert !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.share-buttons button i {
+  font-size: 1.2em;
+  margin-right: 5px;
+}
+/* Fix for Font Awesome icons */
+.fab {
+  font-family: 'Font Awesome 6 Brands' !important;
+}
+
+/* Map container fix */
+#map {
+  min-height: 300px;
+  background: #f0f0f0;
+}
+
+/* Optional: Custom marker style */
+.custom-marker {
+  background: none;
+  border: none;
+}
+.fa-whatsapp:before {
+  content: "\f232";
+  font-family: "Font Awesome 6 Brands";
+  color: #25D366;
+}
+/* Map marker styling */
+.map-marker-icon {
+  background: #3388ff;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+/* Map container fixes */
+#map {
+  min-height: 300px;
+  background: #f5f5f5;
+  z-index: 1;
+}
+
+/* Prevent tile flickering */
+.leaflet-layer {
+  will-change: auto !important;
+}
+/* Force WhatsApp icon rendering */
+.fa-whatsapp:before {
+  content: "\f232";
+  font-family: "Font Awesome 6 Brands";
+  color: #25D366;
+}
+
+/* Ensure all icons use the Brands font */
+.share-buttons .fab {
+  font-family: "Font Awesome 6 Brands" !important;
+}
+/* WhatsApp button styling */
+.whatsapp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.whatsapp-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+
+.whatsapp-button:hover {
+  background: #f5f5f5;
+}
+.share-buttons button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+/* Force text icon as fallback */
+button[data-platform="whatsapp"] {
+  font-weight: bold;
+}
+[data-platform="whatsapp"]::before {
+  content: "WhatsApp";
+  color: #25D366;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+[data-platform="whatsapp"] i {
+  display: none; /* Hide the ? icon */
+}
+/* Saved Reports Styling */
+#saved-reports {
+  padding: 15px;
+}
+
+.saved-report {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.report-header h4 {
+  margin: 0;
+  color: #333;
+}
+
+.report-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.report-actions button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.reshare-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.delete-btn {
+  background: #f44336;
+  color: white;
+}
+
+#clear-all {
+  background: #ff9800;
+  color: white;
+  padding: 10px 15px;
+  margin-top: 20px;
+}
+/* Saved Reports States */
+.loading, .no-reports, .error {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+.no-reports {
+  font-style: italic;
+}
+/* Back to Top Button */
+.back-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1000;
+  display: none;
+}
+
+.back-btn.visible {
+  display: block;
+}
+
+/* Tab Navigation Fix */
+.tab-content {
+  display: none;
+  padding-top: 20px;
+}
+
+.tab-content.active {
+  display: block;
+}
+/* Add to styles.css */
+.loading-reports {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.error-message {
+  padding: 20px;
+  background: #ffeeee;
+  border: 1px solid #ffcccc;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.error-message button {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+/* Saved Reports Styling */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+#reports-list {
+  margin: 20px 0;
+}
+
+.saved-report {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.report-header h4 {
+  margin: 0;
+  color: #333;
+}
+
+.report-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.report-actions button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.delete-btn {
+  background: #ff4444;
+  color: white;
+}
+
+.reshare-btn {
+  background: #4285f4;
+  color: white;
+}
+
+.clear-all-btn {
+  background: #ff4444;
+  color: white;
+  padding: 10px 15px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.loading-reports, .no-reports {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error-message {
+  padding: 20px;
+  background: #ffeeee;
+  border: 1px solid #ffcccc;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.error-message button {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+/* Saved Reports Header */
+.saved-reports-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.back-btn {
+  background: #4285f4;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.clear-all-btn {
+  background: #ff4444;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Loading Animation */
+.loading-reports::after {
+  content: "...";
+  animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: "."; }
+  40% { content: ".."; }
+  60%, 100% { content: "..."; }
+}
+.language-switcher {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+}
+
+/* For RTL languages like Arabic */
+[dir="rtl"] .language-switcher {
+    right: auto;
+    left: 20px;
+}
+/* Language Switcher */
+.language-switcher {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+    text-align: right;
+}
+
+[dir="rtl"] .language-switcher {
+    margin-left: 0;
+    margin-right: 10px;
+}
+/* Warning System Styles */
+.warning-banner {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.abuse-warning {
+  background-color: #fff3cd; /* Yellow */
+  border-left: 4px solid #ffc107;
+}
+
+.privacy-warning {
+  background-color: #d1ecf1; /* Blue */
+  border-left: 4px solid #0dcaf0;
+}
+
+.legal-warnings {
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #f8d7da; /* Red */
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+/* Tooltip-style safety warnings */
+[data-warning-type] {
+  position: relative;
+  cursor: help;
+}
+
+[data-warning-type]:hover::after {
+  content: attr(data-warning-text);
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 100;
+  width: 200px;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+[data-warning]:empty::before {
+  content: attr(data-warning-fallback);
+  color: #999;
+}
+
+[data-warning="fraud"] {
+  font-weight: bold;
+}
+/* Handles both warning types */
+[data-warning]:empty::after,
+[data-translate]:empty::after {
+  content: attr(data-warning) attr(data-translate);
+  color: #999;
+  font-style: italic;
+}
+.location-btn {
+  transition: all 0.3s ease;
+}
+.location-btn:disabled {
+  opacity: 0.7;
+}
+/* Saved Reports Styling */
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.saved-report {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background: white;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.report-date {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.report-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.report-actions button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* === Saved Reports Modal Styles === */
+.reshare-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.reshare-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  width: 500px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.reshare-options {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.reshare-options button {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+}
+
+.reshare-options button i {
+  margin-right: 5px;
+}
+
+.no-reports {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+/* Saved Reports Styling */
+.saved-reports-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.saved-report {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 5px;
+}
+
+.report-actions {
+  margin-top: 0.5rem;
+}
+
+.report-actions button {
+  padding: 0.3rem 0.6rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.no-reports {
+  color: #666;
+  font-style: italic;
+}
+#current-report-title {
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #3498db;
+}
+/* Add to your styles.css */
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+}
+
+.tab.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.tab:hover:not(.active) {
+  color: #333;
+  background: #f5f5f5;
+}
+/* Tab styling */
+.tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab.active {
+    border-bottom-color: #3498db;
+    color: #3498db;
+}
+
+/* Saved reports section highlight */
+#saved-reports-section {
+    transition: box-shadow 0.3s ease;
+}
+/* Temporary debug border */
+#saved-reports-container {
+    border: 3px solid red !important;
+    min-height: 50px;
+}
+#saved-reports-section, #saved-reports-container {
+    all: initial !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+/* Saved Reports Tab */
+#saved-reports-section {
+  display: block;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.saved-reports-actions {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.clear-all-btn {
+  background: #dc3545;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* Make both sections visible when needed */
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* Saved reports section styling */
+#saved-reports-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+/* Floating Back Button */
+.floating-back-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  background: #6c757d; /* Your existing gray color */
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.floating-back-btn:hover {
+  background: #5a6268; /* Slightly darker on hover */
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .floating-back-btn .back-text {
+    display: none;
+  }
+  .floating-back-btn {
+    padding: 12px 12px;
+  }
+}
+/* Clear All button styling */
+.clear-all-btn {
+  padding: 8px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.clear-all-btn:hover {
+  background: #c82333;
+}
+
+.clear-all-btn i {
+  margin-right: 5px;
+}
+#whatsapp-share {
+  transition: opacity 0.3s ease;
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+#whatsapp-share.ready {
+  opacity: 1;
+  cursor: pointer;
+}
+/* Custom File Input Translation */
+.file-input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.file-input-wrapper::after {
+  content: attr(data-translate-text);
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #555; /* Match your text color */
+  background: white;
+  padding: 0 5px;
+}
+
+#report-image {
+  opacity: 0.01; /* Make native input nearly transparent */
+  position: relative;
+  z-index: 2;
+  height: 40px; /* Match your button height */
+}
+/* Custom File Input Styling */
+.custom-file-input {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #f8f8f8;
+}
+
+.custom-file-input:hover {
+  background: #eee;
+}
+
+#report-image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-input-text {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px;
+  background: #ff4444;
+  color: white;
+  border-radius: 5px;
+  z-index: 1000;
+  animation: fadeInOut 3s;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* Field Validation Styles */
+.invalid-field {
+  border: 2px solid #ff4444 !important;
+  background-color: #fff0f0 !important;
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Remove highlight when user interacts */
+#report-title:focus, 
+#report-description:focus,
+#report-type:focus,
+#location-text-input:focus,
+#report-contact:focus {
+  border-color: initial !important;
+  background-color: initial !important;
+}
+/* For select elements */
+select.invalid-field {
+  border: 2px solid #ff4444;
+  background-color: #fff0f0;
+}
+
+/* For address fields */
+#search-address.invalid-field,
+#location-text-input.invalid-field {
+  border-color: #ff4444;
+  background-color: #fff0f0;
+}
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px;
+  background: #ff4444;
+  color: white;
+  border-radius: 5px;
+  z-index: 10000; /* Higher than anything else */
+  animation: fadeInOut 3s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: #ff4444; /* Red for errors */
+  color: white;
+  border-radius: 4px;
+  z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  animation: fadeInOut 2.5s;
+}
+
+/* For success messages (like Facebook copy) */
+.custom-alert.success {
+  background: #4CAF50; /* Green */
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+.custom-alert {
+  /* Existing styles... */
+  background: #4CAF50; /* Green for success messages */
+}
+
+/* For error alerts (if needed) */
+.custom-alert.error {
+  background: #ff4444; /* Red */
+}
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border-radius: 4px;
+  z-index: 10000;
+  animation: fadeInOut 2.5s;
+}
+.custom-alert.error {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: #ff4444;
+  color: white;
+  border-radius: 4px;
+  z-index: 10000;
+  animation: fadeInOut 3s forwards;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* Add this to your existing CSS */
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+.address-error-alert {
+  /* Base styles already inlined, this is for backup */
+  display: block !important;
+}
+.address-error-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px;
+  background: #ff4444;
+  color: white;
+  border-radius: 5px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; top: 0; }
+  to { opacity: 1; top: 20px; }
+}
+.address-error-popup {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: #ff4444;
+  color: white;
+  border-radius: 4px;
+  font-size: 16px;
+  z-index: 9999;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.custom-address-error {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 25px;
+  background: #ff3860;
+  color: white;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 99999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: customErrorFadeIn 0.4s;
+}
+
+@keyframes customErrorFadeIn {
+  0% { opacity: 0; top: 0; }
+  100% { opacity: 1; top: 20px; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* Forces buttons to reload translations on any change */
+[data-translate="buttons.reshare"], 
+[data-translate="buttons.delete"] {
+  transition: opacity 0.01s; /* Nearly instant visual update */
+}
+[data-translate] {
+  transition: none !important;
+}
+[data-translate-button] {
+  transition: none !important;
+  position: relative;
+}
+[data-translate-button]::after {
+  content: attr(data-lang);
+  display: none;
+}
+button[data-trans] {
+  all: unset; /* Remove all default styles */
+} 
+button[data-trans]::after {
+  content: attr(data-trans);
+  display: none;
+}
+.saved-report {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.report-image {
+    max-width: 100%;
+    border: 1px solid #eee;
+}
+.report-actions {
+    margin-top: 10px;
+}
+.reshare-btn {
+    padding: 5px 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+}
+.delete-btn {
+    padding: 5px 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    margin-left: 5px;
+}
+.no-reports-message {
+    text-align: center;
+    color: #666;
+}
+.error-message {
+    color: red;
+}
+/* Reduce space between intro lines */
+#intro-text {
+  line-height: 1.4 !important; /* Makes lines a bit closer together */
+  margin-bottom: 0 !important; /* Removes extra space below the paragraph */
+}/* Fix for Dashboard Intro Layout */
+#app-intro {
+  width: 100%; /* Force it to take full width */
+  display: block; /* Ensure it's a block element */
+  clear: both; /* Force it to clear any floated elements (like the language switcher) */
+  margin-top: 10px; /* Reduce top margin if needed */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Optional: Add a margin to the bottom of the header to push the intro down */
+/* If your header has an ID or class, use it. Otherwise, this is a general rule */
+header, .app-header {
+  margin-bottom: 15px;
+}
+/* More specific fix if the language switcher is in the header */
+header {
+  position: relative; /* Contrain any absolutely positioned elements inside */
+  margin-bottom: 20px; /* Add space between header and intro */
+}
+
+#language-switcher {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+/* This positions the language switcher in the top-right of the header, clearly separating it from the intro text below. */
+/* Ensure all share buttons have the same base style */
+.btn-share {
+  padding: 10px 15px !important; /* Force same padding */
+  margin: 5px !important;        /* Force same margin */
+  border: none !important;
+  border-radius: 4px !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-size: 14px !important;    /* Force same font size */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 120px !important;   /* Force same minimum width */
+}
+
+/* Specific color for Zalo */
+#zalo-share {
+  background-color: #0180C3 !important; /* Zalo's blue color */
+}
+#zalo-share.btn-share {
+  padding: 10px 15px !important;
+  margin: 5px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 120px !important;
+  height: auto !important; /* Force height to be automatic */
+  line-height: normal !important; /* Reset line-height */
+  background-color: #0180C3 !important; /* Zalo's blue */
+}
+/* Force all share buttons to be the same size and style */
+.btn-share {
+  padding: 10px 15px !important;
+  margin: 5px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 120px !important; /* Force exact width */
+  height: 40px !important; /* Force exact height */
+  box-sizing: border-box !important; /* Include padding in width/height */
+}
+
+/* Specific colors for each platform */
+#whatsapp-share { background-color: #25D366 !important; } /* WhatsApp Green */
+#twitter-share { background-color: #1DA1F2 !important; } /* Twitter Blue */
+#facebook-share { background-color: #1877F2 !important; } /* Facebook Blue */
+#email-share { background-color: #34A853 !important; } /* Google Green */
+#zalo-share { background-color: #0068FF !important; } /* A lighter, brighter Zalo Blue */
+/* Force ALL share buttons to be identical in size */
+#whatsapp-share, 
+#twitter-share, 
+#facebook-share, 
+#email-share, 
+#zalo-share {
+  width: 140px !important; /* Force all to same wider width */
+  height: 40px !important;
+  padding: 10px 15px !important;
+  margin: 5px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  line-height: normal !important; /* Fix vertical alignment */
+}
+
+/* Remove any default icon styles that might be causing squares */
+.btn-share i {
+  display: none !important; /* Hide icons if they cause problems */
+}
+
+/* Specific background colors */
+#whatsapp-share { background-color: #25D366 !important; }
+#twitter-share { background-color: #1DA1F2 !important; }
+#facebook-share { background-color: #1877F2 !important; }
+#email-share { background-color: #34A853 !important; }
+#zalo-share { background-color: #0068FF !important; }
+
+/* REMOVE ICONS from all buttons */
+#whatsapp-share i,
+#twitter-share i, 
+#facebook-share i,
+#email-share i,
+#zalo-share i,
+#save-report i {
+  display: none !important;
+}
+
+/* Force ALL buttons to be identical */
+#whatsapp-share, 
+#twitter-share, 
+#facebook-share, 
+#email-share, 
+#zalo-share,
+#save-report {
+  width: 140px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  margin: 5px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: white !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  vertical-align: top !important;
+  line-height: 40px !important;
+  text-align: center !important;
+}
+
+/* Button colors */
+#whatsapp-share { background-color: #25D366; }
+#twitter-share { background-color: #1DA1F2; }
+#facebook-share { background-color: #1877F2; }
+#email-share { background-color: #34A853; }
+#zalo-share { background-color: #0068FF; }
+#save-report { background-color: #FF9500; } /* Orange for Save */
+
+/* Control language dropdown position */
+#language-switcher {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure intro text has clear space below the header */
+#app-intro {
+  margin-top: 50px !important; /* Add space below the fixed dropdown */
+  display: block !important;
+  clear: both !important;
+}
+/* Remove the icon from the Save Report button specifically */
+#save-report i.fa,
+#save-report i.fas,
+#save-report i.far {
+  display: none !important;
+}
+
+/* Ensure the text inside is centered */
+#save-report {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Create a flexible header container that works for LTR and RTL */
+.app-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important; /* Align items to the top */
+  width: 100% !important;
+  position: relative !important;
+  padding: 10px 0 !important;
+}
+
+/* Style the main title/logo to take up most space */
+.app-title {
+  flex-grow: 1 !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+}
+
+/* Force the language dropdown to a fixed size and position */
+#language-switcher {
+  width: 120px !important; /* Fixed width */
+  flex-shrink: 0 !important; /* Don't let it shrink */
+  margin: 0 !important;
+  position: static !important; /* Remove absolute positioning */
+  top: auto !important;
+  right: auto !important;
+}
+
+/* Ensure the intro section clears the header */
+#app-intro {
+  margin-top: 20px !important;
+  clear: both !important;
+  width: 100% !important;
+}
+
+/* RTL specific fixes */
+[dir="rtl"] .app-header {
+  flex-direction: row-reverse !important; /* Reverse the order for RTL */
+}
+/* Remove ANY icon inside the Save Report button */
+#save-report > i,
+#save-report > svg,
+#save-report > span > i {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Ensure only the text is visible and centered */
+#save-report {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+#save-report:after {
+  content: attr(data-lang-key); /* Force display of the translated text */
+}
+/* Make the intro section more compact */
+#app-intro {
+  padding: 12px 20px !important; /* Reduce vertical padding */
+  margin-bottom: 15px !important;
+  line-height: 1.4 !important; /* Reduce space between lines of text */
+  min-height: unset !important; /* Remove any forced height */
+}
+/* NUCLEAR OPTION: Hide everything inside the Save button and show only the text */
+#save-report * {
+  display: none !important; /* Hide ALL elements inside the button */
+}
+#save-report:after {
+  content: attr(data-lang-key) !important; /* Force the translated text to appear */
+  display: inline !important;
+}
+/* Make the intro section more compact */
+#app-intro {
+  padding: 10px 15px !important; /* Reduced padding */
+  margin: 5px 0 15px 0 !important; /* Tight margins */
+}
+
+#app-intro h3 {
+  margin: 0 0 8px 0 !important; /* Reduce space below the title */
+  font-size: 1.2em !important; /* Slightly smaller title */
+}
+
+#intro-text {
+  margin: 0 !important; /* Remove all margin from the text */
+  line-height: 1.3 !important; /* Tighter line spacing */
+  font-size: 0.95em !important; /* Slightly smaller text */
+}
+/* Remove the icon from the Save Report button */
+#save-report-btn i.fa-save {
+  display: none !important;
+}
+
+/* Ensure the text has proper spacing */
+#save-report-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important; /* Space between icon and text */
+}
+/* Prevent pointer events while button is disabled */
+#save-report-btn:disabled {
+  pointer-events: none;
+  opacity: 0.7;
+}
+/* PREVENT DOUBLE-CLICKING VISUALLY */
+#save-report-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  position: relative;
+}
+
+#save-report-btn:disabled::after {
+  content: "✓";
+  position: absolute;
+  right: 10px;
+  font-weight: bold;
+  color: green;
+}
+/* Header Layout */
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.header-center {
+  flex: 2;
+  text-align: center;
+  min-width: 200px;
+}
+
+.controls-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+/* App Title */
+.app-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #34a853;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Control Buttons */
+.control-btn {
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.control-btn:hover {
+  background: #f5f5f5;
+  border-color: #34a853;
+}
+
+.subscribe-btn {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border-color: #ffd700;
+  font-weight: bold;
+  color: #8b6914;
+}
+
+.subscribe-btn:hover {
+  background: linear-gradient(135deg, #ffed4e, #ffd700);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(255, 215, 0, 0.3);
+}
+
+.language-switcher {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+/* Avatar Section */
+.avatar-section {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #34a853;
+  object-fit: cover;
+}
+
+.avatar-upload-btn {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #34a853;
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.avatar-upload-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.avatar-upload-btn:not(:disabled):hover {
+  background: #2e8b47;
+  transform: scale(1.1);
+}
+
+/* App Intro Section */
+.app-intro-section {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #34a853;
+}
+
+.intro-text {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-controls {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .controls-left, .controls-right {
+    justify-content: center;
+    flex: none;
+  }
+  
+  .header-center {
+    order: -1;
+    flex: none;
+  }
+  
+  .app-title {
+    font-size: 2rem;
+  }
+  
+  .control-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls-left {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .app-title {
+    font-size: 1.8rem;
+  }
+}
+/* Add to your main app CSS */
+.avatar-section {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #34a853;
+  object-fit: cover;
+}
+
+.avatar-upload-btn {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #34a853;
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.avatar-upload-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.avatar-upload-btn:not(:disabled):hover {
+  background: #2e8b47;
+  transform: scale(1.1);
+}
+/* Temporary debug styles - remove after testing */
+.avatar-upload-btn {
+  background: #007bff !important;
+  color: white !important;
+  border: 2px solid red !important;
+  padding: 8px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 14px !important;
+  z-index: 1000 !important;
+}
+
+.avatar-section {
+  position: relative !important;
+  display: inline-block !important;
+}
+
+.avatar-image {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50% !important;
+  border: 2px solid blue !important;
+}
+/* Multiple Image Upload Styles */
+.image-previews-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.image-preview-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #ddd;
+}
+
+.image-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-count {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #666;
+}
+
+.custom-file-input:hover {
+  cursor: pointer;
+}
+.plan-period {
+  font-size: 14px;
+  color: #666;
+  margin: 5px 0;
+  font-weight: normal;
+}
+
+.payment-options {
+  text-align: center;
+}
+
+.plan-summary {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.plan-summary p {
+  margin: 5px 0;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-method-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 2px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.payment-method-btn:hover {
+  background: #007bff;
+  color: white;
+}
+
+.payment-icon {
+  font-size: 20px;
+}
+
+.payment-name {
+  flex: 1;
+  text-align: left;
+}
+
+/* Modern Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+}
+
+@keyframes modalSlideIn {
+    from { 
+        transform: translateY(-100px) scale(0.9); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0) scale(1); 
+        opacity: 1; 
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: rgba(255,255,255,0.95);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #2c3e50;
+    /* Fixed: Remove vendor prefix, use solid color instead */
+    color: #667eea; /* Fallback solid color */
+}
+
+.close-modal {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #7f8c8d;
+    padding: 5px 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 25px;
+    max-height: 65vh;
+    overflow-y: auto;
+    background: white;
+    line-height: 1.6;
+    color: #2c3e50;
+}
+
+.modal-body strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    padding: 20px 25px;
+    background: rgba(255,255,255,0.95);
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 120px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+}
+
+/* Payment Options Styling */
+.payment-options {
+    text-align: center;
+}
+
+.plan-summary {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    text-align: left;
+    border-left: 4px solid #667eea;
+}
+
+.plan-summary p {
+    margin: 8px 0;
+    font-size: 15px;
+}
+
+.plan-summary strong {
+    color: #2c3e50;
+}
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-method-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border: 2px solid transparent;
+    background: white;
+    color: #2c3e50;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.payment-method-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.payment-icon {
+    font-size: 24px;
+}
+
+.payment-name {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 5% auto;
+        width: 95%;
+        border-radius: 15px;
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .modal-body {
+        padding: 20px;
+        max-height: 70vh;
+    }
+    
+    .modal-footer {
+        padding: 15px 20px;
+        flex-direction: column;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .payment-method-btn {
+        padding: 14px 18px;
+    }
+}
+/* Improved Modal Body for Better Scrolling */
+.modal-body {
+    padding: 25px;
+    max-height: 65vh;
+    overflow-y: auto;
+    background: white;
+    line-height: 1.6;
+    color: #2c3e50;
+    /* Better scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #f1f1f1;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+/* Fixed Modal Structure - Footer Always Visible */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh; /* Reduced to ensure footer is always visible */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: rgba(255,255,255,0.95);
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.close-modal {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #7f8c8d;
+    padding: 5px 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 25px;
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    line-height: 1.6;
+    color: #2c3e50;
+    max-height: calc(80vh - 140px); /* Ensures footer is always visible */
+}
+
+.modal-footer {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    padding: 20px 25px;
+    background: rgba(255,255,255,0.95);
+    border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+/* Rest of your button styles remain the same */
+.btn-primary, .btn-secondary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 120px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+}
+.modal-body {
+    padding: 25px;
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    line-height: 1.6;
+    color: #2c3e50;
+    max-height: calc(80vh - 140px); /* This ensures footer is always visible */
+}
+.modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 75vh; /* Reduced from 80vh to 75vh for more footer space */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body {
+    padding: 25px;
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    line-height: 1.6;
+    color: #2c3e50;
+    max-height: calc(75vh - 140px); /* Updated to match modal height */
+}
+
+.payment-modal-buttons {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: white !important;
+  z-index: 1000 !important;
+  padding: 15px 25px !important;
+  border-top: 2px solid #007bff !important;
+}
+/* ========== AUTH UI STATES ========== */
+.user-signed-in #usersAuthButtons,
+.user-signed-out #userControls {
+  display: none !important;
+}
+
+.user-signed-in #userControls,
+.user-signed-out #usersAuthButtons {
+  display: flex !important;
+}
+
+/* Ensure controls-left maintains layout */
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Make sure both button containers exist in DOM but are toggled */
+#usersAuthButtons,
+#userControls {
+  transition: opacity 0.3s ease;
+}
+/* ========== AUTH STATE CSS BACKUP ========== */
+/* These styles will work even if JavaScript fails */
+
+[data-auth-state="signed-in"] #usersAuthButtons,
+[data-auth-state="signed-out"] #userControls {
+  display: none !important;
+}
+
+[data-auth-state="signed-in"] #userControls,
+[data-auth-state="signed-out"] #usersAuthButtons {
+  display: flex !important;
+}
+
+/* Default state (before JavaScript runs) */
+#userControls {
+  display: none; /* Start hidden by default */
+}
+
+#usersAuthButtons {
+  display: flex; /* Start visible by default */
+}
+/* CSS backup for auth states */
+.user-signed-in #usersAuthButtons,
+.user-signed-out #userControls {
+  display: none !important;
+}
+
+.user-signed-in #userControls,
+.user-signed-out #usersAuthButtons {
+  display: flex !important;
+}
+
+/* ===== LOGO FIX - PROPER SPACING ===== */
+
+/* Header layout - KEEP existing .header-controls styles */
+/* Only modify .header-center */
+
+.header-center {
+  flex: 0 0 auto; /* Don't grow, don't shrink */
+  display: flex;
+  justify-content: center;
+}
+
+.app-branding {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 4px; /* CLOSE spacing */
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.app-logo-symbol {
+  font-size: 32px;
+  font-weight: 900;
+  color: #1a73e8;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+  line-height: 1;
+  transform: rotate(-5deg);
+  transition: transform 0.3s ease;
+  margin-right: -2px; /* PULL logo closer to title */
+}
+
+.app-branding:hover .app-logo-symbol {
+  transform: rotate(0deg) scale(1.1);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a73e8;
+  transition: color 0.3s ease;
+  padding-left: 0; /* Remove any left padding */
+}
+
+.app-branding:hover {
+  background-color: rgba(26, 115, 232, 0.05);
+}
+
+.app-branding:hover .app-title {
+  color: #0d47a1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .app-branding {
+    gap: 3px;
+    padding: 3px 8px;
+  }
+  
+  .app-logo-symbol {
+    font-size: 26px;
+    margin-right: -1px;
+  }
+  
+  .app-title {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-branding {
+    gap: 2px;
+  }
+  
+  .app-logo-symbol {
+    font-size: 22px;
+  }
+  
+  .app-title {
+    font-size: 1.2rem;
+  }
+}
+
+/* For future logo-only mode */
+.logo-only .app-title {
+  display: none;
+}
+
+.logo-only .app-branding {
+  gap: 0;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Add to styles.css */
+#telegram-share {
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+#telegram-share:hover {
+    background-color: #006699;
+}
+
+#telegram-share i {
+    margin-right: 5px;
+}
+/* Add to styles.css */
+#telegram-share {
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+#telegram-share:hover {
+    background-color: #006699;
+}
+
+#telegram-share i {
+    font-size: 18px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    #telegram-share {
+        padding: 12px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* ============================================
+   SHARE BUTTONS - CLEAN VERSION
+   ============================================ */
+
+/* Container - forces everything into one row */
+.share-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    margin: 20px 0 !important;
+    padding: 10px 0 !important;
+    width: 100% !important;
+}
+
+/* ALL share buttons - colored, with logos only */
+.share-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 50% !important; /* Circular */
+    cursor: pointer !important;
+    color: white !important;
+    font-size: 20px !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Individual share button colors */
+#whatsapp-share { background-color: #25D366 !important; }
+#twitter-share { background-color: #1DA1F2 !important; }
+#facebook-share { background-color: #4267B2 !important; }
+#email-share { background-color: #D44638 !important; }
+#zalo-share { background-color: #0180C3 !important; }
+#telegram-share { background-color: #0088cc !important; }
+
+/* Fix Telegram icon - remove square */
+#telegram-share i,
+#telegram-share::before {
+    font-family: 'Font Awesome 6 Brands' !important;
+    content: "\f2c6" !important; /* Telegram icon */
+    font-size: 20px !important;
+    color: white !important;
+}
+
+/* SAVE REPORT BUTTON - Different shape with text */
+#save-report-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    padding: 0 20px !important;
+    border: none !important;
+    border-radius: 20px !important; /* Pill shape */
+    background-color: #4CAF50 !important;
+    color: white !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Save report icon */
+#save-report-btn i {
+    font-size: 16px !important;
+    color: white !important;
+}
+
+/* Hover effects */
+.share-btn:hover,
+#save-report-btn:hover {
+    opacity: 0.9 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* ============================================
+   MOBILE - SAME AS LAPTOP
+   ============================================ */
+@media (max-width: 768px) {
+    .share-buttons {
+        justify-content: center !important;
+        gap: 8px !important;
+    }
+    
+    .share-btn {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 18px !important;
+    }
+    
+    #telegram-share i {
+        font-size: 18px !important;
+    }
+    
+    #save-report-btn {
+        height: 36px !important;
+        padding: 0 15px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Force all buttons into one row */
+.share-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 20px 0 !important;
+}
+
+/* Share buttons - all same style */
+.share-btn,
+#whatsapp-share, #twitter-share, #facebook-share, 
+#email-share, #zalo-share, #telegram-share {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: white !important;
+    font-size: 18px !important;
+}
+
+/* Individual colors */
+#whatsapp-share { background-color: #25D366 !important; }
+#twitter-share { background-color: #1DA1F2 !important; }
+#facebook-share { background-color: #4267B2 !important; }
+#email-share { background-color: #D44638 !important; }
+#zalo-share { background-color: #0180C3 !important; }
+#telegram-share { background-color: #0088cc !important; }
+
+/* Save button - different */
+#save-report-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    height: 40px !important;
+    padding: 0 15px !important;
+    border-radius: 20px !important;
+    border: none !important;
+    background-color: #4CAF50 !important;
+    color: white !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+}
+
+/* Force ALL buttons to exact same height and alignment */
+.share-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    margin: 20px 0 !important;
+    min-height: 50px !important;
+}
+
+/* ALL interactive buttons - perfect alignment */
+.share-btn,
+#whatsapp-share, #twitter-share, #facebook-share, 
+#email-share, #zalo-share, #telegram-share,
+#save-report-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+    transform: none !important;
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Share buttons - circular */
+.share-btn,
+#whatsapp-share, #twitter-share, #facebook-share, 
+#email-share, #zalo-share, #telegram-share {
+    width: 40px !important;
+    min-width: 40px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+}
+
+/* Save button - pill shape */
+#save-report-btn {
+    width: auto !important;
+    min-width: 120px !important;
+    padding: 0 20px !important;
+    border-radius: 20px !important;
+    gap: 8px !important;
+}
+
+/* Icons - perfect centering */
+.share-btn i,
+#save-report-btn i {
+    display: inline-block !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Admin panel - move left to avoid overlap */
+#adminPanel {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 140px !important; /* 120px left of dashboard button */
+    z-index: 9999 !important;
+}
+
+/* Dashboard floating button */
+#dashboard-floating-btn {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+}
+
+/* Force remove any pseudo-elements that might create extra icons */
+#telegram-share::before,
+#telegram-share::after,
+#telegram-share i::before,
+#telegram-share i::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Ensure icons display properly */
+.share-btn i,
+#telegram-share i {
+    font-family: 'Font Awesome 6 Brands' !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
+
+/* Force icons to display */
+.share-btn i,
+#whatsapp-share i, #twitter-share i, #facebook-share i,
+#email-share i, #zalo-share i, #telegram-share i {
+    font-family: 'Font Awesome 6 Brands', 'Font Awesome 5 Brands', 'FontAwesome' !important;
+    font-size: 20px !important;
+    display: inline-block !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+}
+
+/* Specific for email which uses solid style */
+#email-share i {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'FontAwesome' !important;
+    font-weight: 900 !important;
+}
+
+/* Save button icon */
+#save-report-btn i {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'FontAwesome' !important;
+    font-weight: 900 !important;
+    margin-right: 5px !important;
+}
+
+/* Ensure brand icons display properly */
+.fab {
+    font-family: 'Font Awesome 6 Brands' !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+}
+
+/* Specific fixes for problematic icons */
+#whatsapp-share i,
+#zalo-share i,
+#telegram-share i {
+    display: inline-block !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
+
+/* Zalo sometimes needs extra help */
+#zalo-share i {
+    transform: scale(1.1); /* Slightly larger if needed */
+}
+
+/* Simple button styling */
+.share-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: white !important;
+    height: 40px !important;
+}
+
+/* Share buttons (circular) */
+#whatsapp-share, #twitter-share, #facebook-share, 
+#email-share, #zalo-share, #telegram-share {
+    width: 40px !important;
+    border-radius: 50% !important;
+}
+
+/* Save button (pill shape) */
+#save-report-btn {
+    padding: 0 20px !important;
+    border-radius: 20px !important;
+    gap: 5px !important;
+}
+
+/* Container */
+.share-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 20px 0 !important;
+}
+
+/* Force brand icons to use correct font family */
+.fab {
+    font-family: 'Font Awesome 6 Brands' !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+}
+
+/* Specific overrides if needed */
+#whatsapp-share i,
+#telegram-share i,
+#zalo-share i {
+    display: inline-block !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
+
+/* Zalo fallback if icon still doesn't work */
+#zalo-share span {
+    display: inline-block !important;
+    line-height: 1 !important;
+}
+
+/* Force WhatsApp icon to be white */
+#whatsapp-share img {
+    filter: brightness(0) invert(1) !important; /* Makes any dark icon white */
+    width: 20px !important;
+    height: 20px !important;
+    object-fit: contain !important;
+}
+
+/* If the icon still looks dark, try this stronger filter */
+#whatsapp-share img.dark-icon {
+    filter: brightness(10) invert(1) !important;
+}
+
+/* Standardize all icon sizes */
+.share-btn img {
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+/* Specific fix for Zalo if needed */
+#zalo-share img {
+    width: 18px !important; /* Slightly smaller if it appears larger */
+    height: 18px !important;
+    transform: scale(1); /* Ensure no scaling */
+}
+
+/* Fix Telegram icon brightness */
+#telegram-share img {
+    filter: brightness(0) invert(1) !important;
+    opacity: 1 !important;
+}
+
+/* If the icon has the right color but is too dark, try this */
+#telegram-share img.light-blue-icon {
+    filter: brightness(1.2) !important; /* Brighten without changing color */
+}
+
+/* Only apply to screens larger than mobile */
+@media screen and (min-width: 1024px) {
+    #adminPanel {
+        right: 160px !important; /* Adjust this value as needed */
+    }
+    
+    #dashboard-floating-btn {
+        right: 20px !important;
+    }
+}
+
+/* For very large screens */
+@media screen and (min-width: 1440px) {
+    #adminPanel {
+        right: 180px !important;
+    }
+}
+
+/* Fix for admin and dashboard buttons */
+#adminPanel {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 180px !important; /* Adjust this value as needed */
+    z-index: 9999 !important;
+}
+
+#floating-dashboard-btn {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 9999 !important;
+}
+
+/* Mobile override */
+@media (max-width: 768px) {
+    #adminPanel {
+        right: 20px !important; /* Stack on mobile */
+    }
+}
+
+/* All share buttons - white icons on colored backgrounds */
+.share-btn img {
+    filter: brightness(0) invert(1) !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Individual button colors */
+#whatsapp-share { background-color: #25D366 !important; }
+#twitter-share { background-color: #1DA1F2 !important; }
+#facebook-share { background-color: #4267B2 !important; }
+#email-share { background-color: #D44638 !important; }
+#zalo-share { background-color: #0180C3 !important; }
+#telegram-share { background-color: #7faad9 !important; } /* Light blue */
+#save-report-btn { background-color: #4CAF50 !important; }
+
+/* Light blue variations - pick one */
+#telegram-share {
+    background-color: #7faad9 !important; /* Soft light blue */
+    background-color: #6d9bcf !important; /* Slightly darker */
+    background-color: #9ac0e8 !important; /* Very light blue */
+    background-color: #b0c4de !important; /* Light steel blue */
+}
+
+/* Saved Reports Compact Design */
+.saved-report {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+
+.saved-report:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.saved-report .report-title {
+    margin: 0 0 6px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.saved-report .report-description {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.saved-report .report-location {
+    font-size: 13px;
+    color: #2c7da0;
+    margin-bottom: 4px;
+}
+
+.saved-report .report-coordinates {
+    font-size: 12px;
+    color: #61a5c2;
+}
+
+.saved-report .report-contact {
+    font-size: 13px;
+    color: #2d6a4f;
+    margin-bottom: 6px;
+    word-break: break-all;
+}
+
+.saved-report .report-images-link {
+    margin: 8px 0;
+}
+
+.saved-report .image-link {
+    display: inline-block;
+    font-size: 13px;
+    color: #4267B2;
+    text-decoration: none;
+    padding: 4px 8px;
+    background: #f0f2f5;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.saved-report .image-link:hover {
+    background: #e4e6e9;
+    text-decoration: underline;
+}
+
+.saved-report .report-meta {
+    margin: 8px 0 10px 0;
+}
+
+.saved-report .report-date {
+    font-size: 11px;
+    color: #999;
+}
+
+.saved-report .report-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.saved-report .reshare-btn,
+.saved-report .delete-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.saved-report .reshare-btn {
+    background: #4267B2;
+    color: white;
+}
+
+.saved-report .reshare-btn:hover {
+    background: #365899;
+}
+
+.saved-report .delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.saved-report .delete-btn:hover {
+    background: #c82333;
+}
+
+/* Avatar Section - Clean, Small Camera Icon */
+.avatar-section {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-image,
+#userAvatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #34a853;
+    object-fit: cover;
+}
+
+/* Camera Upload Button - Small and Clean */
+.avatar-upload-btn,
+#uploadAvatarBtn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #4267B2;
+    border-radius: 50%;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: none !important;
+    background-image: none !important;
+    opacity: 1 !important;
+    transition: all 0.2s ease;
+}
+
+/* Remove any background effects */
+.avatar-upload-btn::before,
+.avatar-upload-btn::after,
+#uploadAvatarBtn::before,
+#uploadAvatarBtn::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Camera Icon */
+.avatar-upload-btn i,
+#uploadAvatarBtn i {
+    font-size: 10px !important;
+    color: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hover effect */
+.avatar-upload-btn:hover,
+#uploadAvatarBtn:hover {
+    background: #365899;
+    transform: scale(1.05);
+}
+
+.app-logo-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .app-logo-image {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Optional: Hide the old @ symbol */
+.app-logo-symbol {
+    display: none;
+}
+
+/* Remove border/shadow from avatar upload button */
+.avatar-upload-btn {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: #4267B2 !important;
+    border-radius: 50% !important;
+}
+
+/* Remove any ring/focus effect */
+.avatar-upload-btn:focus,
+.avatar-upload-btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.avatar-image {
+    border-radius: 50%;
+    border: 2px solid white;  /* Keep white border, remove if you want */
+    object-fit: cover;
+}
+
+/* ============================================ */
+/* LOGO & AVATAR FIXES */
+/* ============================================ */
+
+/* Logo image styling */
+.app-logo-image {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    vertical-align: middle;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Avatar upload button - remove all lines */
+.avatar-upload-btn {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: #4267B2 !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+}
+
+.avatar-upload-btn:focus,
+.avatar-upload-btn:active,
+.avatar-upload-btn:hover {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Avatar image */
+.avatar-image {
+    border-radius: 50%;
+    border: 2px solid white;
+    object-fit: cover;
+    width: 40px;
+    height: 40px;
+}
+
+/* Remove any focus ring on avatar section */
+.avatar-section:focus,
+.avatar-section:focus-within {
+    outline: none;
+}
+
+/* ============================================ */
+/* FORCE REMOVE ALL LINES FROM LOGO & AVATAR */
+/* ============================================ */
+
+/* App logo - remove all possible lines */
+.app-logo-image,
+.app-logo-symbol,
+.app-branding img,
+.app-branding .app-logo-image {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Avatar button - force remove all lines */
+.avatar-upload-btn,
+.avatar-upload-btn *,
+.avatar-upload-btn:focus,
+.avatar-upload-btn:active,
+.avatar-upload-btn:hover,
+.avatar-upload-btn:focus-visible {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    outline-offset: 0 !important;
+}
+
+/* Avatar image border - keep only white border if desired */
+.avatar-image {
+    border: 2px solid white !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove any ring from parent elements */
+.avatar-section,
+.avatar-section *,
+.controls-right,
+.controls-right * {
+    outline: none !important;
+}
+
+/* Remove the outline that's causing the line */
+.app-logo-image,
+.app-logo-symbol,
+.app-branding img {
+    outline: none !important;
+    outline-style: none !important;
+}
+
+/* Also remove from focus state */
+.app-logo-image:focus,
+.app-logo-symbol:focus,
+.app-branding img:focus {
+    outline: none !important;
+}
+
+/* Remove outline from all elements that might have it */
+*:focus {
+    outline: none !important;
+}
+
+/* ============================================ */
+/* REMOVE OUTLINES FROM LOGO AND AVATAR BUTTON */
+/* ============================================ */
+
+/* Logo outline fix */
+.app-logo-image,
+.app-logo-symbol,
+.app-branding img {
+    outline: none !important;
+    outline-style: none !important;
+}
+
+/* Avatar button outline fix */
+.avatar-upload-btn,
+.avatar-upload-btn:focus,
+.avatar-upload-btn:active,
+.avatar-upload-btn:focus-visible,
+.avatar-upload-btn:focus-within {
+    outline: none !important;
+    outline-style: none !important;
+}
+
+/* Also remove white border if visible */
+.avatar-upload-btn {
+    border: none !important;
+}
+
+/* Global focus outline removal for all buttons */
+button:focus,
+button:focus-visible,
+a:focus,
+[tabindex]:focus {
+    outline: none !important;
+}
+
+/* ============================================ */
+/* REMOVE OUTLINE FROM PARENT CONTAINERS */
+/* ============================================ */
+
+/* Target the parent containers */
+.app-branding,
+.header-center,
+.header-center *,
+.app-branding * {
+    outline: none !important;
+    outline-style: none !important;
+}
+
+/* Also remove from any focused elements in the header */
+.header-center:focus,
+.header-center:focus-visible,
+.app-branding:focus,
+.app-branding:focus-visible {
+    outline: none !important;
+}
+
+/* Global fix for any outline in the header area */
+header *,
+.header-center *,
+.app-branding * {
+    outline: none !important;
+}
+
+/* ============================================ */
+/* COMPLETE LOGO LINE REMOVAL */
+/* ============================================ */
+
+/* Remove outline from logo and ALL its parents */
+.app-logo-image,
+.app-logo-symbol,
+.app-branding,
+.app-branding *,
+.header-center,
+.header-center *,
+.app-branding:focus,
+.header-center:focus {
+    outline: none !important;
+    outline-style: none !important;
+}
+
+/* Also remove border and shadow */
+.app-logo-image,
+.app-logo-symbol {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ============================================ */
+/* FORCE REMOVE OUTLINE FROM LOGO PARENT - FINAL FIX */
+/* ============================================ */
+
+.app-branding,
+.app-branding *,
+.header-center,
+.header-center *,
+.app-branding:focus,
+.app-branding:focus-visible,
+.header-center:focus,
+.header-center:focus-visible {
+    outline: 0 !important;
+    outline-style: none !important;
+    outline-width: 0 !important;
+    outline-color: transparent !important;
+}
+
+/* Also remove any browser default focus ring */
+*:focus {
+    outline: 0 !important;
+    outline-style: none !important;
+}
+
+/* ============================================ */
+/* REMOVE OUTLINE FROM LOGO IMAGE */
+/* ============================================ */
+
+/* Target the exact image with the outline */
+.app-logo-image {
+    outline: none !important;
+    outline-style: none !important;
+    outline-width: 0 !important;
+}
+
+/* Also remove from any image in the branding area */
+.app-branding img {
+    outline: none !important;
+}
+
+/* Remove from the container as well */
+.app-branding {
+    outline: none !important;
+}
+.app-logo-image {
+    background: white;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+/* Support Contact Styles */
+.support-contact {
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #666;
+}
+
+.support-email, .support-email-link {
+    color: #4267B2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.support-email:hover, .support-email-link:hover {
+    text-decoration: underline;
+    color: #365899;
+}
+
+/* Optional: Footer styles */
+.app-footer {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-content p {
+    margin: 5px 0;
+}

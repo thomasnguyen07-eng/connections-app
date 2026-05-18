@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🛡️ Admin Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        display: block;
+        overflow-x: auto;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #4267b2;
+        color: white;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+      button:hover {
+        transform: scale(1.02);
+      }
+      .btn-block {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-unblock {
+        background: #28a745;
+        color: white;
+      }
+      .btn-refresh {
+        background: #4267b2;
+        color: white;
+      }
+      .btn-cleanup {
+        background: #ffc107;
+        color: #333;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+      }
+      .status-active {
+        background: #28a745;
+        color: white;
+      }
+      .status-blocked {
+        background: #dc3545;
+        color: white;
+      }
+      .status-suspended {
+        background: #ffc107;
+        color: #333;
+      }
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+      .error {
+        color: #dc3545;
+        padding: 20px;
+        text-align: center;
+      }
+      .admin-only {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #4267b2;
+      }
+      .stat-label {
+        color: #666;
+        margin-top: 5px;
+      }
+      @media (max-width: 768px) {
+        th,
+        td {
+          padding: 8px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🛡️ Admin Dashboard</h1>
+        <div id="user-info">Loading...</div>
+      </div>
+
+      <div id="admin-check" class="admin-only" style="display: none">
+        ⚠️ Admin access only. You do not have permission to view this page.
+        <div id="login-help" style="margin-top: 10px; font-size: 14px"></div>
+      </div>
+
+      <div id="dashboard-content" style="display: none">
+    <!-- Stats Row 1 -->
+    <div class="stats" id="stats-container">
+        <div class="stat-card">
+            <div class="stat-number" id="total-users">0</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="active-users">0</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="blocked-users">0</div>
+            <div class="stat-label">Blocked Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="premium-users">0</div>
+            <div class="stat-label">Premium Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="sponsored-users">0</div>
+            <div class="stat-label">Sponsored Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="free-users">0</div>
+            <div class="stat-label">Free Users</div>
+        </div>
+        <div class="stat-card">
+    <div class="stat-number" id="admin-blocked-deleted">0</div>
+    <div class="stat-label">Admin Blocked/Deleted</div>
+</div>
+    </div>
+
+    <!-- Stats Row 2: Subscription Analytics -->
+    <div class="card">
+        <h2>📊 Subscription Analytics</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="expiring-10">0</div>
+                <div class="stat-label">Expiring in 10 days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="expiring-3">0</div>
+                <div class="stat-label">Expiring in 3 days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="expiring-1">0</div>
+                <div class="stat-label">Expiring in 1 day</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="expired-active">0</div>
+                <div class="stat-label">⚠️ Expired But Active</div>
+            </div>
+        </div>
+
+        <!-- Cancellation Survey Results -->
+<div class="card">
+    <h2>📋 Cancellation Survey Results</h2>
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number" id="survey-no-need">0</div>
+            <div class="stat-label">No longer need service</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="survey-unsatisfied">0</div>
+            <div class="stat-label">Unsatisfactory service</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="survey-too-expensive">0</div>
+            <div class="stat-label">Too expensive</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="survey-other">0</div>
+            <div class="stat-label">Other reasons</div>
+        </div>
+    </div>
+    <div id="survey-feedback-container" style="margin-top: 15px;">
+        <div class="loading">Loading feedback...</div>
+    </div>
+</div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="cancelled-count">0</div>
+                <div class="stat-label">Cancelled (30d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="renewed-count">0</div>
+                <div class="stat-label">Renewed (30d)</div>
+            </div>
+            <div class="stat-card">
+    <div class="stat-number" id="admin-blocked-deleted">0</div>
+    <div class="stat-label">Admin Blocked/Deleted</div>
+</div>
+        </div>
+    </div>
+
+    <!-- Expired Users Table -->
+    <div class="card">
+        <h2>⚠️ Expired/Expiring Users</h2>
+        <div id="expired-users-container">
+            <div class="loading">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Security Alerts Section -->
+    <div class="card" id="alerts-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2>🚨 Security Alerts</h2>
+            <button class="btn-refresh" onclick="refreshAlerts()">🔄 Refresh Alerts</button>
+        </div>
+        <div id="alerts-container">
+            <div class="loading">Loading alerts...</div>
+        </div>
+    </div>
+
+    <!-- Button Group -->
+    <div class="card">
+        <div class="button-group">
+            <button class="btn-refresh" onclick="loadUsers()">🔄 Refresh Users</button>
+            <button class="btn-cleanup" onclick="runSecurityCleanup()">🧹 Run Security Cleanup</button>
+            <button class="btn-refresh" onclick="loadSecurityLogs()">📋 View Security Logs</button>
+            <button class="btn-refresh" onclick="syncUserStatus()">🔄 Sync User Status</button>
+            <button class="btn-refresh" onclick="goToDashboard()">🏠 Back to Dashboard</button>
+            <button class="btn-refresh" onclick="openFixUserModal()">🔧 Fix User Status</button>
+            <button class="btn-refresh" onclick="window.location.href='/profitability.html'">💰 Profitability</button>
+        </div>
+    </div>
+
+    <!-- User Management Table -->
+    <div class="card">
+        <h2>User Management</h2>
+        <div id="users-table-container">
+            <div class="loading">Loading users...</div>
+        </div>
+    </div>
+
+    <!-- Security Logs (Hidden by default) -->
+    <div id="logs-container" style="display: none">
+        <div class="card">
+            <h2>Security Logs</h2>
+            <button class="btn-refresh" onclick="hideLogs()">← Back to Users</button>
+            <div id="logs-table-container">
+                <div class="loading">Loading logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Moderation Panel Section (Updated) -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2>🚨 Moderation Queue</h2>
+            <div class="button-group">
+                <button class="btn-refresh" onclick="loadFlaggedReports()">🔄 Refresh</button>
+                <button class="btn-cleanup" onclick="deleteAllFlaggedReports()">🗑️ Delete All Flagged</button>
+                <button class="btn-block" onclick="blockAllViolatingUsers()">🚫 Block All Violating</button>
+                <button class="btn-refresh" onclick="manualScanReports()">🔍 Scan Existing</button>
+            </div>
+        </div>
+        <div id="moderation-container">
+            <div class="loading">Loading flagged reports...</div>
+        </div>
+    </div>
+
+    <!-- Appeal Request Modal -->
+<div id="appealModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; z-index: 10000; max-width: 500px; width: 90%;">
+    <h3 id="appealTitle">Request Report Approval</h3>
+    <p id="appealDesc">If your report contains sensitive content but is urgent (e.g., missing person), please explain why it should be approved:</p>
+    <textarea id="appealReason" rows="4" style="width: 100%; margin: 10px 0; padding: 8px;" placeholder="Explain why this report is important..."></textarea>
+    <input type="text" id="appealContact" placeholder="Your email or phone" style="width: 100%; margin: 10px 0; padding: 8px;">
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="closeAppealModal()">Cancel</button>
+        <button onclick="submitAppeal()" style="background: #4267B2; color: white;">Submit Request</button>
+    </div>
+</div>
+</div>
+
+    <!-- Firebase SDKs as modules -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import {
+        collection,
+        getDocs,
+        doc,
+        updateDoc,
+        query,
+        where,
+        orderBy,
+        limit,
+        getDoc,
+        setDoc,
+        addDoc,        // ✅ ADD THIS
+    deleteDoc      // ✅ ADD THIS
+      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0",
+        authDomain: "connectionsfinder.com",
+        projectId: "connectionsfinder-app",
+        storageBucket: "connectionsfinder-app.firebasestorage.app",
+        messagingSenderId: "503658774852",
+        appId: "1:503658774852:web:6ef3a8f506f36ca2c3d711",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      let currentUser = null;
+      let showingLogs = false;
+
+      // Make sure getFirestore is imported
+      import { getFirestore } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+      // Make functions available globally for onclick handlers
+      window.loadUsers = () => loadUsers();
+      window.loadSecurityLogs = () => loadSecurityLogs();
+      window.hideLogs = () => hideLogs();
+      window.goToDashboard = () => goToDashboard();
+      window.logout = () => logout();
+      window.blockUser = (userId) => blockUser(userId);
+      window.unblockUser = (userId) => unblockUser(userId);
+      window.runSecurityCleanup = () => runSecurityCleanup();
+
+      // Helper to get auth token
+      async function getAuthToken() {
+        return await currentUser.getIdToken();
+      }
+
+      // Check auth state
+      onAuthStateChanged(auth, async (user) => {
+        console.log("Auth state changed. User:", user?.email);
+
+        if (user) {
+          currentUser = user;
+          document.getElementById("user-info").innerHTML = `
+                    <div>✅ ${user.email} <button onclick="logout()" style="margin-left: 10px;">Logout</button></div>
+                `;
+
+          if (user.email === "thomasnguyen07@gmail.com") {
+            console.log("Admin access granted");
+            document.getElementById("admin-check").style.display = "none";
+            document.getElementById("dashboard-content").style.display =
+              "block";
+            loadUsers();
+          } else {
+            console.log("Not admin. User email:", user.email);
+            document.getElementById("admin-check").style.display = "block";
+            document.getElementById("dashboard-content").style.display = "none";
+            document.getElementById("login-help").innerHTML = `
+                        <strong>You are signed in as: ${user.email}</strong><br>
+                        This page is only accessible to the app owner.<br>
+                        <a href="/dashboard" style="color: #4267B2;">← Return to Dashboard</a>
+                    `;
+          }
+        } else {
+          console.log("No user signed in");
+          document.getElementById("user-info").innerHTML =
+            '<div>❌ Not signed in <a href="/dashboard">Sign in</a></div>';
+          document.getElementById("admin-check").style.display = "block";
+          document.getElementById("dashboard-content").style.display = "none";
+          document.getElementById("login-help").innerHTML = `
+                    Please sign in as admin first.<br>
+                    <a href="/dashboard" style="color: #4267B2;">→ Go to Dashboard to Sign In</a>
+                `;
+        }
+        // After loading other stats
+await loadCancellationSurveyStats();
+      });
+
+      function goToDashboard() {
+        window.location.href = "/dashboard";
+      }
+
+      async function logout() {
+        await signOut(auth);
+        window.location.href = "/dashboard";
+      }
+
+      // Updated loadUsers function with sponsored support
+      async function loadUsers() {
+        if (!currentUser || currentUser.email !== "thomasnguyen07@gmail.com")
+          return;
+
+        document.getElementById("logs-container").style.display = "none";
+        document.getElementById("users-table-container").style.display =
+          "block";
+        showingLogs = false;
+
+        const container = document.getElementById("users-table-container");
+        container.innerHTML = '<div class="loading">Loading users...</div>';
+
+        try {
+          const usersSnapshot = await getDocs(collection(db, "users"));
+
+          let totalUsers = 0,
+            activeUsers = 0,
+            blockedUsers = 0,
+            premiumUsers = 0,
+            sponsoredUsers = 0,
+            freeUsers = 0;
+
+          if (usersSnapshot.empty) {
+            container.innerHTML = '<div class="error">No users found</div>';
+            return;
+          }
+
+          let html = `<div style="overflow-x: auto;"> <table> <thead> <tr>
+            <th>User ID</th><th>Email</th><th>Status</th><th>Subscription</th><th>Type</th><th>Created At</th><th>Actions</th>
+        </tr> </thead> <tbody>`;
+
+          for (const userDoc of usersSnapshot.docs) {
+            const userData = userDoc.data();
+            const userId = userDoc.id;
+            const status = userData.status || "active";
+
+            // Check if this is the admin user
+            const isAdmin = userData.email === "thomasnguyen07@gmail.com";
+
+            // Determine subscription display
+            let subscriptionDisplay = "❌ Free";
+            let userTypeDisplay = "Free";
+
+            if (isAdmin) {
+              subscriptionDisplay = "👑 Admin";
+              userTypeDisplay = "Admin";
+              totalUsers++;
+              if (status === "active") activeUsers++;
+              if (status === "blocked") blockedUsers++;
+            } else {
+              if (userData.hasActiveSubscription === true) {
+                if (
+                  userData.accountType === "sponsored" ||
+                  userData.userType === "sponsored"
+                ) {
+                  subscriptionDisplay = "🎁 Sponsored";
+                  userTypeDisplay = "Sponsored";
+                  sponsoredUsers++;
+                  // ✅ REMOVE THIS LINE:
+                  // premiumUsers++;
+                } else {
+                  subscriptionDisplay = "✅ Premium";
+                  userTypeDisplay = "Premium";
+                  premiumUsers++;
+                }
+              } else {
+                freeUsers++;
+              }
+
+              totalUsers++;
+              if (status === "active") activeUsers++;
+              if (status === "blocked") blockedUsers++;
+            }
+
+            // Format date
+            let formattedDate = "N/A";
+            if (userData.createdAt) {
+              if (typeof userData.createdAt.toDate === "function") {
+                formattedDate = userData.createdAt
+                  .toDate()
+                  .toLocaleDateString();
+              } else if (typeof userData.createdAt === "string") {
+                formattedDate = new Date(
+                  userData.createdAt,
+                ).toLocaleDateString();
+              }
+            }
+
+            html += `<tr>
+                <td><code title="${userId}">${userId.substring(0, 12)}...</code></td>
+                <td>${userData.email || "N/A"}</td>
+                <td><span class="status-badge status-${status}">${status}</span></td>
+                <td>${subscriptionDisplay}</td>
+                <td>${userTypeDisplay}</td>
+                <td>${formattedDate}</td>
+                <td>${
+                  status === "blocked"
+                    ? `<button class="btn-unblock" onclick="unblockUser('${userId}')">Unblock</button>`
+                    : `<button class="btn-block" onclick="blockUser('${userId}')">Block</button>`
+                }</td>
+            </tr>`;
+          }
+
+          html += `</tbody> </table> </div>`;
+          container.innerHTML = html;
+
+          document.getElementById("total-users").innerText = totalUsers;
+          document.getElementById("active-users").innerText = activeUsers;
+          document.getElementById("blocked-users").innerText = blockedUsers;
+          document.getElementById("premium-users").innerText = premiumUsers;
+          document.getElementById("sponsored-users").innerText = sponsoredUsers;
+          document.getElementById("free-users").innerText = freeUsers;
+        } catch (error) {
+          console.error("Error loading users:", error);
+          container.innerHTML = `<div class="error">Error loading users: ${error.message}</div>`;
+        }
+      }
+
+      // Add this after the loadUsers function
+      async function syncUserStatus() {
+        if (
+          !confirm(
+            "Sync user statuses? This will ensure all users have correct data types.",
+          )
+        )
+          return;
+
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = "⏳ Syncing...";
+        btn.disabled = true;
+
+        try {
+          const usersSnapshot = await getDocs(collection(db, "users"));
+          let fixedCount = 0;
+
+          for (const userDoc of usersSnapshot.docs) {
+            const data = userDoc.data();
+            const updates = {};
+            let needsUpdate = false;
+
+            // Fix data types
+            if (data.hasActiveSubscription === "true") {
+              updates.hasActiveSubscription = true;
+              needsUpdate = true;
+            }
+            if (data.hasActiveSubscription === "false") {
+              updates.hasActiveSubscription = false;
+              needsUpdate = true;
+            }
+            if (data.maxImagesPerReport === "5") {
+              updates.maxImagesPerReport = 5;
+              needsUpdate = true;
+            }
+            if (data.maxImagesPerReport === "0") {
+              updates.maxImagesPerReport = 0;
+              needsUpdate = true;
+            }
+
+            if (needsUpdate) {
+              await updateDoc(doc(db, "users", userDoc.id), updates);
+              fixedCount++;
+            }
+          }
+
+          alert(`✅ Sync complete! Fixed ${fixedCount} users.`);
+          loadUsers();
+        } catch (error) {
+          alert("Error: " + error.message);
+        } finally {
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }
+      }
+
+      async function loadSecurityLogs() {
+        if (!currentUser || currentUser.email !== "thomasnguyen07@gmail.com")
+          return;
+
+        const container = document.getElementById("logs-table-container");
+        container.innerHTML =
+          '<div class="loading">Loading security logs...</div>';
+
+        document.getElementById("users-table-container").style.display = "none";
+        document.getElementById("logs-container").style.display = "block";
+        showingLogs = true;
+
+        try {
+          const q = query(
+            collection(db, "security_logs"),
+            orderBy("timestamp", "desc"),
+            limit(100),
+          );
+          const logsSnapshot = await getDocs(q);
+
+          if (logsSnapshot.empty) {
+            container.innerHTML =
+              '<div class="error">No security logs found</div>';
+            return;
+          }
+
+          let html = `<div style="overflow-x: auto;"><table><thead><tr><th>Timestamp</th><th>Event Type</th><th>User ID</th><th>Severity</th><th>Details</th></tr></thead><tbody>`;
+
+          logsSnapshot.forEach((doc) => {
+            const log = doc.data();
+            const severity = log.severity || "info";
+            const severityClass =
+              severity === "high"
+                ? "status-blocked"
+                : severity === "medium"
+                  ? "status-suspended"
+                  : "status-active";
+
+            html += `<tr>
+                        <td>${log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString() : "N/A"}</td>
+                        <td>${log.eventType || "N/A"}</td>
+                        <td><code>${log.userId ? log.userId.substring(0, 12) + "..." : "N/A"}</code></td>
+                        <td><span class="status-badge ${severityClass}">${severity}</span></td>
+                        <td><pre style="max-width: 200px; overflow: auto; font-size: 11px;">${JSON.stringify(log.details, null, 2)}</pre></td>
+                    </tr>`;
+          });
+
+          html += `</tbody></table></div>`;
+          container.innerHTML = html;
+        } catch (error) {
+          console.error("Error loading logs:", error);
+          container.innerHTML = `<div class="error">Error loading logs: ${error.message}</div>`;
+        }
+      }
+
+      function hideLogs() {
+        document.getElementById("logs-container").style.display = "none";
+        document.getElementById("users-table-container").style.display =
+          "block";
+        loadUsers();
+      }
+
+      async function blockUser(userId) {
+        const reason = prompt(
+          "Enter reason for blocking this user:",
+          "Violation of terms",
+        );
+        if (!reason) return;
+        if (!confirm(`Block user ${userId}?`)) return;
+
+        const token = await getAuthToken();
+
+        try {
+          const response = await fetch(
+            "https://us-central1-connectionsfinder-app.cloudfunctions.net/blockUser",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ userId, reason }),
+            },
+          );
+          const result = await response.json();
+          if (result.success) {
+            alert("✅ User blocked");
+            loadUsers();
+          } else {
+            alert("❌ Failed: " + (result.error || "Unknown error"));
+          }
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      }
+
+      async function unblockUser(userId) {
+        if (!confirm(`Unblock user ${userId}?`)) return;
+        const token = await getAuthToken();
+
+        try {
+          const response = await fetch(
+            "https://us-central1-connectionsfinder-app.cloudfunctions.net/unblockUser",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ userId }),
+            },
+          );
+          const result = await response.json();
+          if (result.success) {
+            alert("✅ User unblocked");
+            loadUsers();
+          } else {
+            alert("❌ Failed: " + (result.error || "Unknown error"));
+          }
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      }
+
+      async function runSecurityCleanup() {
+        if (
+          !confirm(
+            "Run security cleanup? This will auto-block users with 10+ high severity violations.",
+          )
+        )
+          return;
+
+        // Get fresh token
+        const token = await currentUser.getIdToken(true); // Force refresh
+
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = "⏳ Running...";
+        btn.disabled = true;
+
+        try {
+          const response = await fetch(
+            "https://us-central1-connectionsfinder-app.cloudfunctions.net/securityCleanup",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+          if (result.success) {
+            alert(
+              `✅ Cleanup completed! Blocked ${result.blockedUsers?.length || 0} users.`,
+            );
+            loadUsers();
+          } else {
+            alert("❌ Failed: " + (result.error || "Unknown error"));
+          }
+        } catch (error) {
+          console.error("Error running cleanup:", error);
+          alert("Error running cleanup: " + error.message);
+        } finally {
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }
+      }
+
+      async function openFixUserModal() {
+        const userId = prompt("Enter User ID to fix:");
+        if (!userId) return;
+
+        const email = prompt("Enter User Email:");
+        if (!email) return;
+
+        const subscriptionType = prompt(
+          "Subscription Type: (premium / sponsored / free)",
+          "premium",
+        );
+        if (!subscriptionType) return;
+
+        try {
+          const updateData = {
+            hasActiveSubscription: subscriptionType !== "free",
+            userType: subscriptionType === "free" ? "free" : "premium",
+            accountType:
+              subscriptionType === "sponsored" ? "sponsored" : "individual",
+            maxImagesPerReport: subscriptionType === "free" ? 0 : 5,
+          };
+
+          await updateDoc(doc(db, "users", userId), updateData);
+          alert(`✅ User ${email} updated to ${subscriptionType}`);
+          loadUsers();
+        } catch (error) {
+          console.error("Error fixing user:", error);
+          alert("Error: " + error.message);
+        }
+      }
+
+      // Make functions global
+      window.refreshAlerts = refreshAlerts;
+      window.syncUserStatus = syncUserStatus;
+      window.openFixUserModal = openFixUserModal;
+
+      // Load security alerts
+      async function loadSecurityAlerts() {
+        const container = document.getElementById("alerts-container");
+
+        try {
+          const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+          // Use imported where
+          const q = query(
+            collection(db, "security_logs"),
+            where("severity", "in", ["high", "critical"]),
+            where("timestamp", ">", oneDayAgo),
+            orderBy("timestamp", "desc"),
+            limit(20),
+          );
+
+          const alertsSnapshot = await getDocs(q);
+
+          if (alertsSnapshot.empty) {
+            container.innerHTML =
+              '<div class="success">✅ No recent security alerts. System is healthy.</div>';
+            return;
+          }
+
+          let html = '<div style="overflow-x: auto;"><tr><thead><tr>';
+          html +=
+            "<th>Time</th><th>Event Type</th><th>User ID</th><th>Severity</th><th>Details</th>";
+          html += "</thead><tbody>";
+
+          alertsSnapshot.forEach((doc) => {
+            const alert = doc.data();
+            const timestamp = alert.timestamp
+              ? new Date(alert.timestamp.toDate()).toLocaleString()
+              : "N/A";
+            const severityClass =
+              alert.severity === "critical"
+                ? "status-blocked"
+                : "status-suspended";
+
+            html += `<tr>
+                <td>${timestamp}</td>
+                <td><strong>${alert.eventType}</strong></td>
+                <td><code>${alert.userId ? alert.userId.substring(0, 12) + "..." : "Unknown"}</code></td>
+                <td><span class="status-badge ${severityClass}">${alert.severity}</span></td>
+                <td><pre style="max-width: 200px; overflow: auto; font-size: 11px;">${JSON.stringify(alert.details, null, 2)}</pre></td>
+            </tr>`;
+          });
+
+          html += "</tbody></table></div>";
+          container.innerHTML = html;
+        } catch (error) {
+          console.error("Error loading alerts:", error);
+          container.innerHTML = `<div class="error">Error loading alerts: ${error.message}</div>`;
+        }
+      }
+
+      // Refresh alerts
+      async function refreshAlerts() {
+        await loadSecurityAlerts();
+      }
+
+      // ============================================
+      // MODERATION FUNCTIONS
+      // ============================================
+
+      // Load flagged reports for moderation
+      async function loadFlaggedReports() {
+        const container = document.getElementById("moderation-container");
+        if (!container) return;
+
+        container.innerHTML =
+          '<div class="loading">Loading flagged reports...</div>';
+
+        try {
+          const q = query(
+            collection(db, "reports"),
+            where("flagged", "==", true),
+            orderBy("flaggedAt", "desc"),
+            limit(50),
+          );
+
+          const flaggedSnapshot = await getDocs(q);
+
+          if (flaggedSnapshot.empty) {
+            container.innerHTML =
+              '<div class="success">✅ No flagged reports pending review.</div>';
+            return;
+          }
+
+          let html = '<div style="overflow-x: auto;"> <table> <thead> <tr>';
+          html +=
+            "<th>Time</th><th>User ID</th><th>Title</th><th>Violations</th><th>Actions</th>";
+          html += "</tr> </thead> <tbody>";
+
+          for (const doc of flaggedSnapshot.docs) {
+            const report = doc.data();
+            const timestamp = report.flaggedAt
+              ? new Date(report.flaggedAt.toDate()).toLocaleString()
+              : "N/A";
+            const violations = report.violations || [];
+
+            html += `<tr>
+                <td>${timestamp}</td>
+                <td><code>${report.userId ? report.userId.substring(0, 12) + "..." : "Unknown"}</code></td>
+                <td><strong>${escapeHtml(report.title || "No title")}</strong><br>
+                    <small>${escapeHtml((report.description || "").substring(0, 100))}</small></td>
+                <td>${violations.map((v) => `<span class="status-badge status-blocked">${v.category}</span>`).join(" ")}</td>
+                <td>
+                    <button class="btn-block" onclick="confirmViolation('${doc.id}', '${report.userId}')">🚫 Confirm & Block</button>
+                    <button class="btn-unblock" onclick="clearFlag('${doc.id}')">✅ False Alarm</button>
+                </td>
+            </tr>`;
+          }
+
+          html += "</tbody> </table> </div>";
+          container.innerHTML = html;
+        } catch (error) {
+          console.error("Error loading flagged reports:", error);
+          container.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
+      }
+
+      // Review single report
+async function reviewReport(reportId, userId, action) {
+    try {
+        if (action === 'block') {
+            await updateDoc(doc(db, 'users', userId), {
+                status: 'blocked',
+                blockedReason: 'Confirmed content violation',
+                blockedAt: new Date(),
+                blockedBy: 'admin_review'
+            });
+            alert('✅ User blocked.');
+        } else if (action === 'delete') {
+            await deleteDoc(doc(db, 'reports', reportId));
+            alert('✅ Report deleted.');
+        } else if (action === 'clear') {
+            await updateDoc(doc(db, 'reports', reportId), {
+                flagged: false,
+                reviewed: true,
+                action: 'false_alarm',
+                reviewedAt: new Date()
+            });
+            alert('✅ Flag cleared.');
+        }
+        loadFlaggedReports();
+        loadUsers();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+      // Confirm violation and block user
+      async function confirmViolation(reportId, userId) {
+    if (!confirm('Confirm this violation? User will be BLOCKED.')) return;
+    
+    try {
+        // Update report
+        await updateDoc(doc(db, 'reports', reportId), {
+            reviewed: true,
+            reviewedAt: new Date(),
+            action: 'blocked'
+        });
+        
+        // Block the user
+        await updateDoc(doc(db, 'users', userId), {
+            status: 'blocked',
+            blockedReason: 'Confirmed content violation',
+            blockedAt: new Date(),
+            blockedBy: 'admin_review'
+        });
+        
+        // ✅ Use addDoc (now imported)
+        await addDoc(collection(db, 'security_logs'), {
+            eventType: 'ADMIN_CONFIRMED_VIOLATION',
+            userId: userId,
+            severity: 'high',
+            details: { reportId: reportId },
+            timestamp: new Date()
+        });
+        
+        alert('✅ User blocked and report confirmed.');
+        loadFlaggedReports();
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+      // Clear false alarm flag
+      async function clearFlag(reportId) {
+        if (!confirm("Mark as false alarm? User will NOT be blocked.")) return;
+
+        try {
+          await updateDoc(doc(db, "reports", reportId), {
+            flagged: false,
+            reviewed: true,
+            reviewedAt: new Date(),
+            action: "false_alarm",
+          });
+
+          alert("✅ Report cleared as false alarm.");
+          loadFlaggedReports();
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Error: " + error.message);
+        }
+      }
+
+      // Batch unflag all reports
+      async function batchUnflagReports() {
+        if (
+          !confirm(
+            "Mark ALL flagged reports as false alarms? This will not block any users.",
+          )
+        )
+          return;
+
+        const q = query(
+          collection(db, "reports"),
+          where("flagged", "==", true),
+        );
+        const flaggedSnapshot = await getDocs(q);
+        let count = 0;
+
+        for (const doc of flaggedSnapshot.docs) {
+          await updateDoc(doc.ref, {
+            flagged: false,
+            reviewed: true,
+            reviewedAt: new Date(),
+            action: "batch_cleared",
+          });
+          count++;
+        }
+
+        alert(`✅ Cleared ${count} flagged reports.`);
+        loadFlaggedReports();
+      }
+
+      // Manual scan reports
+      // Direct scan from browser (no Cloud Function needed)
+async function manualScanReports() {
+    if (!confirm('Scan all existing reports for violations? This will FLAG violating reports and BLOCK violating users.')) return;
+    
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = '⏳ Scanning and flagging...';
+    btn.disabled = true;
+    
+    try {
+        const badKeywords = [
+            'bomb', 'đánh bom', 'terror', 'khủng bố', 'kill', 'giết',
+            'bank account', 'tài khoản ngân hàng', 'porn', 'khiêu dâm',
+            'scam', 'lừa đảo', 'lottery', 'trúng thưởng', 'weapon', 'vũ khí'
+        ];
+        
+        const reportsSnapshot = await getDocs(collection(db, 'reports'));
+        let flaggedCount = 0;
+        let blockedUsers = new Set();
+        
+        for (const reportDoc of reportsSnapshot.docs) {
+            const report = reportDoc.data();
+            const textToCheck = (report.title + ' ' + report.description).toLowerCase();
+            
+            const foundViolations = [];
+            for (const keyword of badKeywords) {
+                if (textToCheck.includes(keyword.toLowerCase())) {
+                    foundViolations.push({ category: 'prohibited', keyword: keyword });
+                }
+            }
+            
+            if (foundViolations.length > 0) {
+                // Flag the report
+                await updateDoc(doc(db, 'reports', reportDoc.id), {
+                    flagged: true,
+                    violations: foundViolations,
+                    flaggedAt: new Date()
+                });
+                flaggedCount++;
+                
+                // Block the user who created the report
+                if (report.userId) {
+                    blockedUsers.add(report.userId);
+                }
+            }
+        }
+        
+        // Block all violating users
+        let blockedCount = 0;
+        for (const userId of blockedUsers) {
+            try {
+                await updateDoc(doc(db, 'users', userId), {
+                    status: 'blocked',
+                    blockedReason: 'Content violation detected',
+                    blockedAt: new Date(),
+                    blockedBy: 'auto_scan'
+                });
+                blockedCount++;
+            } catch (e) {
+                console.error(`Failed to block ${userId}:`, e);
+            }
+        }
+        
+        alert(`✅ Scan completed!\n• ${flaggedCount} reports flagged\n• ${blockedCount} users blocked`);
+        loadFlaggedReports();
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+      // Helper function for HTML escaping
+      function escapeHtml(text) {
+        if (!text) return "";
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Real-time security alerts (refreshes every 30 seconds)
+      async function startRealTimeAlerts() {
+        // Initial load
+        await loadSecurityAlerts();
+
+        // Refresh every 30 seconds
+        setInterval(async () => {
+          await loadSecurityAlerts();
+
+          // Check for critical alerts and play sound
+          const criticalAlerts = document.querySelectorAll(".status-blocked");
+          if (criticalAlerts.length > 0 && !window.alertPlaying) {
+            window.alertPlaying = true;
+            // Visual notification
+            document.title = "🚨 SECURITY ALERT! - Admin Dashboard";
+            setTimeout(() => {
+              document.title = "🛡️ Admin Dashboard";
+              window.alertPlaying = false;
+            }, 5000);
+          }
+        }, 30000);
+      }
+      // Call this when dashboard loads
+      startRealTimeAlerts();
+
+      async function blockUserWithNotice(userId, reason) {
+    const notice = prompt('Select reason for blocking/deleting this account:\n\n1. Terms Violation\n2. Suspicious Activity\n3. Payment Fraud\n4. Spam/Abuse\n5. Other (specify)\n\nEnter number or type reason:');
+    if (!notice) return;
+    
+    let finalReason = '';
+    const reasons = {
+        '1': 'Terms Violation',
+        '2': 'Suspicious Activity',
+        '3': 'Payment Fraud',
+        '4': 'Spam/Abuse'
+    };
+    finalReason = reasons[notice] || notice;
+    
+    await updateDoc(doc(db, 'users', userId), {
+        status: 'blocked',
+        blockedReason: finalReason,
+        blockedAt: new Date(),
+        blockedBy: 'admin'
+    });
+    
+    alert(`User blocked. Reason: ${finalReason}`);
+    loadUsers();
+}
+
+// ============================================
+// SUBSCRIPTION ANALYTICS FUNCTIONS
+// ============================================
+
+async function loadSubscriptionAnalytics() {
+    try {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const now = new Date();
+        const tenDaysFromNow = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+        const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const oneDayFromNow = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        
+        let expiring10 = 0;
+        let expiring3 = 0;
+        let expiring1 = 0;
+        let expiredButActive = 0;
+        let cancelledCount = 0;
+        let renewedCount = 0;
+        let adminBlockedDeleted = 0;
+        
+        const expiredUsers = [];
+        
+        for (const userDoc of usersSnapshot.docs) {
+            const userData = userDoc.data();
+            const userId = userDoc.id;
+            
+            // Count admin blocked OR deleted users
+            if (userData.blockedBy === 'admin' || 
+                userData.blockedBy === 'admin_expiry_fix' ||
+                userData.blockedBy === 'admin_batch_action' ||
+                userData.status === 'deleted') {
+                adminBlockedDeleted++;
+            }
+            
+            const expiryDate = userData.subscriptionExpiry ? 
+                (userData.subscriptionExpiry.toDate ? userData.subscriptionExpiry.toDate() : new Date(userData.subscriptionExpiry)) : null;
+            
+            if (expiryDate) {
+                const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                
+                if (daysUntilExpiry <= 10 && daysUntilExpiry > 0 && userData.hasActiveSubscription === true) {
+                    expiring10++;
+                    if (daysUntilExpiry <= 3) expiring3++;
+                    if (daysUntilExpiry <= 1) expiring1++;
+                }
+                
+                if (expiryDate < now && userData.hasActiveSubscription === true) {
+                    expiredButActive++;
+                    expiredUsers.push({
+                        userId: userId,
+                        email: userData.email,
+                        expiryDate: expiryDate,
+                        userType: userData.userType,
+                        lastActive: userData.lastActive
+                    });
+                }
+                
+                if (expiryDate < now && userData.hasActiveSubscription === false && expiryDate > thirtyDaysAgo) {
+                    cancelledCount++;
+                }
+                
+                if (userData.subscriptionRenewedAt && userData.subscriptionRenewedAt > thirtyDaysAgo) {
+                    renewedCount++;
+                }
+            }
+        }
+        
+        document.getElementById('expiring-10').innerText = expiring10;
+        document.getElementById('expiring-3').innerText = expiring3;
+        document.getElementById('expiring-1').innerText = expiring1;
+        document.getElementById('expired-active').innerText = expiredButActive;
+        document.getElementById('cancelled-count').innerText = cancelledCount;
+        document.getElementById('renewed-count').innerText = renewedCount;
+        document.getElementById('admin-blocked-deleted').innerText = adminBlockedDeleted;
+        
+        displayExpiredUsers(expiredUsers);
+        
+        if (expiredButActive > 0) {
+            showExpiredAlert(expiredButActive);
+        }
+        
+    } catch (error) {
+        console.error('Error loading subscription analytics:', error);
+    }
+}
+
+function displayExpiredUsers(expiredUsers) {
+    const container = document.getElementById('expired-users-container');
+    
+    if (expiredUsers.length === 0) {
+        container.innerHTML = '<div class="success">✅ No expired users with active subscriptions found.</div>';
+        return;
+    }
+    
+    let html = '<div style="overflow-x: auto;"> table <thead> <tr>';
+    html += '<th>User ID</th><th>Email</th><th>Expiry Date</th><th>User Type</th><th>Last Active</th><th>Actions</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (const user of expiredUsers) {
+        html += `<tr>
+            <td><code>${user.userId.substring(0, 12)}...</code></td>
+            <td>${user.email}</td>
+            <td><span class="status-badge status-blocked">${user.expiryDate.toLocaleDateString()}</span></td>
+            <td>${user.userType || 'Unknown'}</td>
+            <td>${user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Unknown'}</td>
+            <td>
+                <button class="btn-block" onclick="fixExpiredUser('${user.userId}')">🔧 Fix & Block</button>
+                <button class="btn-refresh" onclick="investigateUser('${user.userId}')">🔍 Investigate</button>
+            </td>
+        </tr>`;
+    }
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function showExpiredAlert(count) {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = 'background: #dc3545; color: white; padding: 10px; margin: 10px 0; border-radius: 8px;';
+    alertDiv.innerHTML = `🚨 CRITICAL: ${count} user(s) have expired subscriptions but are still marked as active! Please review immediately.`;
+    const container = document.getElementById('expired-users-container');
+    if (container && !container.querySelector('.alert')) {
+        container.insertBefore(alertDiv, container.firstChild);
+    }
+}
+
+async function fixExpiredUser(userId) {
+    if (!confirm(`Fix expired user? This will:\n1. Set subscription to expired\n2. Block the user\n3. Log the action\n\nContinue?`)) return;
+    
+    try {
+        await updateDoc(doc(db, 'users', userId), {
+            hasActiveSubscription: false,
+            subscriptionStatus: 'expired',
+            status: 'blocked',
+            blockedReason: 'Expired subscription - manual fix',
+            blockedAt: new Date(),
+            blockedBy: 'admin_expiry_fix'
+        });
+        
+        await addDoc(collection(db, 'security_logs'), {
+            eventType: 'ADMIN_FIXED_EXPIRED_USER',
+            userId: userId,
+            severity: 'medium',
+            details: { action: 'manual_expiry_block' }
+        });
+        
+        alert('✅ User fixed and blocked.');
+        loadSubscriptionAnalytics();
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+async function investigateUser(userId) {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    const userData = userDoc.data();
+    
+    const reportsQuery = query(collection(db, 'reports'), where('userId', '==', userId), orderBy('timestamp', 'desc'), limit(10));
+    const reportsSnapshot = await getDocs(reportsQuery);
+    
+    let reportsHtml = '';
+    reportsSnapshot.forEach(doc => {
+        const report = doc.data();
+        reportsHtml += `<li><strong>${report.title}</strong> - ${new Date(report.timestamp).toLocaleDateString()}</li>`;
+    });
+    
+    const modalHtml = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 500px; z-index: 10001; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h3>User Investigation</h3>
+            <p><strong>Email:</strong> ${userData.email}</p>
+            <p><strong>Status:</strong> ${userData.status}</p>
+            <p><strong>Subscription:</strong> ${userData.hasActiveSubscription ? 'Active' : 'Inactive'}</p>
+            <p><strong>Recent Reports:</strong></p>
+            <ul>${reportsHtml || '<li>No reports found</li>'}</ul>
+            <button onclick="this.parentElement.remove(); document.querySelector('#modal-overlay')?.remove();">Close</button>
+            <button onclick="fixExpiredUser('${userId}'); this.parentElement.remove(); document.querySelector('#modal-overlay')?.remove();">Fix & Block</button>
+        </div>
+        <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000;" onclick="this.remove(); document.querySelector('#modal-overlay')?.remove();"></div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// ============================================
+// MODERATION FUNCTIONS
+// ============================================
+
+// Delete all flagged reports
+async function deleteAllFlaggedReports() {
+    if (!confirm('⚠️ DANGER: This will DELETE all flagged reports permanently.\n\nUsers will NOT be blocked.\n\nAre you sure?')) return;
+    
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = '⏳ Deleting...';
+    btn.disabled = true;
+    
+    try {
+        const q = query(collection(db, 'reports'), where('flagged', '==', true));
+        const flaggedSnapshot = await getDocs(q);
+        let deletedCount = 0;
+        
+        for (const doc of flaggedSnapshot.docs) {
+            // ✅ Use deleteDoc (now imported)
+            await deleteDoc(doc.ref);
+            deletedCount++;
+        }
+        
+        alert(`✅ Deleted ${deletedCount} flagged reports.`);
+        loadFlaggedReports();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Block all users who have flagged reports
+async function blockAllViolatingUsers() {
+    if (!confirm('⚠️ This will BLOCK all users who have flagged reports.\n\nAre you sure?')) return;
+    
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = '⏳ Blocking...';
+    btn.disabled = true;
+    
+    try {
+        const q = query(collection(db, 'reports'), where('flagged', '==', true));
+        const flaggedSnapshot = await getDocs(q);
+        
+        const usersToBlock = new Set();
+        flaggedSnapshot.forEach(doc => {
+            const report = doc.data();
+            if (report.userId) usersToBlock.add(report.userId);
+        });
+        
+        let blockedCount = 0;
+        for (const userId of usersToBlock) {
+            await updateDoc(doc(db, 'users', userId), {
+                status: 'blocked',
+                blockedReason: 'Multiple flagged content violations',
+                blockedAt: new Date(),
+                blockedBy: 'admin_batch_action'
+            });
+            blockedCount++;
+        }
+        
+        alert(`✅ Blocked ${blockedCount} users.`);
+        loadFlaggedReports();
+        loadUsers();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Call this in onAuthStateChanged after loadUsers()
+loadSubscriptionAnalytics();
+
+// ============================================
+// CANCELLATION SURVEY FUNCTIONS
+// ============================================
+
+async function loadCancellationSurveyStats() {
+    try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        
+        const surveySnapshot = await getDocs(query(
+            collection(db, 'cancellation_surveys'),
+            where('timestamp', '>', thirtyDaysAgo)
+        ));
+        
+        let stats = {
+            no_need: 0,
+            unsatisfied: 0,
+            too_expensive: 0,
+            other: 0
+        };
+        
+        const feedbackList = [];
+        
+        surveySnapshot.forEach(doc => {
+            const survey = doc.data();
+            const reason = survey.reason;
+            
+            if (reason === 'no_need' || reason === '1') stats.no_need++;
+            else if (reason === 'unsatisfied' || reason === '2') stats.unsatisfied++;
+            else if (reason === 'too_expensive' || reason === '3') stats.too_expensive++;
+            else stats.other++;
+            
+            if (survey.feedback) {
+                feedbackList.push({
+                    email: survey.email,
+                    reason: survey.reason,
+                    feedback: survey.feedback,
+                    timestamp: survey.timestamp
+                });
+            }
+        });
+        
+        document.getElementById('survey-no-need').innerText = stats.no_need;
+        document.getElementById('survey-unsatisfied').innerText = stats.unsatisfied;
+        document.getElementById('survey-too-expensive').innerText = stats.too_expensive;
+        document.getElementById('survey-other').innerText = stats.other;
+        
+        displaySurveyFeedback(feedbackList);
+        
+    } catch (error) {
+        console.error('Error loading survey stats:', error);
+    }
+}
+
+function displaySurveyFeedback(feedbackList) {
+    const container = document.getElementById('survey-feedback-container');
+    
+    if (feedbackList.length === 0) {
+        container.innerHTML = '<div class="success">✅ No feedback submitted yet.</div>';
+        return;
+    }
+    
+    let html = '<h3>User Feedback</h3><div style="overflow-x: auto;"><table><thead><tr>';
+    html += '<th>Date</th><th>Email</th><th>Reason</th><th>Feedback</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (const item of feedbackList) {
+        const reasonText = getReasonText(item.reason);
+        const date = item.timestamp ? new Date(item.timestamp.toDate()).toLocaleDateString() : 'N/A';
+        
+        html += `<tr>
+            <td>${date}</td>
+            <td>${item.email || 'N/A'}</td>
+            <td>${reasonText}</td>
+            <td>${escapeHtml(item.feedback || 'No additional feedback')}</td>
+        </tr>`;
+    }
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function getReasonText(reason) {
+    const reasons = {
+        'no_need': '📤 No longer need service',
+        '1': '📤 No longer need service',
+        'unsatisfied': '😞 Unsatisfactory service',
+        '2': '😞 Unsatisfactory service',
+        'too_expensive': '💰 Too expensive',
+        '3': '💰 Too expensive',
+        'other': '📝 Other reasons',
+        '4': '📝 Other reasons'
+    };
+    return reasons[reason] || '📝 Other reasons';
+}
+// Call this in onAuthStateChanged
+loadCancellationSurveyStats();
+
+// Make functions global (add at the bottom of your script)
+window.deleteAllFlaggedReports = deleteAllFlaggedReports;
+window.blockAllViolatingUsers = blockAllViolatingUsers;
+window.reviewReport = reviewReport;
+// Make functions global
+      window.loadFlaggedReports = loadFlaggedReports;
+      window.batchUnflagReports = batchUnflagReports;
+      window.manualScanReports = manualScanReports;
+      window.confirmViolation = confirmViolation;
+      window.clearFlag = clearFlag;
+
+    </script>
+  </body>
+</html>

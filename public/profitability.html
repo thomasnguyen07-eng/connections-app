@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profitability Dashboard - Connections</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        color: white;
+      }
+      .stat-card.income {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      }
+      .stat-card.cost {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      }
+      .stat-card.profit {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+      .stat-number {
+        font-size: 36px;
+        font-weight: bold;
+      }
+      .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-top: 5px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #4267b2;
+        color: white;
+      }
+      .btn-refresh {
+        padding: 8px 16px;
+        background: #4267b2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .profit-positive {
+        color: #28a745;
+        font-weight: bold;
+      }
+      .profit-negative {
+        color: #dc3545;
+        font-weight: bold;
+      }
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+      .admin-only {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>💰 Profitability Dashboard</h1>
+        <button class="btn-refresh" onclick="location.reload()">
+          🔄 Refresh
+        </button>
+      </div>
+
+      <div id="admin-check" class="admin-only" style="display: none">
+        ⚠️ Admin access only. Please sign in as admin.
+      </div>
+
+      <div id="dashboard-content" style="display: none">
+        <div class="stats-grid">
+          <div class="stat-card income">
+            <div class="stat-number" id="monthly-revenue">$0</div>
+            <div class="stat-label">Actual Revenue (30 days)</div>
+          </div>
+          <div class="stat-card cost">
+            <div class="stat-number" id="monthly-costs">$55</div>
+            <div class="stat-label">Monthly Costs (Fixed)</div>
+          </div>
+          <div class="stat-card profit">
+            <div class="stat-number" id="net-profit">-$55</div>
+            <div class="stat-label">Net Profit</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" style="background: #4267b2">
+            <div class="stat-number" id="premium-count">0</div>
+            <div class="stat-label">Premium</div>
+          </div>
+          <div class="stat-card" style="background: #6c757d">
+            <div class="stat-number" id="sponsored-count">0</div>
+            <div class="stat-label">Sponsored</div>
+          </div>
+          <div class="stat-card" style="background: #28a745">
+            <div class="stat-number" id="free-count">0</div>
+            <div class="stat-label">Free</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>💰 Payment Breakdown</h2>
+          <div id="payment-breakdown">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📊 Monthly Projection</h2>
+          <div id="projection-table"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import { initializeApp } from "firebase/app";
+      import { getAuth, onAuthStateChanged } from "firebase/auth";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        query,
+        where,
+      } from "firebase/firestore";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0",
+        authDomain: "connectionsfinder.com",
+        projectId: "connectionsfinder-app",
+        storageBucket: "connectionsfinder-app.firebasestorage.app",
+        messagingSenderId: "503658774852",
+        appId: "1:503658774852:web:6ef3a8f506f36ca2c3d711",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // Fixed monthly costs
+      const FIXED_COSTS = 55;
+
+      async function getExactRevenue() {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        let totalRevenue = 0;
+        let paymentDetails = {
+          paypal: 0,
+          momo: 0,
+          bank: 0,
+          premium_subscriptions: 0,
+        };
+        let paymentCount = 0;
+
+        // 1. Get PayPal payments (last 30 days)
+        try {
+          const paypalQuery = query(
+            collection(db, "paypalPayments"),
+            where("timestamp", ">", thirtyDaysAgo),
+            where("status", "==", "completed"),
+            where("testMode", "!=", true), // ← EXCLUDE test payments
+          );
+          const paypalSnapshot = await getDocs(paypalQuery);
+          paypalSnapshot.forEach((doc) => {
+            const payment = doc.data();
+            const amount = payment.amount || payment.transactionAmount || 4.99;
+            totalRevenue += amount;
+            paymentDetails.paypal += amount;
+            paymentCount++;
+          });
+        } catch (e) {
+          console.log("No PayPal payments yet");
+        }
+
+        // 2. Get MoMo payments
+        try {
+          const momoQuery = query(
+            collection(db, "momoPayments"),
+            where("timestamp", ">", thirtyDaysAgo),
+            where("status", "==", "success"),
+          );
+          const momoSnapshot = await getDocs(momoQuery);
+          momoSnapshot.forEach((doc) => {
+            const payment = doc.data();
+            const amount = payment.amount || payment.amountVND || 4.99;
+            totalRevenue += amount;
+            paymentDetails.momo += amount;
+            paymentCount++;
+          });
+        } catch (e) {
+          console.log("No MoMo payments yet");
+        }
+
+        // 3. Get Bank payments
+        try {
+          const bankQuery = query(
+            collection(db, "bankPayments"),
+            where("timestamp", ">", thirtyDaysAgo),
+            where("status", "==", "confirmed"),
+          );
+          const bankSnapshot = await getDocs(bankQuery);
+          bankSnapshot.forEach((doc) => {
+            const payment = doc.data();
+            const amount = payment.amount || 4.99;
+            totalRevenue += amount;
+            paymentDetails.bank += amount;
+            paymentCount++;
+          });
+        } catch (e) {
+          console.log("No Bank payments yet");
+        }
+
+        // 4. Get Premium Subscriptions (as backup)
+        try {
+          const subQuery = query(
+            collection(db, "premium_subscriptions"),
+            where("createdAt", ">", thirtyDaysAgo),
+            where("status", "==", "active"),
+          );
+          const subSnapshot = await getDocs(subQuery);
+          subSnapshot.forEach((doc) => {
+            const sub = doc.data();
+            if (!sub.paymentProcessed) {
+              const amount = sub.amount || 4.99;
+              totalRevenue += amount;
+              paymentDetails.premium_subscriptions += amount;
+              paymentCount++;
+            }
+          });
+        } catch (e) {
+          console.log("No premium subscriptions yet");
+        }
+
+        return { totalRevenue, paymentDetails, paymentCount };
+      }
+
+      async function loadData(user) {
+        try {
+          document.getElementById("dashboard-content").style.display = "block";
+          document.getElementById("admin-check").style.display = "none";
+
+          // Get user counts
+          const usersSnapshot = await getDocs(collection(db, "users"));
+          let premium = 0,
+            sponsored = 0,
+            free = 0;
+          usersSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            if (userData.email === "thomasnguyen07@gmail.com") return;
+            if (userData.hasActiveSubscription === true) {
+              if (
+                userData.accountType === "sponsored" ||
+                userData.userType === "sponsored"
+              ) {
+                sponsored++;
+              } else {
+                premium++;
+              }
+            } else {
+              free++;
+            }
+          });
+
+          document.getElementById("premium-count").innerText = premium;
+          document.getElementById("sponsored-count").innerText = sponsored;
+          document.getElementById("free-count").innerText = free;
+
+          // Get exact revenue from payments
+          const { totalRevenue, paymentDetails, paymentCount } =
+            await getExactRevenue();
+          const profit = totalRevenue - FIXED_COSTS;
+
+          document.getElementById("monthly-revenue").innerHTML =
+            `$${totalRevenue.toFixed(2)}`;
+          document.getElementById("net-profit").innerHTML =
+            `$${profit.toFixed(2)}`;
+
+          const profitElement = document.getElementById("net-profit");
+          profitElement.style.color = profit >= 0 ? "#28a745" : "#dc3545";
+
+          // Payment breakdown table
+          let paymentHtml = `
+                    <table>
+                        <thead><tr><th>Payment Method</th><th>Amount (30 days)</th></tr></thead>
+                        <tbody>
+                            <tr><td>PayPal</td><td>$${paymentDetails.paypal.toFixed(2)}</td></tr>
+                            <tr><td>MoMo</td><td>$${paymentDetails.momo.toFixed(2)}</td></tr>
+                            <tr><td>Bank Transfer</td><td>$${paymentDetails.bank.toFixed(2)}</td></tr>
+                            <tr><td>Premium Subscriptions</td><td>$${paymentDetails.premium_subscriptions.toFixed(2)}</td></tr>
+                            <tr style="background:#f0f0f0; font-weight:bold;"><td>Total</td><td>$${totalRevenue.toFixed(2)}</td></tr>
+                            <tr><td colspan="2"><small>💰 Total payments processed: ${paymentCount}</small></td></tr>
+                        </tbody>
+                    </table>
+                `;
+          document.getElementById("payment-breakdown").innerHTML = paymentHtml;
+
+          // Projections
+          const projections = [
+            { users: 100, premium: 80, sponsored: 20 },
+            { users: 500, premium: 400, sponsored: 100 },
+            { users: 1000, premium: 800, sponsored: 200 },
+          ];
+
+          let html =
+            "<table><thead><tr><th>Users</th><th>Premium</th><th>Sponsored</th><th>Revenue</th><th>Profit</th></tr></thead><tbody>";
+          html += `<tr style="background:#e8f4f8;"><td><strong>Current (${premium + sponsored})</strong></td><td class="stat-number">${premium}</td><td class="stat-number">${sponsored}</td><td class="stat-number">$${totalRevenue.toFixed(2)}</td><td class="${profit >= 0 ? "profit-positive" : "profit-negative"}">$${profit.toFixed(2)}</td></tr>`;
+
+          for (const p of projections) {
+            const rev = p.premium * 4.99 + Math.ceil(p.sponsored / 10) * 40;
+            const prof = rev - FIXED_COSTS;
+            html += `<tr><td>${p.users}</td><td>${p.premium}</td><td>${p.sponsored}</td><td>$${rev.toFixed(2)}</td><td class="${prof >= 0 ? "profit-positive" : "profit-negative"}">$${prof.toFixed(2)}</td></tr>`;
+          }
+          html += "</tbody></table>";
+          document.getElementById("projection-table").innerHTML = html;
+        } catch (error) {
+          console.error("Error loading data:", error);
+          document.getElementById("payment-breakdown").innerHTML =
+            '<div class="loading">Error loading data. Please refresh.</div>';
+        }
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        if (user && user.email === "thomasnguyen07@gmail.com") {
+          loadData(user);
+        } else if (user) {
+          document.getElementById("admin-check").style.display = "block";
+          document.getElementById("admin-check").innerHTML =
+            "⚠️ Admin access only. You are signed in as " + user.email;
+          document.getElementById("dashboard-content").style.display = "none";
+        } else {
+          document.getElementById("admin-check").style.display = "block";
+          document.getElementById("admin-check").innerHTML =
+            '⚠️ Please sign in as admin to view this page. <a href="/dashboard">Go to Dashboard</a>';
+          document.getElementById("dashboard-content").style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>

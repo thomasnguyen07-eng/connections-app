@@ -1,0 +1,730 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- ===== STANDARD FACEBOOK TAGS ===== -->
+    <meta property="fb:app_id" content="1192380645773075" />
+    <meta property="fb:pages" content="101628931705282" />
+
+    <!-- Open Graph Tags (COMPLETE, NO DUPLICATES) -->
+    <meta
+      property="og:title"
+      content="Connections - Find Missing People, Lost Items & Events"
+    />
+    <meta
+      property="og:description"
+      content="Help find missing persons, lost items, & events. Community platform for reuniting people."
+    />
+    <meta
+      property="og:image"
+      content="https://connectionsfinder.com/images/logo-new.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Connections" />
+    <meta
+      property="og:url"
+      content="https://connectionsfinder.com/dashboard.html"
+    />
+    <!-- ADD THESE NEW TAGS FOR BETTER MULTI-LANGUAGE SUPPORT -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="vi_VN" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <meta property="og:locale:alternate" content="ar_AR" />
+    <link rel="canonical" href="https://connectionsfinder.com/dashboard.html" />
+
+    <!-- Cache control - helps with Facebook scraping -->
+    <meta property="og:ttl" content="1209600" />
+
+    <!-- Link to your Facebook Page -->
+    <meta
+      property="article:publisher"
+      content="https://www.facebook.com/101628931705282"
+    />
+    <!-- ===== END OF STANDARD TAGS ===== -->
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Connections - Shared Images" />
+    <meta
+      name="twitter:description"
+      content="View shared images from the Connections app"
+    />
+    <meta
+      name="twitter:image"
+      content="https://connectionsfinder.com/images/logo-new.png"
+    />
+    <!-- ===== END OF TAGS ===== -->
+
+    <script>
+      // Set the dynamic OG URL to the current page URL
+      document.getElementById("dynamicOgUrl").content = window.location.href;
+    </script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        text-align: center;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .image-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .image-container img {
+        width: 100%;
+        max-width: 300px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        transition: transform 0.2s;
+      }
+      .image-container img:hover {
+        transform: scale(1.05);
+      }
+      .image-count {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+      .error-message {
+        color: red;
+        padding: 20px;
+        background: #ffe6e6;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .loading {
+        color: #666;
+        padding: 20px;
+        font-size: 18px;
+      }
+      .back-button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-size: 16px;
+      }
+      .back-button:hover {
+        background: #0056b3;
+      }
+      .status-info {
+        font-size: 14px;
+        color: #666;
+        margin: 10px 0;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+      }
+      .success-message {
+        color: green;
+        padding: 10px;
+        background: #e6ffe6;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ✅ ADD THIS ENTIRE BLOCK RIGHT HERE -->
+    <script>
+      (function () {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isFacebook =
+          userAgent.includes("fban") ||
+          userAgent.includes("fba/v") ||
+          userAgent.includes("facebook") ||
+          /FBAN|FBAV|FBIOS|FB_IAB|FB4A/i.test(navigator.userAgent);
+
+        if (isFacebook) {
+          console.log(
+            "📱 Facebook mobile app detected. Creating enhanced page.",
+          );
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const reportId = urlParams.get("id"); // This is your report ID
+
+          // 🔥 CRITICAL: Try to get report data from localStorage or a global variable
+          // The report data should be set by your sharing.js when creating the link
+          let reportData = null;
+          try {
+            // Method 1: Check if data was passed via localStorage
+            const storedData = localStorage.getItem(`report_${reportId}`);
+            if (storedData) {
+              reportData = JSON.parse(storedData);
+            }
+            // Method 2: Check if data is in a global variable (set by sharing.js)
+            if (window.currentReportData) {
+              reportData = window.currentReportData;
+            }
+          } catch (e) {
+            console.log("Could not load report data:", e);
+          }
+
+          // Build the HTML with report details if available
+          let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Connections - Report Details</title>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+            h1 { color: #333; font-size: 22px; margin-bottom: 15px; }
+            .detail { margin-bottom: 10px; }
+            .label { font-weight: bold; color: #555; }
+            .images { margin-top: 20px; }
+            img { max-width: 100%; height: auto; margin: 10px 0; border-radius: 8px; }
+            .link-note { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #666; }
+          </style>
+        </head>
+        <body>
+      `;
+
+          // Add report details if we have them
+          if (reportData) {
+            html += `
+          <h1>${reportData.title || "Report Details"}</h1>
+          <div class="detail"><span class="label">Description:</span> ${
+            reportData.description || "Not provided"
+          }</div>
+          <div class="detail"><span class="label">Location:</span> ${
+            reportData.location || "Not provided"
+          }</div>
+          <div class="detail"><span class="label">Contact:</span> ${
+            reportData.contact || "Not provided"
+          }</div>
+          <div class="detail"><span class="label">Report Type:</span> ${
+            reportData.type || "Not specified"
+          }</div>
+        `;
+          } else {
+          }
+
+          // Try to show images if available in URL
+          const imageParam = urlParams.get("images");
+          if (imageParam) {
+            const imageUrls = imageParam.split(",");
+            html += `<div class="images"><p><strong>Images (${imageUrls.length}):</strong></p>`;
+            imageUrls.forEach((url) => {
+              html += `<img src="${url}" alt="Report image" loading="lazy">`;
+            });
+            html += `</div>`;
+          }
+          `
+          </body>
+        </html>
+      `;
+
+          // Write the complete page
+          document.write(html);
+          document.close();
+
+          // Stop other scripts
+          throw new Error("Facebook mobile optimized page served");
+        }
+      })();
+    </script>
+    <!-- ✅ END OF ADDED BLOCK -->
+
+    <div class="container">
+      <h1>📸 Report Images - Connections</h1>
+      <div id="loading" class="loading">Loading images... 🔄</div>
+      <div id="status-info" class="status-info"></div>
+      <div
+        id="success-message"
+        class="success-message"
+        style="display: none"
+      ></div>
+      <div id="image-count" class="image-count" style="display: none"></div>
+      <div
+        id="image-container"
+        class="image-container"
+        style="display: none"
+      ></div>
+      <div id="error-message" class="error-message" style="display: none"></div>
+      <button
+        onclick="window.history.back()"
+        class="back-button"
+        style="display: none"
+        id="back-button"
+      >
+        ← Back
+      </button>
+    </div>
+
+    <script>
+      console.log("🔄 Image package page loading...");
+      console.log("🔗 Full URL:", window.location.href);
+
+      // FIREBASE CONFIGURATION
+      const firebaseConfig = {
+        apiKey: "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0",
+        authDomain: "connectionsfinder.com",
+        projectId: "connectionsfinder-app",
+        storageBucket: "connectionsfinder-app.firebasestorage.app",
+        messagingSenderId: "503658774852",
+        appId: "1:503658774852:web:6ef3a8f506f36ca2c3d711",
+      };
+
+      let firebaseInitialized = false;
+
+      // ===== IMPROVED FACEBOOK CRAWLER FIX =====
+      // ===== INSTANT FACEBOOK CRAWLER HANDLER =====
+      (function () {
+        const userAgent = navigator.userAgent || "";
+        const isFacebookCrawler = /facebookexternalhit|Facebot/i.test(
+          userAgent,
+        );
+
+        // 1. If it's Facebook's Crawler, show a static page IMMEDIATELY.
+        if (isFacebookCrawler) {
+          console.log("🚨 Facebook crawler detected. Serving static preview.");
+          const params = new URLSearchParams(window.location.search);
+          const packageId = params.get("id") || "";
+
+          // Write a COMPLETE, SIMPLE HTML document. This stops all other processing.
+          document.write(`<!DOCTYPE html><html><head>
+            <title>Connections - Shared Report</title>
+            <meta charset="UTF-8">
+            <!-- CRITICAL: Same Open Graph tags as your <head> -->
+            <meta property="og:title" content="Connections - Shared Images">
+            <meta property="og:description" content="View shared images from the Connections app">
+            <meta property="og:image" content="https://connectionsfinder.com/images/logo-new.png" />
+            <meta property="og:url" content="https://connectionsfinder.com/image-package.html${
+              packageId ? "?id=" + packageId : ""
+            }">
+            <meta property="og:type" content="website">
+            <style>body{text-align:center; padding:40px; font-family:Arial;}</style>
+            </head><body>
+            <h1>Connections - Shared Report</h1>
+            <p>Open in browser to view images.</p>
+            </body></html>`);
+
+          document.close(); // Finalize the document
+          // STOP ALL FURTHER JAVASCRIPT EXECUTION for the crawler
+          throw new Error("Static page served to Facebook crawler");
+        }
+        // 2. If it's NOT the crawler, do nothing. The normal page continues to load.
+        else {
+          console.log("👤 Real user detected. Proceeding with full app.");
+        }
+      })();
+      // ===== END CRAWLER HANDLER =====
+
+      function updateStatus(message) {
+        console.log("📢 Status:", message);
+        const statusElement = document.getElementById("status-info");
+        if (statusElement) {
+          statusElement.textContent = message;
+          statusElement.style.display = "block";
+        }
+      }
+
+      function showSuccess(message) {
+        console.log("✅ Success:", message);
+        const successElement = document.getElementById("success-message");
+        if (successElement) {
+          successElement.textContent = message;
+          successElement.style.display = "block";
+        }
+      }
+
+      function showElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.style.display = "block";
+      }
+
+      function hideElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.style.display = "none";
+      }
+
+      async function initializeFirebase() {
+        try {
+          if (firebaseInitialized) {
+            return true;
+          }
+
+          updateStatus("Initializing Firebase connection...");
+
+          // Initialize Firebase if not already done
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialized");
+          }
+
+          // Wait for Firestore to be ready
+          await firebase
+            .firestore()
+            .enablePersistence({ synchronizeTabs: true });
+
+          firebaseInitialized = true;
+          updateStatus("Firebase connected successfully");
+          return true;
+        } catch (error) {
+          console.error("❌ Firebase initialization failed:", error);
+          updateStatus("Firebase offline - using fallback methods");
+          return false;
+        }
+      }
+
+      // MOBILE FACEBOOK FIX - Add at the VERY TOP of your script section
+
+      // NEW: Enhanced package loading with better error handling
+      async function loadImagePackage(packageId) {
+        console.log("🔍 Searching for package:", packageId);
+
+        // Try all storage methods in parallel for better performance
+        const storagePromises = [
+          loadFromFirestore(packageId),
+          loadFromLocalStorage(packageId),
+          loadFromSessionStorage(packageId),
+          loadFromWhatsAppStorage(packageId),
+          loadFromIndexedDB(packageId), // New fallback
+        ];
+
+        const results = await Promise.allSettled(storagePromises);
+
+        // Find first successful result
+        for (let i = 0; i < results.length; i++) {
+          const result = results[i];
+          if (result.status === "fulfilled" && result.value) {
+            const sources = [
+              "Firestore",
+              "Local Storage",
+              "Session Storage",
+              "WhatsApp Storage",
+              "IndexedDB",
+            ];
+            console.log(`✅ Found package in ${sources[i]}`);
+            return {
+              images: result.value.images || result.value,
+              source: sources[i],
+              timestamp: result.value.timestamp || new Date().toISOString(),
+            };
+          }
+        }
+
+        return null;
+      }
+
+      async function loadImages() {
+        // DO NOT RUN if crawler mode is active
+        if (window.crawlerModeActive) {
+          console.log("Skipping normal loadImages() for crawler.");
+          return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const packageId = urlParams.get("id");
+
+        console.log("🔑 Package ID from URL:", packageId);
+        updateStatus(`Searching for image package: ${packageId}`);
+
+        if (!packageId) {
+          showError("No image package ID provided in the URL.");
+          return;
+        }
+
+        try {
+          // Initialize Firebase first
+          await initializeFirebase();
+
+          // Load package data
+          const packageData = await loadImagePackage(packageId);
+
+          if (!packageData) {
+            const errorDetails = `
+              <strong>Image package not found.</strong><br><br>
+              
+              <strong>Technical Details:</strong><br>
+              • Package ID: <code>${packageId}</code><br>
+              • Firebase Status: ${
+                firebaseInitialized ? "Connected" : "Not available"
+              }<br>
+              • Search Locations: Firestore, Local Storage, Session Storage, WhatsApp Storage<br>
+              • Timestamp: ${new Date().toLocaleString()}<br><br>
+
+              <strong>Common Reasons:</strong><br>
+              1. The package has expired (images are automatically removed after 30 days)<br>
+              2. The link was opened in a different browser/device<br>
+              3. Browser data was cleared<br>
+              4. Using private/incognito mode<br><br>
+
+              <strong>Solutions:</strong><br>
+              1. Return to the original app and share again<br>
+              2. Ask the sender to reshare the images<br>
+              3. Try opening in the same browser where the report was created<br>
+              4. Contact the person who shared this link
+            `;
+            throw new Error(errorDetails);
+          }
+
+          // Validate images array
+          if (
+            !packageData.images ||
+            !Array.isArray(packageData.images) ||
+            packageData.images.length === 0
+          ) {
+            throw new Error("Package found but contains no valid images.");
+          }
+
+          // Check if images are still accessible
+          const accessibleImages = await checkImageAccessibility(
+            packageData.images,
+          );
+
+          if (accessibleImages.length === 0) {
+            throw new Error(
+              "All images in this package are no longer accessible. They may have expired or been deleted.",
+            );
+          }
+
+          showSuccess(
+            `✅ Successfully loaded ${accessibleImages.length} image${
+              accessibleImages.length > 1 ? "s" : ""
+            } from ${packageData.source}`,
+          );
+          displayImages(accessibleImages, packageData.source);
+        } catch (error) {
+          console.error("❌ Error loading images:", error);
+          showError(error.message);
+        }
+      }
+
+      async function loadFromFirestore(packageId) {
+        try {
+          console.log("🔍 Searching Firestore for:", packageId);
+
+          // FIRST: Try as document ID (new method after fix)
+          const docRef = firebase
+            .firestore()
+            .collection("imagePackages")
+            .doc(packageId); // Your img_ ID
+
+          const docSnapshot = await docRef.get();
+
+          if (docSnapshot.exists) {
+            console.log("✅ Found as document ID (new method)");
+            const data = docSnapshot.data();
+            return data.images || data.imageUrls || [];
+          }
+
+          // SECOND: Try querying by 'id' field (old method - for existing documents)
+          const querySnapshot = await firebase
+            .firestore()
+            .collection("imagePackages")
+            .where("id", "==", packageId)
+            .limit(1)
+            .get();
+
+          if (!querySnapshot.empty) {
+            console.log("✅ Found by 'id' field query (old method)");
+            const data = querySnapshot.docs[0].data();
+            return data.images || data.imageUrls || [];
+          }
+
+          console.log("❌ Not found in Firestore");
+          return null;
+        } catch (error) {
+          console.error("Firestore search error:", error);
+          return null;
+        }
+      }
+
+      async function loadFromLocalStorage(packageId) {
+        try {
+          const storedData =
+            localStorage.getItem(`img_${packageId}`) ||
+            localStorage.getItem(packageId);
+          if (!storedData) {
+            console.log("❌ Not found in localStorage");
+            return null;
+          }
+
+          const packageData = JSON.parse(storedData);
+
+          // Check expiration (24 hours for localStorage)
+          if (
+            packageData.timestamp &&
+            Date.now() - packageData.timestamp > 24 * 60 * 60 * 1000
+          ) {
+            localStorage.removeItem(packageId);
+            console.log("❌ Expired in localStorage");
+            return null;
+          }
+
+          const images = packageData.imageUrls || packageData.images;
+          if (!images || !Array.isArray(images)) {
+            console.log("❌ Invalid data in localStorage");
+            return null;
+          }
+
+          console.log(`✅ Found ${images.length} images in localStorage`);
+          return { images, timestamp: packageData.timestamp };
+        } catch (error) {
+          console.error("❌ localStorage error:", error);
+          return null;
+        }
+      }
+
+      async function loadFromSessionStorage(packageId) {
+        try {
+          const storedData = sessionStorage.getItem(packageId);
+          if (!storedData) {
+            return null;
+          }
+
+          const packageData = JSON.parse(storedData);
+          const images = packageData.imageUrls || packageData.images;
+          if (!images || !Array.isArray(images)) {
+            return null;
+          }
+
+          console.log(`✅ Found ${images.length} images in sessionStorage`);
+          return { images, timestamp: packageData.timestamp };
+        } catch (error) {
+          return null;
+        }
+      }
+
+      async function loadFromWhatsAppStorage(packageId) {
+        try {
+          const waKey = "whatsapp_" + packageId;
+          const storedData = localStorage.getItem(waKey);
+          if (!storedData) {
+            return null;
+          }
+
+          const packageData = JSON.parse(storedData);
+          const images = packageData.imageUrls || packageData.images;
+          if (!images || !Array.isArray(images)) {
+            return null;
+          }
+
+          console.log(`✅ Found ${images.length} images in WhatsApp storage`);
+          return { images, timestamp: packageData.timestamp };
+        } catch (error) {
+          return null;
+        }
+      }
+
+      // NEW: IndexedDB fallback
+      async function loadFromIndexedDB(packageId) {
+        return null; // Placeholder for future implementation
+      }
+
+      // NEW: Check if images are still accessible
+      async function checkImageAccessibility(imageUrls) {
+        updateStatus("Checking image accessibility...");
+
+        const checkPromises = imageUrls.map(
+          (url) =>
+            new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve(url);
+              img.onerror = () => resolve(null);
+              img.src = url;
+              // Timeout after 5 seconds
+              setTimeout(() => resolve(null), 5000);
+            }),
+        );
+
+        const results = await Promise.all(checkPromises);
+        const accessibleImages = results.filter((url) => url !== null);
+
+        console.log(
+          `📊 Image accessibility: ${accessibleImages.length}/${imageUrls.length} images accessible`,
+        );
+        return accessibleImages;
+      }
+
+      function displayImages(imageUrls, source) {
+        hideElement("loading");
+        hideElement("status-info");
+        showElement("image-count");
+        showElement("image-container");
+        showElement("back-button");
+
+        document.getElementById("image-count").innerHTML = `
+          Showing ${imageUrls.length} image${
+            imageUrls.length > 1 ? "s" : ""
+          }<br>
+          <small>Source: ${source} • Loaded: ${new Date().toLocaleString()}</small>
+        `;
+
+        const container = document.getElementById("image-container");
+        container.innerHTML = ""; // Clear previous content
+
+        imageUrls.forEach((url, index) => {
+          const imgWrapper = document.createElement("div");
+          imgWrapper.style.textAlign = "center";
+
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = `Report image ${index + 1}`;
+          img.loading = "lazy";
+          img.style.maxWidth = "100%";
+          img.style.height = "auto";
+          img.style.border = "2px solid #ddd";
+          img.style.borderRadius = "8px";
+          img.style.cursor = "pointer";
+
+          img.onclick = function () {
+            window.open(url, "_blank");
+          };
+
+          const imgLabel = document.createElement("div");
+          imgLabel.textContent = `Image ${index + 1}`;
+          imgLabel.style.marginTop = "5px";
+          imgLabel.style.color = "#666";
+          imgLabel.style.fontSize = "14px";
+
+          imgWrapper.appendChild(img);
+          imgWrapper.appendChild(imgLabel);
+          container.appendChild(imgWrapper);
+        });
+      }
+
+      function showError(message) {
+        hideElement("loading");
+        hideElement("status-info");
+        showElement("error-message");
+        document.getElementById("error-message").innerHTML = message;
+        showElement("back-button");
+      }
+
+      // Start loading images when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        loadImages();
+      });
+
+      // Add error handling for page errors
+      window.addEventListener("error", function (e) {
+        console.error("Page error:", e.error);
+        updateStatus("Page error occurred - trying to recover...");
+      });
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  </body>
+</html>

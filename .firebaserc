@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "connectionsfinder-app"
+  },
+  "targets": {
+    "connectionsfinder-app": {
+      "hosting": {
+        "main": [
+          "connectionsfinder-app"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "appTitle": "Connections",
+  "newReportTab": "New Report",
+  "savedReportsTab": "Saved Reports",
+  "reportTypeLabel": "Report Type:",
+  "titleLabel": "Title:",
+  "descriptionLabel": "Description:",
+  "locationLabel": "Location Details:",
+  "contactLabel": "Your Contact:",
+  "imageLabel": "Upload Image:",
+  "submitButton": "Submit Report",
+  "useLocationButton": "Use My Location",
+  "showOnMapButton": "Show on Map",
+  "reportTypes": {
+    "select": "Select Type",
+    "missing_person": "🚨 Missing Person",
+    "lost_item": "🔍 Lost Item",
+    "found_person": "🙏 Found Person",
+    "found_item": "🔄 Found Item",
+    "event": "🎉 Event"
+  },
+  "buttons": {
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "share": "Share",
+    "reshare": "Reshare",
+    "delete": "Delete",
+    "clearAll": "Clear All",
+    "backToDashboard": "Back to Dashboard",
+    "retry": "Retry",
+    "useMyLocation": "Use My Location",
+    "locating": "Locating...",
+    "save": "Save Report",
+    "logout": "Logout",
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "subscribe": "Subscribe",
+    "guide": "Guide"
+  },
+  "warnings": {
+    "fraud": "False reports harm the community. Intentionally submitting fake listings may result in a permanent ban and legal action.",
+    "spam": "Excessive reporting (beyond your plan's limits) may trigger account review. Upgrade for more capacity.",
+    "privacy": "Do NOT share sensitive info (e.g., credit cards, IDs). Violations will be removed and reported to authorities.",
+    "images": "Upload only relevant item photos. No explicit/offensive content. Repeat violations will ban your account.",
+    "tos": "By using this app, you agree to our Terms of Service and Privacy Policy. Misuse may lead to account termination.",
+    "legal": "We cooperate with law enforcement. Illegal activity (e.g., stolen goods) will be reported.",
+    "scams": "Never share payment details. Report anyone demanding money for lost items.",
+    "meetings": "Meet in public places. We're not liable for offline interactions.",
+    "data": "Free reports auto-delete after 6 months. Continue with submission?"
+  },
+  "success": {
+    "submit": "Report submitted successfully!",
+    "delete": "Report deleted successfully",
+    "clearAll": "All reports cleared successfully"
+  },
+  "errors": {
+    "submit": "Error submitting report. Please try again.",
+    "load": "Failed to load reports. Please refresh.",
+    "delete": "Failed to delete report",
+    "clearAll": "Failed to clear all reports",  
+    "location": "Error getting location",
+    "clearAllFailed": "Failed to clear reports. Please try again."
+  },
+  "labels": {
+    "yourCurrentLocation": "Your Current Location",
+    "selectedLocation": "Selected Location",
+    "untitledReport": "Untitled Report"
+  },
+    "messages": {
+    "confirmClearAll": "Permanently delete ALL saved reports?",
+    "allReportsCleared": "All reports cleared successfully"
+  },
+   "greetings": {
+    "share": "Dear friends,\nI'm sharing this information:"
+  },
+  "closingLines": {
+    "missing_person": "Please help find. Share widely",
+    "lost_item": "Please help locate",
+    "found_person": "Please help reunite with family",
+    "found_item": "Please contact if this is yours",
+    "event": "Join us. Spread the word",
+    "thank_you": "Thank you for your assistance"
+  },
+  "reportSharing": {
+    "shareButton": "Share this report",
+    "appReference": "Report shared via MissingLostAndFoundApp"
+  },
+  "dashboard": {
+    "yourSavedReports": "Your Saved Reports",
+    "logout": "Log Out"
+  },
+  "fileUpload": {
+    "chooseFile": "Choose file",
+    "noFileChosen": "No file chosen"
+  },
+  "deleting": "Deleting...",
+  "clearing": "Clearing..."
+  
+}
+
