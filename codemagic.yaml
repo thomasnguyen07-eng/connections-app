@@ -13,30 +13,22 @@ workflows:
         script: npm install @capacitor/ios
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: List root directory
-        script: ls -la
-      - name: List ios directory
-        script: ls -la ios/
-      - name: List ios/App directory
-        script: ls -la ios/App/
-      - name: Find xcworkspace file
-        script: find . -name "*.xcworkspace"
       - name: Create exportOptions.plist
-  script: |
-    cat > ios/App/exportOptions.plist << EOF
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>method</key>
-      <string>app-store</string>
-      <key>teamID</key>
-      <string>S67PVB76PN</string>
-      <key>provisioningProfiles</key>
-      <dict/>
-    </dict>
-    </plist>
-    EOF
+        script: |
+          cat > ios/App/exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>S67PVB76PN</string>
+            <key>provisioningProfiles</key>
+            <dict/>
+          </dict>
+          </plist>
+          EOF
       - name: Build iOS app
         script: |
           cd ios/App
