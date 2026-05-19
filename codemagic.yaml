@@ -5,31 +5,29 @@ workflows:
       xcode: latest
       node: 22
     scripts:
-      - name: Check Node version
-        script: node --version
       - name: Install dependencies
         script: npm install
       - name: Install Capacitor iOS
         script: npm install @capacitor/ios
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Set Team ID and remove personal account references
-        script: |
-          cd ios/App
-          /usr/libexec/PlistBuddy -c "Delete :objects:DEVELOPMENT_TEAM" App.xcodeproj/project.pbxproj || true
-          /usr/libexec/PlistBuddy -c "Add :objects:DEVELOPMENT_TEAM string S67PVB76PN" App.xcodeproj/project.pbxproj || true
       - name: Build iOS app
         script: |
           cd ios/App
-          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive DEVELOPMENT_TEAM=S67PVB76PN -allowProvisioningUpdates
+          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
           xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build -exportOptionsPlist <(echo '<?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>method</key>
             <string>app-store</string>
-            <key>teamID</key>
-            <string>S67PVB76PN</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.connectionsfinder.app</key>
+              <string></string>
+            </dict>
           </dict>
           </plist>')
     artifacts:
