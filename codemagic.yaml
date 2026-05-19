@@ -4,8 +4,6 @@ workflows:
     environment:
       xcode: latest
       node: 22
-      vars:
-        BUNDLE_ID: "com.connectionsfinder.app"
     scripts:
       - name: Check Node version
         script: node --version
@@ -15,10 +13,16 @@ workflows:
         script: npm install @capacitor/ios
       - name: Sync Capacitor
         script: npx cap sync ios
+      - name: Install xcodeproj gem
+        script: gem install xcodeproj
+      - name: Set Team ID in Xcode project
+        script: |
+          cd ios/App
+          ruby -e "require 'xcodeproj'; project = Xcodeproj::Project.open('App.xcodeproj'); project.targets.each do |target| target.build_configurations.each do |config| config.build_settings['DEVELOPMENT_TEAM'] = 'S67PVB76PN' end end; project.save"
       - name: Build iOS app
         script: |
           cd ios/App
-          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive -allowProvisioningUpdates
+          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive DEVELOPMENT_TEAM=S67PVB76PN -allowProvisioningUpdates
           xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build -exportOptionsPlist <(echo '<?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
