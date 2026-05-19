@@ -4,6 +4,8 @@ workflows:
     environment:
       xcode: latest
       node: 22
+      vars:
+        BUNDLE_ID: "com.connectionsfinder.app"
     scripts:
       - name: Check Node version
         script: node --version
@@ -13,15 +15,10 @@ workflows:
         script: npm install @capacitor/ios
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Set Team ID in Xcode project
+      - name: Build iOS app
         script: |
           cd ios/App
-          /usr/libexec/PlistBuddy -c "Set :PROVISIONING_PROFILE_SPECIFIER ''" App.xcodeproj/project.pbxproj || true
-          /usr/libexec/PlistBuddy -c "Set :DEVELOPMENT_TEAM S67PVB76PN" App.xcodeproj/project.pbxproj || true
-      - name: Build and archive
-        script: |
-          cd ios/App
-          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive DEVELOPMENT_TEAM=S67PVB76PN
+          xcodebuild -workspace App.xcodeproj/project.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath build/App.xcarchive -allowProvisioningUpdates
           xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build -exportOptionsPlist <(echo '<?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
