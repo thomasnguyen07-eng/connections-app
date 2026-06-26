@@ -1,9 +1,49 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Default deny all
     match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // Report images - users can upload their own
+    match /reports/{userId}/{imageName} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // IMAGE PACKAGES FOR SHARING (FIX)
+    // ============================================
+    // When a report is shared, images are copied to a package folder
+    match /imagePackages/{packageId}/{imageName} {
+      // Anyone with the package link can read (no authentication required)
       allow read: if true;
+      // Only authenticated users can create packages
       allow write: if request.auth != null;
+      allow delete: if request.auth != null && 
+                     request.auth.token.email == 'thomasnguyen07@gmail.com';
+    }
+    
+    // Avatars - only the user can read/write their own
+    match /avatars/{userId}/{avatarId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Admin can read all (for moderation)
+    match /admin/{allPaths=**} {
+      allow read: if request.auth != null && 
+                   request.auth.token.email == 'thomasnguyen07@gmail.com';
+      allow write: if false;
+    }
+    
+    // Public assets (logos, icons) - read only
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

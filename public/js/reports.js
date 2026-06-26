@@ -1,4 +1,7 @@
 // At the top of reports.js, after existing constants but before functions
+// Add this at the top of your file, outside any function
+window._languageLock = false;
+window._translationLock = false;
 
 // ============================================
 // APPEAL MESSAGES AND FUNCTIONS
@@ -188,6 +191,15 @@ async function uploadImage(file, storagePath = null) {
 
 // ▼▼▼ COMPLETE RESTORE AFTER LANGUAGE RELOAD ▼▼▼
 (function () {
+  // ============================================
+  // SKIP FOR SIGNED-OUT USERS
+  // ============================================
+  const user = window.fb?.auth?.currentUser;
+  if (!user) {
+    console.log("⚠️ User not signed in - skipping form restore");
+    return;
+  }
+
   console.log("=== 🔄 LANGUAGE CHANGE RESTORE START ===");
 
   // 1. RESTORE FORM DATA
@@ -197,17 +209,14 @@ async function uploadImage(file, storagePath = null) {
       const data = JSON.parse(savedForm);
       console.log("📦 Form data to restore:", data);
 
-      // Check if data is fresh (last 15 seconds)
       const now = new Date().getTime();
       if (now - data.savedAt > 15000) {
         console.log("Data too old, skipping");
         localStorage.removeItem("preReloadFormData");
       } else {
-        // Wait for page to be ready, then restore
         setTimeout(() => {
           console.log("🔄 Restoring form data...");
 
-          // Restore each field
           const fields = [
             { id: "report-title", value: data.title },
             { id: "report-type", value: data.type },
@@ -216,8 +225,6 @@ async function uploadImage(file, storagePath = null) {
             { id: "reporter-contact", value: data.contact },
           ];
 
-          // Try multiple address field IDs
-          // In the restore section, add:
           if (data.searchAddress) {
             const addressField = document.getElementById("address-input");
             if (addressField) {
@@ -234,18 +241,16 @@ async function uploadImage(file, storagePath = null) {
             }
           });
 
-          // Show image count message
           if (data.imageCount > 0) {
             console.log(
               `📸 Previously had ${data.imageCount} images:`,
               data.imageNames,
             );
-            // You could show a message to user: "You had X images selected"
           }
 
           localStorage.removeItem("preReloadFormData");
           console.log("✅ Form restoration complete");
-        }, 1500); // Wait 1.5 seconds
+        }, 1500);
       }
     } catch (error) {
       console.error("❌ Form restore error:", error);
@@ -260,18 +265,14 @@ async function uploadImage(file, storagePath = null) {
   if (savedTab === "saved-reports") {
     console.log("🔄 Restoring saved-reports tab...");
 
-    // Wait for page to load
     setTimeout(() => {
       console.log("🔄 Attempting to load saved reports...");
 
-      // Method 1: Try to call loadSavedReports if function exists
       if (typeof loadSavedReports === "function") {
         console.log("✅ Calling loadSavedReports()");
         loadSavedReports();
       } else {
         console.log("❌ loadSavedReports function not found");
-
-        // Method 2: Try clicking the saved reports tab to trigger load
         const savedTabBtn = document.querySelector(
           '[data-tab="saved-reports"]',
         );
@@ -281,7 +282,6 @@ async function uploadImage(file, storagePath = null) {
         }
       }
 
-      // Wait for reports to load, then switch tab
       setTimeout(() => {
         const hasReports =
           document.querySelectorAll("#saved-reports-container .report-item")
@@ -289,7 +289,6 @@ async function uploadImage(file, storagePath = null) {
         console.log("Has reports after loading attempt?", hasReports);
 
         if (hasReports) {
-          // Actually switch to the tab
           switchTab("saved-reports");
           console.log("✅ Successfully switched to saved-reports");
         } else {
@@ -297,8 +296,8 @@ async function uploadImage(file, storagePath = null) {
         }
 
         localStorage.removeItem("preReloadTab");
-      }, 3000); // Wait 3 seconds for loading
-    }, 2000); // Initial wait
+      }, 3000);
+    }, 2000);
   }
 
   console.log("=== 🔄 LANGUAGE CHANGE RESTORE END ===");
@@ -604,17 +603,33 @@ function fixButtonTranslations() {
 let isSubmitting = false;
 
 // Helper function for image validation
-function validateImageSelection(files) {
+async function validateImageSelection(files) {
   const currentLang = localStorage.getItem("userLanguage") || "en";
+  const userId = window.fb.auth.currentUser?.uid;
 
   if (files.length === 0) {
     return { valid: true };
   }
 
-  // Check premium status for image limits
-  const userId = window.fb.auth.currentUser?.uid;
-  const isPremium = localStorage.getItem(`premium_${userId}`) === "true";
-  const MAX_IMAGES = isPremium ? 5 : 0; // Trial: 0 images, Premium: 5 images
+  // Check premium status - localStorage first, then Firestore
+  let isPremium = localStorage.getItem(`premium_${userId}`) === "true";
+
+  if (!isPremium && userId && userId !== "anonymous") {
+    try {
+      const userDoc = await window.fb.firestore
+        .collection("users")
+        .doc(userId)
+        .get();
+      isPremium = userDoc.exists && userDoc.data().isPremium === true;
+      if (isPremium) {
+        localStorage.setItem(`premium_${userId}`, "true");
+      }
+    } catch (e) {
+      console.error("Failed to check premium from Firestore:", e);
+    }
+  }
+
+  const MAX_IMAGES = isPremium ? 5 : 0;
 
   if (files.length > MAX_IMAGES) {
     const errorMessages = {
@@ -631,7 +646,7 @@ function validateImageSelection(files) {
     };
   }
 
-  // Check file types
+  // Rest of your validation code...
   for (let file of files) {
     if (!file.type.startsWith("image/")) {
       const errorMessages = {
@@ -994,6 +1009,13 @@ if (typeof window.reportsInitialized === "undefined") {
 
   // ===== 2. CORE FUNCTIONS ===== //
   function translate(key) {
+    // Skip dropdown option translation
+    if (
+      key &&
+      (key.startsWith("reportTypes.") || key === "reportType.select")
+    ) {
+      return key; // Return the key so it gets skipped
+    }
     const value = key
       .split(".")
       .reduce((o, k) => (o || {})[k], currentTranslations);
@@ -1506,7 +1528,7 @@ if (typeof window.reportsInitialized === "undefined") {
           "explosive",
         ],
         vi: [
-          "đánh bom",
+          "bom",
           "giết",
           "sát hại",
           "khủng bố",
@@ -1838,7 +1860,7 @@ if (typeof window.reportsInitialized === "undefined") {
       const prohibitedWords = {
         en: ["bomb", "kill", "weapon", "gun", "bank account", "porn", "sex"],
         vi: [
-          "đánh bom",
+          "bom",
           "giết",
           "vũ khí",
           "súng",
@@ -1939,7 +1961,7 @@ if (typeof window.reportsInitialized === "undefined") {
       const prohibitedWords = {
         en: ["bomb", "kill", "weapon", "gun", "bank account", "porn", "sex"],
         vi: [
-          "đánh bom",
+          "bom",
           "giết",
           "vũ khí",
           "súng",
@@ -2234,7 +2256,25 @@ if (typeof window.reportsInitialized === "undefined") {
 
         // Check premium status
         const userId = window.fb.auth.currentUser?.uid || "anonymous";
-        const isPremium = localStorage.getItem(`premium_${userId}`) === "true";
+
+        // Check localStorage first, then Firestore
+        let isPremium = localStorage.getItem(`premium_${userId}`) === "true";
+
+        if (!isPremium && userId !== "anonymous") {
+          try {
+            const userDoc = await window.fb.firestore
+              .collection("users")
+              .doc(userId)
+              .get();
+            isPremium = userDoc.exists && userDoc.data().isPremium === true;
+            if (isPremium) {
+              localStorage.setItem(`premium_${userId}`, "true");
+            }
+          } catch (e) {
+            console.error("Failed to check premium from Firestore:", e);
+          }
+        }
+
         const MAX_IMAGES = isPremium ? 5 : 0;
 
         console.log("🖼️ Image upload:", {
@@ -3000,6 +3040,14 @@ if (typeof window.reportsInitialized === "undefined") {
   };
 
   function translate(key) {
+    // Skip dropdown option translation
+    if (
+      key &&
+      (key.startsWith("reportTypes.") || key === "reportType.select")
+    ) {
+      return key; // Return the key so it gets skipped
+    }
+
     const lang = localStorage.getItem("userLanguage") || "en";
     const translation = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
@@ -3012,94 +3060,358 @@ if (typeof window.reportsInitialized === "undefined") {
   }
 
   function applyTranslations() {
-    // Translate labels and buttons
+    // Translate labels and buttons, BUT SKIP dropdown options
     document.querySelectorAll("[data-translate]").forEach((el) => {
+      // SKIP dropdown options - they are handled by translateDropdown()
+      if (el.parentElement?.id === "report-type" || el.tagName === "OPTION") {
+        return;
+      }
       el.textContent = translate(el.getAttribute("data-translate"));
     });
 
     // Special handling for select placeholder
     const select = document.querySelector('#report-type option[value=""]');
     if (select) select.textContent; // Add this at the end
-    // ▼ Add this at the end ▼
-    // ✅ ADD THIS LINE AT THE VERY END OF THE FUNCTION
+
     if (typeof translateButtons === "function") translateButtons();
   }
   // ===== LANGUAGE PERSISTENCE ===== //
+  // ============================================
+  // 3. setLanguage() - MODIFIED with retry
+  // ============================================
   function setLanguage(lang) {
-    console.log("🔧 setLanguage() called with:", lang);
-
-    // Check if user is signed in
-    const isSignedIn = window.fb?.auth?.currentUser ? true : false;
-
-    // Save language regardless of sign in status
-    localStorage.setItem("userLanguage", lang);
-    localStorage.setItem("appLanguage", lang);
-    window.currentLanguage = lang;
-
-    // If signed out, also save to preSignoutLanguage
-    if (!isSignedIn) {
-      localStorage.setItem("preSignoutLanguage", lang);
+    // 🔒 GUARD: Prevent infinite loop
+    if (window._languageLock) {
+      console.log("⚠️ Language change already in progress, skipping...");
+      return;
     }
+    window._languageLock = true;
 
-    // Update Guide button (inline)
-    const guideText = document.getElementById("guide-text");
-    if (guideText) {
-      guideText.innerText =
-        {
-          en: "Guide",
-          vi: "Hướng dẫn",
-          zh: "指南",
-          es: "Guía",
-          hi: "गाइड",
-          ar: "دليل",
-        }[lang] || "Guide";
+    try {
+      // Safety: Check if critical DOM elements exist
+      if (!document.body || !document.getElementById("report-type")) {
+        console.log(
+          "⚠️ DOM not ready (missing critical elements), delaying setLanguage",
+        );
+        setTimeout(() => {
+          window._languageLock = false;
+          setLanguage(lang);
+        }, 100);
+        return;
+      }
+
+      // FORCE save the language
+      localStorage.setItem("userLanguage", lang);
+      localStorage.setItem("appLanguage", lang);
+      window.currentLanguage = lang;
+      console.log("🔧 setLanguage() called with:", lang);
+
+      const isSignedIn = window.fb?.auth?.currentUser ? true : false;
+
+      if (!isSignedIn) {
+        console.log("📢 Signed out - using signed-out translation system");
+        const selector = document.getElementById("language-switcher");
+        if (selector) selector.value = lang;
+        const userSelector = document.getElementById("usersLanguageSwitcher");
+        if (userSelector) userSelector.value = lang;
+        if (typeof window.applySignedOutTranslations === "function") {
+          window.applySignedOutTranslations();
+        } else {
+          setTimeout(() => location.reload(), 100);
+        }
+        return;
+      }
+
+      // ============================================
+      // SIGNED-IN USER TRANSLATIONS
+      // ============================================
+
+      // Guide button
+      const guideText = document.getElementById("guide-text");
+      if (guideText) {
+        guideText.innerText =
+          {
+            en: "Guide",
+            vi: "Hướng dẫn",
+            zh: "指南",
+            es: "Guía",
+            hi: "गाइड",
+            ar: "دليل",
+          }[lang] || "Guide";
+      }
+
+      // Subscribe button
+      const subscribeSpan = document.querySelector("#subscribeBtn span");
+      if (subscribeSpan) {
+        subscribeSpan.innerText =
+          {
+            en: "Subscribe",
+            vi: "Đăng ký",
+            zh: "订阅",
+            es: "Suscribirse",
+            hi: "सदस्यता लें",
+            ar: "اشتراك",
+          }[lang] || "Subscribe";
+      }
+
+      // Copyright text
+      const copyrightSpan = document.getElementById("footerCopyright");
+      if (copyrightSpan) {
+        const copyrightText = {
+          en: "All rights reserved.",
+          vi: "Đã đăng ký bản quyền.",
+          zh: "保留所有权利。",
+          es: "Todos los derechos reservados.",
+          hi: "सर्वाधिकार सुरक्षित।",
+          ar: "جميع الحقوق محفوظة.",
+        };
+        copyrightSpan.textContent = copyrightText[lang] || copyrightText.en;
+      }
+
+      // Support label
+      const supportLabel = document.getElementById("supportLabel");
+      if (supportLabel) {
+        const supportText = {
+          en: "Support:",
+          vi: "Hỗ trợ:",
+          zh: "支持:",
+          es: "Soporte:",
+          hi: "समर्थन:",
+          ar: "الدعم:",
+        };
+        supportLabel.textContent = supportText[lang] || supportText.en;
+      }
+
+      // Logout button
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) {
+        logoutBtn.innerText =
+          {
+            en: "Logout",
+            vi: "Đăng xuất",
+            zh: "退出",
+            es: "Cerrar sesión",
+            hi: "लॉगआउट",
+            ar: "تسجيل الخروج",
+          }[lang] || "Logout";
+      }
+
+      // Run existing UI updates
+      if (typeof applyTranslations === "function") applyTranslations();
+      if (typeof updatePatchedTranslations === "function")
+        updatePatchedTranslations();
+      if (typeof updateShareHeading === "function") updateShareHeading();
+      if (typeof updateFileInputDisplay === "function")
+        updateFileInputDisplay();
+      if (typeof translateSavedReportsLabel === "function")
+        translateSavedReportsLabel();
+      if (typeof updateAllWarnings === "function") updateAllWarnings();
+      if (typeof updateLocationButtonText === "function")
+        updateLocationButtonText();
+      if (typeof updateDashboardIntro === "function") updateDashboardIntro();
+      if (typeof updateFormPlaceholders === "function")
+        updateFormPlaceholders(lang);
+      if (typeof translateButtons === "function") translateButtons();
+
+      // ✅ ONLY CALL translateDropdown() ONCE
+      if (typeof translateDropdown === "function") translateDropdown();
+
+      // ============================================
+      // FORCE UPDATE LABELS AFTER ALL OTHER FUNCTIONS
+      // ============================================
+      const labelTranslations = {
+        reportTypeLabel: {
+          en: "Report Type:",
+          vi: "Loại báo cáo:",
+          zh: "报告类型：",
+          es: "Tipo de informe:",
+          hi: "रिपोर्ट प्रकार:",
+          ar: "نوع التقرير:",
+        },
+        titleLabel: {
+          en: "Title:",
+          vi: "Tiêu đề:",
+          zh: "标题：",
+          es: "Título:",
+          hi: "शीर्षक:",
+          ar: "العنوان:",
+        },
+        descriptionLabel: {
+          en: "Description:",
+          vi: "Mô tả:",
+          zh: "描述：",
+          es: "Descripción:",
+          hi: "विवरण:",
+          ar: "الوصف:",
+        },
+        locationLabel: {
+          en: "Location Details:",
+          vi: "Chi tiết địa điểm:",
+          zh: "位置详情：",
+          es: "Detalles de ubicación:",
+          hi: "स्थान विवरण:",
+          ar: "تفاصيل الموقع:",
+        },
+        contactLabel: {
+          en: "Your Contact:",
+          vi: "Liên hệ của bạn:",
+          zh: "您的联系方式：",
+          es: "Su contacto:",
+          hi: "आपका संपर्क:",
+          ar: "جهة اتصالك:",
+        },
+        "reportTypes.select": {
+          en: "-- Select Type --",
+          vi: "-- Chọn loại --",
+          zh: "-- 选择类型 --",
+          es: "-- Seleccione tipo --",
+          hi: "-- प्रकार चुनें --",
+          ar: "-- اختر النوع --",
+        },
+        "buttons.showOnMap": {
+          en: "Show on Map",
+          vi: "Hiện trên bản đồ",
+          zh: "在地图上显示",
+          es: "Mostrar en mapa",
+          hi: "मानचित्र पर दिखाएं",
+          ar: "عرض على الخريطة",
+        },
+      };
+
+      // Update ALL data-translate elements
+      document.querySelectorAll("[data-translate]").forEach((el) => {
+        const key = el.getAttribute("data-translate");
+        if (labelTranslations[key] && labelTranslations[key][lang]) {
+          if (el.tagName === "OPTION") {
+            el.textContent = labelTranslations[key][lang];
+          } else if (el.tagName === "LABEL") {
+            el.textContent = labelTranslations[key][lang];
+          } else {
+            el.textContent = labelTranslations[key][lang];
+          }
+        }
+      });
+
+      // Update the map button specifically
+      const mapBtn = document.querySelector('button[onclick="findAddress()"]');
+      if (mapBtn) {
+        mapBtn.textContent =
+          labelTranslations["buttons.showOnMap"][lang] || "Show on Map";
+      }
+
+      const selector = document.getElementById("language-switcher");
+      if (selector) selector.value = lang;
+      const userSelector = document.getElementById("usersLanguageSwitcher");
+      if (userSelector) userSelector.value = lang;
+
+      // ============================================
+      // UPDATE DROPDOWN OPTIONS (SIGNED IN)
+      // ============================================
+      const reportTypeTranslations = {
+        missing_person: {
+          en: "Missing Person",
+          vi: "Người mất tích",
+          zh: "失踪人员",
+          es: "Persona desaparecida",
+          hi: "लापता व्यक्ति",
+          ar: "شخص مفقود",
+        },
+        lost_item: {
+          en: "Lost Item",
+          vi: "Tài sản bị mất",
+          zh: "丢失物品",
+          es: "Objeto perdido",
+          hi: "खोई हुई वस्तु",
+          ar: "عنصر مفقود",
+        },
+        found_person: {
+          en: "Found Person",
+          vi: "Tìm thấy người",
+          zh: "找到人员",
+          es: "Persona encontrada",
+          hi: "मिला व्यक्ति",
+          ar: "شخص تم العثور عليه",
+        },
+        found_item: {
+          en: "Found Item",
+          vi: "Tìm thấy tài sản",
+          zh: "找到物品",
+          es: "Objeto encontrado",
+          hi: "मिली वस्तु",
+          ar: "عنصر تم العثور عليه",
+        },
+        event: {
+          en: "Event",
+          vi: "Sự kiện",
+          zh: "活动",
+          es: "Evento",
+          hi: "कार्यक्रम",
+          ar: "حدث",
+        },
+      };
+
+      const selectElement = document.getElementById("report-type");
+      if (selectElement && selectElement.options) {
+        const options = selectElement.options;
+        for (let i = 0; i < options.length; i++) {
+          const opt = options[i];
+          const value = opt.value;
+          if (value && reportTypeTranslations[value]) {
+            const translation = reportTypeTranslations[value][lang];
+            if (translation) {
+              let emoji = "";
+              if (value === "missing_person") emoji = "🚨 ";
+              else if (value === "lost_item") emoji = "🔍 ";
+              else if (value === "found_person") emoji = "🙏 ";
+              else if (value === "found_item") emoji = "🔄 ";
+              else if (value === "event") emoji = "🎉 ";
+              opt.textContent = emoji + translation;
+            }
+          }
+        }
+        // Translate the first option (-- Select Type --)
+        const firstOption = selectElement.options[0];
+        if (firstOption) {
+          const selectTypeText = {
+            en: "-- Select Type --",
+            vi: "-- Chọn loại --",
+            zh: "-- 选择类型 --",
+            es: "-- Seleccione tipo --",
+            hi: "-- प्रकार चुनें --",
+            ar: "-- اختر النوع --",
+          };
+          firstOption.textContent = selectTypeText[lang] || "-- Select Type --";
+        }
+      }
+
+      console.log("🔧 setLanguage() completed for signed-in user");
+    } finally {
+      // Release the lock
+      window._languageLock = false;
     }
-
-    // Update Subscribe button (inline)
-    const subscribeSpan = document.querySelector("#subscribeBtn span");
-    if (subscribeSpan) {
-      subscribeSpan.innerText =
-        {
-          en: "Subscribe",
-          vi: "Đăng ký",
-          zh: "订阅",
-          es: "Suscribirse",
-          hi: "सदस्यता लें",
-          ar: "اشتراك",
-        }[lang] || "Subscribe";
-    }
-
-    // Update Logout button (inline)
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-      logoutBtn.innerText =
-        {
-          en: "Logout",
-          vi: "Đăng xuất",
-          zh: "退出",
-          es: "Cerrar sesión",
-          hi: "लॉगआउट",
-          ar: "تسجيل الخروج",
-        }[lang] || "Logout";
-    }
-
-    // Your existing UI updates
-    applyTranslations();
-    updatePatchedTranslations();
-    updateShareHeading();
-    updateFileInputDisplay();
-    translateSavedReportsLabel();
-    updateAllWarnings();
-    updateLocationButtonText();
-    updateDashboardIntro();
-    updateFormPlaceholders(lang);
-    translateButtons();
-
-    const selector = document.getElementById("language-switcher");
-    if (selector) selector.value = lang;
-
-    console.log("🔧 setLanguage() completed");
   }
+
+  function updateSupportLabel() {
+    const supportSpan = document.getElementById("supportLabel");
+    if (!supportSpan) return;
+
+    const lang =
+      localStorage.getItem("userLanguage") ||
+      localStorage.getItem("appLanguage") ||
+      "en";
+    const labels = {
+      en: "📧 Support:",
+      vi: "📧 Hỗ trợ:",
+      zh: "📧 支持：",
+      es: "📧 Soporte:",
+      hi: "📧 सहायता:",
+      ar: "📧 الدعم:",
+    };
+    supportSpan.textContent = labels[lang] || labels.en;
+  }
+
+  // Call this function on page load and language change
+  document.addEventListener("DOMContentLoaded", updateSupportLabel);
 
   // ▼▼▼ ADD THIS NEW FUNCTION RIGHT HERE ▼▼▼
   function updateFormPlaceholders(lang) {
@@ -3250,80 +3562,106 @@ document.getElementById("language-switcher")?.addEventListener("change", () => {
 
 // ===== SCALED TRANSLATION PATCH ===== // (NEW CODE - ADD BELOW)
 const TRANSLATION_PATCH = {
-  warnings: {
-    fraud: {
-      en: "False reports harm the community. Intentionally submitting fake listings may result in a permanent ban and legal action.",
-      vi: "Báo cáo giả gây hại cho cộng đồng. Cố tình gửi danh sách giả có thể dẫn đến cấm vĩnh viễn và hành động pháp lý.",
-      ar: "التقارير الكاذبة تضر المجتمع. التقديم المتعمد لقوائم مزيفة قد يؤدي إلى حظر دائم وإجراءات قانونية.",
-      es: "Los informes falsos dañan a la comunidad. Enviar intencionalmente listados falsos puede resultar en una prohibición permanente y acciones legales.",
-      hi: "झूठी रिपोर्ट समुदाय को नुकसान पहुँचाती हैं। जानबूझकर नकली सूचियाँ जमा करने से स्थायी प्रतिबंध और कानूनी कार्रवाई हो सकती है।",
-      zh: "虚假报告危害社区。故意提交虚假列表可能导致永久封禁和法律诉讼。",
-    },
-    spam: {
-      en: "Subscription required for all features. Your subscription supports our community service.",
-      vi: "Đăng ký để sử dụng tất cả tính năng. Đăng ký của bạn hỗ trợ dịch vụ cộng đồng của chúng tôi.",
-      ar: "يوجد اشتراك مطلوب لجميع الميزات. يدعم اشتراكك خدمتنا المجتمعية.",
-      es: "Se requiere suscripción para todas las funciones. Su suscripción apoya nuestro servicio comunitario.",
-      hi: "सभी सुविधाओं के लिए सदस्यता आवश्यक है। आपकी सदस्यता हमारी सामुदायिक सेवा का समर्थन करती है।",
-      zh: "所有功能都需要订阅。您的订阅支持我们的社区服务。",
-    },
-    privacy: {
-      en: "Do NOT share sensitive info (e.g., credit cards, IDs). Violations will be removed and reported to authorities.",
-      vi: "KHÔNG chia sẻ thông tin nhạy cảm (ví dụ: thẻ tín dụng, CMND). Vi phạm sẽ bị xóa và báo cáo với cơ quan chức năng.",
-      ar: "لا تشارك معلومات حساسة (مثل بطاقات الائتمان، الهويات). سيتم إزالة الانتهاكات وإبلاغ السلطات.",
-      es: "NO comparta información sensible (ej. tarjetas de crédito, identificaciones). Las violaciones serán eliminadas y reportadas a las autoridades.",
-      hi: "संवेदनशील जानकारी साझा न करें (जैसे क्रेडिट कार्ड, आईडी)। उल्लंघनों को हटा दिया जाएगा और अधिकारियों को रिपोर्ट किया जाएगा।",
-      zh: "请勿分享敏感信息（如信用卡、身份证）。违规内容将被删除并报告给当局。",
-    },
-    images: {
-      en: "Upload only relevant item photos. No explicit/offensive content. Repeat violations will ban your account.",
-      vi: "Chỉ tải lên ảnh phù hợp. Không nội dung khiêu dâm/phản cảm. Vi phạm nhiều lần sẽ bị khóa tài khoản.",
-      ar: "قم بتحميل صور العناصر ذات الصلة فقط. لا يوجد محتوى صريح/مسيء. ستؤدي الانتهاكات المتكررة إلى حظر حسابك.",
-      es: "Suba solo fotos relevantes del artículo. Sin contenido explícito/ofensivo. Las violaciones repetidas prohibirán su cuenta.",
-      hi: "केवल प्रासंगिक आइटम की तस्वीरें अपलोड करें। कोई स्पष्ट/आपत्तिजनक सामग्री नहीं। दोहराए गए उल्लंघन आपके खाते पर प्रतिबंध लगा देंगे।",
-      zh: "仅上传相关物品照片。禁止露骨/冒犯性内容。重复违规将封禁您的账户。",
-    },
-    tos: {
-      en: "By using this app, you agree to our Terms of Service and Privacy Policy. Misuse may lead to account termination.",
-      vi: "Khi sử dụng ứng dụng này, bạn đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật của chúng tôi. Lạm dụng có thể dẫn đến chấm dứt tài khoản.",
-      ar: "باستخدام هذا التطبيق، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا. قد يؤدي سوء الاستخدام إلى إنهاء الحساب.",
-      es: "Al usar esta aplicación, aceptas nuestros Términos de Servicio y Política de Privacidad. El uso inadecuado puede llevar a la terminación de la cuenta.",
-      hi: "इस ऐप का उपयोग करके, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं। दुरुपयोग से खाता समाप्ति हो सकती है।",
-      zh: "使用本应用即表示您同意我们的服务条款和隐私政策。滥用可能导致账户终止。",
-    },
-    legal: {
-      en: "We cooperate with law enforcement. Illegal activity (e.g., stolen goods) will be reported.",
-      vi: "Chúng tôi hợp tác với cơ quan thực thi pháp luật. Hành động phạm pháp (ví dụ: hàng ăn cắp) sẽ bị báo cáo.",
-      ar: "نحن نتعاون مع إنفاذ القانون. سيتم الإبلاغ عن الأنشطة غير القانونية (مثل البضائع المسروقة).",
-      es: "Cooperamos con las fuerzas del orden. Se informará de actividades ilegales (ej. artículos robados).",
-      hi: "हम कानून प्रवर्तन के साथ सहयोग करते हैं। अवैध गतिविधि (जैसे चोरी का सामान) की रिपोर्ट की जाएगी।",
-      zh: "我们与执法部门合作。非法活动（如赃物）将被举报。",
-    },
-    scams: {
-      en: "Never share payment details. Report anyone demanding money for lost items.",
-      vi: "Không bao giờ chia sẻ chi tiết thanh toán. Báo cáo bất kỳ ai yêu cầu tiền cho đồ vật bị mất.",
-      ar: "لا تشارك تفاصيل الدفع أبدًا. أبلغ عن أي شخص يطالب بالمال مقابل العناصر المفقودة.",
-      es: "Nunca comparta detalles de pago. Informe a cualquiera que exija dinero por artículos perdidos.",
-      hi: "भुगतान विवरण कभी साझा न करें। खोई हुई वस्तुओं के लिए पैसे मांगने वाले किसी भी व्यक्ति की रिपोर्ट करें।",
-      zh: "切勿分享付款详情。举报任何为失物索要钱财的人。",
-    },
-    meetings: {
-      en: "Meet in public places. We're not liable for offline interactions.",
-      vi: "Gặp nhau ở nơi công cộng. Chúng tôi không chịu trách nhiệm cho tương tác ngoại tuyến.",
-      ar: "التق في الأماكن العامة. نحن لسنا مسؤولين عن التفاعلات غير المتصلة بالإنترنت.",
-      es: "Reúnase en lugares públicos. No somos responsables de las interacciones fuera de línea.",
-      hi: "सार्वजनिक स्थानों पर मिलें। हम ऑफ़लाइन इंटरैक्शन के लिए उत्तरदायी नहीं हैं।",
-      zh: "在公共场所见面。我们对线下互动不承担责任。",
-    },
-    subscription: {
-      en: "Subscription required for all features. Your subscription supports our community service.",
-      vi: "Đăng ký để sử dụng tất cả tính năng. Đăng ký của bạn hỗ trợ dịch vụ cộng đồng của chúng tôi.",
-      ar: "يوجد اشتراك مطلوب لجميع الميزات. يدعم اشتراكك خدمتنا المجتمعية.",
-      es: "Se requiere suscripción para todas las funciones. Su suscripción apoya nuestro servicio comunitario.",
-      hi: "सभी सुविधाओं के लिए सदस्यता आवश्यक है। आपकी सदस्यता हमारी सामुदायिक सेवा का समर्थन करती है।",
-      zh: "所有功能都需要订阅。您的订阅支持我们的社区服务。",
-    },
+  // ============================================
+  // COMPACT WARNING - ALL 6 LANGUAGES
+  // ============================================
+  compact_warning: {
+    en: '⚠️ By using this app, you agree to our <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Terms</a> &amp; <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>. No sensitive info. Reports auto-delete after 180 days.',
+
+    vi: '⚠️ Khi sử dụng ứng dụng này, bạn đồng ý với <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Điều khoản</a> &amp; <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Chính sách bảo mật</a> của chúng tôi. Không chia sẻ thông tin nhạy cảm. Báo cáo tự động xóa sau 180 ngày.',
+
+    zh: '⚠️ 使用本应用即表示您同意我们的<a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">服务条款</a>和<a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">隐私政策</a>。请勿分享敏感信息。报告将在180天后自动删除。',
+
+    es: '⚠️ Al usar esta aplicación, aceptas nuestros <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Términos</a> y <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Política de Privacidad</a>. No compartas información sensible. Los informes se eliminan automáticamente después de 180 días.',
+
+    hi: '⚠️ इस ऐप का उपयोग करके, आप हमारी <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">सेवा शर्तों</a> और <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">गोपनीयता नीति</a> से सहमत होते हैं। कोई संवेदनशील जानकारी नहीं। रिपोर्ट 180 दिनों के बाद स्वचालित रूप से हटा दी जाती हैं।',
+
+    ar: '⚠️ باستخدام هذا التطبيق، فإنك توافق على <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">الشروط</a> و<a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">سياسة الخصوصية</a> الخاصة بنا. لا تشارك معلومات حساسة. يتم حذف التقارير تلقائيًا بعد 180 يومًا.',
   },
+
+  //warnings: {
+  // REMOVED - Now using compact warning
+  //fraud: {
+  en: "False reports harm the community. Intentionally submitting fake listings may result in a permanent ban and legal action.",
+  vi: "Báo cáo giả gây hại cho cộng đồng. Cố tình gửi danh sách giả có thể dẫn đến cấm vĩnh viễn và hành động pháp lý.",
+  ar: "التقارير الكاذبة تضر المجتمع. التقديم المتعمد لقوائم مزيفة قد يؤدي إلى حظر دائم وإجراءات قانونية.",
+  es: "Los informes falsos dañan a la comunidad. Enviar intencionalmente listados falsos puede resultar en una prohibición permanente y acciones legales.",
+  hi: "झूठी रिपोर्ट समुदाय को नुकसान पहुँचाती हैं। जानबूझकर नकली सूचियाँ जमा करने से स्थायी प्रतिबंध और कानूनी कार्रवाई हो सकती है।",
+  zh: "虚假报告危害社区。故意提交虚假列表可能导致永久封禁和法律诉讼。",
+  //},
+  //spam: {
+  en: "Subscription required for all features. Your subscription supports our community service.",
+  vi: "Đăng ký để sử dụng tất cả tính năng. Đăng ký của bạn hỗ trợ dịch vụ cộng đồng của chúng tôi.",
+  ar: "يوجد اشتراك مطلوب لجميع الميزات. يدعم اشتراكك خدمتنا المجتمعية.",
+  es: "Se requiere suscripción para todas las funciones. Su suscripción apoya nuestro servicio comunitario.",
+  hi: "सभी सुविधाओं के लिए सदस्यता आवश्यक है। आपकी सदस्यता हमारी सामुदायिक सेवा का समर्थन करती है।",
+  zh: "所有功能都需要订阅。您的订阅支持我们的社区服务。",
+  //},
+  //privacy: {
+  en: "Do NOT share sensitive info (e.g., credit cards, IDs). Violations will be removed and reported to authorities.",
+  vi: "KHÔNG chia sẻ thông tin nhạy cảm (ví dụ: thẻ tín dụng, CMND). Vi phạm sẽ bị xóa và báo cáo với cơ quan chức năng.",
+  ar: "لا تشارك معلومات حساسة (مثل بطاقات الائتمان، الهويات). سيتم إزالة الانتهاكات وإبلاغ السلطات.",
+  es: "NO comparta información sensible (ej. tarjetas de crédito, identificaciones). Las violaciones serán eliminadas y reportadas a las autoridades.",
+  hi: "संवेदनशील जानकारी साझा न करें (जैसे क्रेडिट कार्ड, आईडी)। उल्लंघनों को हटा दिया जाएगा और अधिकारियों को रिपोर्ट किया जाएगा।",
+  zh: "请勿分享敏感信息（如信用卡、身份证）。违规内容将被删除并报告给当局。",
+  //},
+  //images: {
+  en: "Upload only relevant item photos. No explicit/offensive content. Repeat violations will ban your account.",
+  vi: "Chỉ tải lên ảnh phù hợp. Không nội dung khiêu dâm/phản cảm. Vi phạm nhiều lần sẽ bị khóa tài khoản.",
+  ar: "قم بتحميل صور العناصر ذات الصلة فقط. لا يوجد محتوى صريح/مسيء. ستؤدي الانتهاكات المتكررة إلى حظر حسابك.",
+  es: "Suba solo fotos relevantes del artículo. Sin contenido explícito/ofensivo. Las violaciones repetidas prohibirán su cuenta.",
+  hi: "केवल प्रासंगिक आइटम की तस्वीरें अपलोड करें। कोई स्पष्ट/आपत्तिजनक सामग्री नहीं। दोहराए गए उल्लंघन आपके खाते पर प्रतिबंध लगा देंगे।",
+  zh: "仅上传相关物品照片。禁止露骨/冒犯性内容。重复违规将封禁您的账户。",
+  //},
+  //tos: {
+  en: "By using this app, you agree to our Terms of Service and Privacy Policy. Misuse may lead to account termination.",
+  vi: "Khi sử dụng ứng dụng này, bạn đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật của chúng tôi. Lạm dụng có thể dẫn đến chấm dứt tài khoản.",
+  ar: "باستخدام هذا التطبيق، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بنا. قد يؤدي سوء الاستخدام إلى إنهاء الحساب.",
+  es: "Al usar esta aplicación, aceptas nuestros Términos de Servicio y Política de Privacidad. El uso inadecuado puede llevar a la terminación de la cuenta.",
+  hi: "इस ऐप का उपयोग करके, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं। दुरुपयोग से खाता समाप्ति हो सकती है।",
+  zh: "使用本应用即表示您同意我们的服务条款和隐私政策。滥用可能导致账户终止。",
+  //},
+  //legal: {
+  en: "We cooperate with law enforcement. Illegal activity (e.g., stolen goods) will be reported.",
+  vi: "Chúng tôi hợp tác với cơ quan thực thi pháp luật. Hành động phạm pháp (ví dụ: hàng ăn cắp) sẽ bị báo cáo.",
+  ar: "نحن نتعاون مع إنفاذ القانون. سيتم الإبلاغ عن الأنشطة غير القانونية (مثل البضائع المسروقة).",
+  es: "Cooperamos con las fuerzas del orden. Se informará de actividades ilegales (ej. artículos robados).",
+  hi: "हम कानून प्रवर्तन के साथ सहयोग करते हैं। अवैध गतिविधि (जैसे चोरी का सामान) की रिपोर्ट की जाएगी।",
+  zh: "我们与执法部门合作。非法活动（如赃物）将被举报。",
+  //},
+  //scams: {
+  en: "Never share payment details. Report anyone demanding money for lost items.",
+  vi: "Không bao giờ chia sẻ chi tiết thanh toán. Báo cáo bất kỳ ai yêu cầu tiền cho đồ vật bị mất.",
+  ar: "لا تشارك تفاصيل الدفع أبدًا. أبلغ عن أي شخص يطالب بالمال مقابل العناصر المفقودة.",
+  es: "Nunca comparta detalles de pago. Informe a cualquiera que exija dinero por artículos perdidos.",
+  hi: "भुगतान विवरण कभी साझा न करें। खोई हुई वस्तुओं के लिए पैसे मांगने वाले किसी भी व्यक्ति की रिपोर्ट करें।",
+  zh: "切勿分享付款详情。举报任何为失物索要钱财的人。",
+  //},
+  //meetings: {
+  en: "Meet in public places. We're not liable for offline interactions.",
+  vi: "Gặp nhau ở nơi công cộng. Chúng tôi không chịu trách nhiệm cho tương tác ngoại tuyến.",
+  ar: "التق في الأماكن العامة. نحن لسنا مسؤولين عن التفاعلات غير المتصلة بالإنترنت.",
+  es: "Reúnase en lugares públicos. No somos responsables de las interacciones fuera de línea.",
+  hi: "सार्वजनिक स्थानों पर मिलें। हम ऑफ़लाइन इंटरैक्शन के लिए उत्तरदायी नहीं हैं।",
+  zh: "在公共场所见面。我们对线下互动不承担责任。",
+  //},
+  //subscription: {
+  en: "Subscription required for all features. Your subscription supports our community service.",
+  vi: "Đăng ký để sử dụng tất cả tính năng. Đăng ký của bạn hỗ trợ dịch vụ cộng đồng của chúng tôi.",
+  ar: "يوجد اشتراك مطلوب لجميع الميزات. يدعم اشتراكك خدمتنا المجتمعية.",
+  es: "Se requiere suscripción para todas las funciones. Su suscripción apoya nuestro servicio comunitario.",
+  hi: "सभी सुविधाओं के लिए सदस्यता आवश्यक है। आपकी सदस्यता हमारी सामुदायिक सेवा का समर्थन करती है।",
+  zh: "所有功能都需要订阅。您的订阅支持我们的社区服务。",
+  //},
+  //retention: {
+  en: "📌 Reports and images are stored for a maximum of 180 days (6 months). After 180 days, they are automatically deleted. Please save any important information before then.",
+  vi: "📌 Báo cáo và hình ảnh được lưu trữ tối đa 180 ngày (6 tháng). Sau 180 ngày, chúng sẽ tự động bị xóa. Vui lòng lưu lại bất kỳ thông tin quan trọng trước thời điểm đó.",
+  ar: "📌 يتم تخزين التقارير والصور لمدة أقصاها 180 يومًا (6 أشهر). بعد 180 يومًا، يتم حذفها تلقائيًا. يرجى حفظ أي معلومات مهمة قبل ذلك الوقت.",
+  es: "📌 Los informes e imágenes se almacenan por un máximo de 180 días (6 meses). Después de 180 días, se eliminan automáticamente. Guarde cualquier información importante antes de ese momento.",
+  hi: "📌 रिपोर्ट और छवियाँ अधिकतम 180 दिनों (6 महीने) के लिए संग्रहीत की जाती हैं। 180 दिनों के बाद, वे स्वचालित रूप से हटा दी जाती हैं। कृपया उस समय से पहले कोई भी महत्वपूर्ण जानकारी सहेज लें।",
+  zh: "📌 报告和图片最多存储180天（6个月）。180天后将自动删除。请在此之前保存任何重要信息。",
+  //},
+  //},
 
   dashboardIntro: {
     en: "Your all-in-one hub for community communication. Report missing people, lost items, found property, and announce events. Connect and share across platforms instantly.",
@@ -3379,6 +3717,59 @@ const TRANSLATION_PATCH = {
     es: "Informes guardados",
     hi: "सहेजी गई रिपोर्ट",
     zh: "已保存报告",
+  },
+
+  reportTypeLabel: {
+    en: "Report Type",
+    vi: "Loại báo cáo",
+    zh: "报告类型",
+    es: "Tipo de informe",
+    hi: "रिपोर्ट प्रकार",
+    ar: "نوع التقرير",
+  },
+
+  titleLabel: {
+    en: "Title",
+    vi: "Tiêu đề",
+    zh: "标题",
+    es: "Título",
+    hi: "शीर्षक",
+    ar: "العنوان",
+  },
+  descriptionLabel: {
+    en: "Description",
+    vi: "Mô tả",
+    zh: "描述",
+    es: "Descripción",
+    hi: "विवरण",
+    ar: "الوصف",
+  },
+  locationLabel: {
+    en: "Location Details",
+    vi: "Chi tiết địa điểm",
+    zh: "位置详情",
+    es: "Detalles de ubicación",
+    hi: "स्थान विवरण",
+    ar: "تفاصيل الموقع",
+  },
+  contactLabel: {
+    en: "Your Contact",
+    vi: "Thông tin liên hệ",
+    zh: "您的联系方式",
+    es: "Su contacto",
+    hi: "आपका संपर्क",
+    ar: "جهة اتصالك",
+  },
+
+  buttons: {
+    showOnMap: {
+      en: "Show on Map",
+      vi: "Hiện trên bản đồ",
+      zh: "在地图上显示",
+      es: "Mostrar en mapa",
+      hi: "मानचित्र पर दिखाएं",
+      ar: "عرض على الخريطة",
+    },
   },
 
   dropdowns: {
@@ -4442,29 +4833,26 @@ console.log(
 
 // ▼ Add this after TRANSLATION_PATCH but before any functions that use it ▼
 // ▼▼▼ SINGLE LANGUAGE CHANGE HANDLER ▼▼▼
+// ============================================
+// 4. handleLanguageChange() - MODIFIED with routing and retry
+// ============================================
 function handleLanguageChange(lang) {
+  const user = window.fb?.auth?.currentUser;
+  if (!user) {
+    console.log("⚠️ User not signed in - routing to signed-out handler");
+    handleSignedOutLanguageChange(lang);
+    return;
+  }
+
+  // ============================================
+  // SIGNED-IN USER CODE (YOUR ORIGINAL CODE)
+  // ============================================
+
   console.log("=== 🔍 LANGUAGE CHANGE DEBUG START ===");
-  console.log("=== 🚨 DEBUG: handleLanguageChange START ===");
   console.log("Called with language:", lang);
 
-  // DEBUG: Show what's in the form RIGHT NOW
-  console.log("📝 CURRENT FORM STATE:", {
-    title: document.getElementById("report-title")?.value || "(empty)",
-    type: document.getElementById("report-type")?.value || "(empty)",
-    description:
-      document.getElementById("report-description")?.value || "(empty)",
-    location:
-      document.getElementById("location-text-input")?.value || "(empty)",
-    contact: document.getElementById("reporter-contact")?.value || "(empty)",
-    currentTab: document.querySelector(".tab.active")?.dataset.tab || "unknown",
-    savedReportsCount: document.querySelectorAll(
-      "#saved-reports-container .report-item",
-    ).length,
-  });
-
-  // 1. CAPTURE CURRENT STATE (EXCLUDING AVATAR to avoid quota issues)
+  // Capture current state
   const beforeState = {
-    // ✅ REMOVED avatar from here - it causes quota issues
     title: document.getElementById("report-title")?.value || "",
     type: document.getElementById("report-type")?.value || "",
     description: document.getElementById("report-description")?.value || "",
@@ -4476,42 +4864,16 @@ function handleLanguageChange(lang) {
     ).length,
   };
 
-  console.log("📊 BEFORE language change:", beforeState);
-
-  // 2. SAVE TO localStorage (smaller data, no quota issues)
   try {
     localStorage.setItem("preLanguageChangeState", JSON.stringify(beforeState));
   } catch (error) {
     console.warn("Could not save language state:", error);
-    // If still quota issue, save minimal data only
-    localStorage.setItem(
-      "preLanguageChangeState",
-      JSON.stringify({
-        currentTab: beforeState.currentTab,
-        savedReportsCount: beforeState.savedReportsCount,
-      }),
-    );
   }
 
-  // ✅ Comment out or remove this entire block
-  /*
-  // ✅ Save avatar separately (only if it's not the default)
-  const avatarImg = document.getElementById("userAvatar");
-  if (avatarImg && avatarImg.src && !avatarImg.src.includes("default-avatar")) {
-    // Only save if avatar URL is not too large (under 500KB)
-    if (avatarImg.src.length < 500000) {
-      localStorage.setItem("userAvatarUrl", avatarImg.src);
-    } else {
-      console.log("Avatar too large, skipping localStorage backup");
-    }
-  }
-  */
-
-  // 3. CHANGE LANGUAGE WITHOUT CALLING setLanguage()
   localStorage.setItem("userLanguage", lang);
   window.currentLanguage = lang;
 
-  // Update UI translations
+  // Update UI
   applyTranslations();
   updateLogoutButton();
   updatePatchedTranslations();
@@ -4521,50 +4883,33 @@ function handleLanguageChange(lang) {
   updateAllWarnings();
   updateLocationButtonText();
   updateDashboardIntro();
+  if (typeof translateDropdown === "function") translateDropdown(); // <-- ADD THIS
 
   setTimeout(() => {
     if (typeof window.renderSavedReports === "function") {
-      console.log("🔄 Reloading saved reports after language change");
       window.renderSavedReports();
     }
   }, 200);
 
-  // Sync language switcher UI
   const selector = document.getElementById("language-switcher");
   if (selector) selector.value = lang;
   const userSelector = document.getElementById("usersLanguageSwitcher");
   if (userSelector) userSelector.value = lang;
 
-  // 4. SET UP RESTORATION
+  // Restore form state
   let attempt = 1;
   const maxAttempts = 10;
 
   function restoreState() {
-    console.log(`🔄 Restore attempt ${attempt}/${maxAttempts}`);
-
-    const savedForm = JSON.parse(localStorage.getItem("savedFormData") || "{}");
-    console.log("📋 PARSED savedFormData:", savedForm);
-
     const elements = {
       title: document.getElementById("report-title"),
       type: document.getElementById("report-type"),
-      avatar: document.getElementById("userAvatar"),
     };
-
-    console.log("Elements found:", {
-      title: !!elements.title,
-      type: !!elements.type,
-      avatar: !!elements.avatar,
-    });
 
     if (elements.title && elements.type) {
       const savedState = JSON.parse(
         localStorage.getItem("preLanguageChangeState") || "{}",
       );
-      const savedAvatar = localStorage.getItem("userAvatarUrl");
-
-      console.log("📋 Saved state to restore:", savedState);
-
       elements.title.value = savedState.title || "";
       elements.type.value = savedState.type || "";
       document.getElementById("report-description").value =
@@ -4573,50 +4918,57 @@ function handleLanguageChange(lang) {
         savedState.location || "";
       document.getElementById("reporter-contact").value =
         savedState.contact || "";
-
-      console.log("✅ Form restored");
-
-      // ✅ Comment out or remove this block
-      /*
-      if (
-        savedAvatar &&
-        elements.avatar &&
-        !elements.avatar.src.includes(savedAvatar)
-      ) {
-        elements.avatar.src = savedAvatar;
-        console.log("✅ Avatar restored");
-      }
-      */
-
-      if (
-        savedState.currentTab === "saved-reports" &&
-        savedState.savedReportsCount > 0
-      ) {
-        const currentTab = document.querySelector(".tab.active")?.dataset.tab;
-        if (currentTab !== "saved-reports") {
-          console.log("🔄 Switching to saved-reports tab");
-          if (typeof window.renderSavedReports === "function") {
-            window.renderSavedReports();
-          } else {
-            switchTab("saved-reports");
-          }
-        }
-      }
-
-      console.log("=== ✅ LANGUAGE CHANGE COMPLETE ===");
       return true;
     } else if (attempt < maxAttempts) {
       attempt++;
       setTimeout(restoreState, 200);
       return false;
-    } else {
-      console.error("❌ FAILED: Elements never became available");
-      return false;
     }
+    return false;
   }
 
   setTimeout(restoreState, 300);
-  console.log("=== 🔍 LANGUAGE CHANGE DEBUG END ===");
+
+  // Retry translations after 200ms
+  setTimeout(() => {
+    if (typeof applyTranslations === "function") applyTranslations();
+    if (typeof updatePatchedTranslations === "function")
+      updatePatchedTranslations();
+    if (typeof updateAllWarnings === "function") updateAllWarnings();
+    if (typeof updateFormPlaceholders === "function")
+      updateFormPlaceholders(lang);
+  }, 200);
+
+  console.log("=== ✅ LANGUAGE CHANGE COMPLETE ===");
+}
+
+// ============================================
+// 5. handleSignedOutLanguageChange() - NEW with retry
+// ============================================
+function handleSignedOutLanguageChange(newLang) {
+  console.log("📢 Handling signed-out language change to:", newLang);
+
+  localStorage.setItem("userLanguage", newLang);
+  localStorage.setItem("appLanguage", newLang);
+  window.currentLanguage = newLang;
+
+  document
+    .querySelectorAll("#language-switcher, #usersLanguageSwitcher")
+    .forEach((sel) => {
+      if (sel) sel.value = newLang;
+    });
+
+  if (typeof window.applySignedOutTranslations === "function") {
+    window.applySignedOutTranslations();
+    // Retry after 200ms
+    setTimeout(() => {
+      window.applySignedOutTranslations();
+    }, 200);
+    // Retry again after 500ms for safety
+    setTimeout(() => {
+      window.applySignedOutTranslations();
+    }, 500);
+  }
 }
 
 // Connect language selectors
@@ -4722,7 +5074,12 @@ setTimeout(verifyTranslationResources, 1000); // ◀◀◀ 1-second safety check
 // ▼▼▼ ADD THIS RIGHT AFTER YOUR TRANSLATION_PATCH ▼▼▼
 function translateButtons() {
   const lang = window.currentLanguage || "en";
-
+  // Translate Submit Button (using your existing popups.submitReportBtn)
+  const submitBtn = document.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.textContent =
+      TRANSLATION_PATCH.popups?.submitReportBtn?.[lang] || "Submit Report";
+  }
   // Translate "Save Report" button (target by ID)
   const saveBtn = document.getElementById("save-report-btn");
   if (saveBtn) {
@@ -4819,11 +5176,14 @@ const getTranslation = (obj, fallback = "") => {
 function updatePatchedTranslations() {
   try {
     const lang = window.currentLanguage || "en";
-    // Add null checks
     if (!TRANSLATION_PATCH) return;
 
-    // Safe navigation
     document.querySelectorAll("[data-translate]").forEach((el) => {
+      // SKIP dropdown options - they are handled by translateDropdown()
+      if (el.parentElement?.id === "report-type" || el.tagName === "OPTION") {
+        return;
+      }
+
       const key = el.getAttribute("data-translate");
       const translation = TRANSLATION_PATCH[key]?.[lang] || el.textContent;
       el.textContent = translation;
@@ -4964,20 +5324,113 @@ function updateFileInputDisplay() {
 
 // SIMPLIFIED VERSION - Add this to reports.js
 function translateDropdown() {
-  const lang = window.currentLanguage || "en";
-  const dropdown = document.getElementById("report-type");
-  if (!dropdown) return;
+  // 🔒 GUARD: Prevent infinite loop
+  if (window._translationLock) {
+    console.log("⚠️ Translation already in progress, skipping...");
+    return;
+  }
+  window._translationLock = true;
 
-  Array.from(dropdown.options).forEach((option) => {
-    const key = option.getAttribute("data-translate"); // e.g. "reportTypes.select"
-    if (key) {
-      const [_, translationKey] = key.split("."); // Gets "select", "missing_person" etc.
-      if (TRANSLATION_PATCH.reportTypes[translationKey]?.[lang]) {
-        option.textContent =
-          TRANSLATION_PATCH.reportTypes[translationKey][lang];
+  try {
+    const lang =
+      window.currentLanguage || localStorage.getItem("appLanguage") || "en";
+
+    console.log("🔄 translateDropdown() called for language:", lang);
+
+    // ============================================
+    // 1. Translate the dropdown (if it exists)
+    // ============================================
+    const dropdown = document.getElementById("report-type");
+    if (dropdown && dropdown.options) {
+      console.log("📋 Translating dropdown options...");
+      try {
+        Array.from(dropdown.options).forEach((option) => {
+          const value = option.value;
+
+          if (value === "") {
+            if (TRANSLATION_PATCH.reportTypes?.select?.[lang]) {
+              option.textContent = TRANSLATION_PATCH.reportTypes.select[lang];
+            }
+            return;
+          }
+
+          if (value && TRANSLATION_PATCH.reportTypes?.[value]?.[lang]) {
+            let emoji = "";
+            if (value === "missing_person") emoji = "🚨 ";
+            else if (value === "lost_item") emoji = "🔍 ";
+            else if (value === "found_person") emoji = "🙏 ";
+            else if (value === "found_item") emoji = "🔄 ";
+            else if (value === "event") emoji = "🎉 ";
+
+            option.textContent =
+              emoji + TRANSLATION_PATCH.reportTypes[value][lang];
+          }
+        });
+      } catch (e) {
+        console.log("⚠️ Error translating dropdown:", e);
       }
     }
-  });
+
+    // ============================================
+    // 2. Translate icon buttons
+    // ============================================
+    const iconButtons = document.querySelectorAll(".type-btn");
+    if (iconButtons.length > 0) {
+      console.log("🎨 Translating icon buttons...");
+      iconButtons.forEach((btn) => {
+        try {
+          const type = btn.dataset.type;
+          if (type && TRANSLATION_PATCH.reportTypes?.[type]?.[lang]) {
+            const label = btn.querySelector(".type-label");
+            if (label) {
+              label.textContent = TRANSLATION_PATCH.reportTypes[type][lang];
+            }
+          }
+        } catch (e) {
+          console.log("⚠️ Error translating button:", e);
+        }
+      });
+    }
+
+    // ============================================
+    // 3. Translate form labels
+    // ============================================
+    try {
+      const labelMap = {
+        reportTypeLabel: "reportTypeLabel",
+        titleLabel: "titleLabel",
+        descriptionLabel: "descriptionLabel",
+        locationLabel: "locationLabel",
+        contactLabel: "contactLabel",
+      };
+
+      Object.keys(labelMap).forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && TRANSLATION_PATCH[labelMap[id]]?.[lang]) {
+          el.textContent = TRANSLATION_PATCH[labelMap[id]][lang];
+        }
+      });
+    } catch (e) {
+      console.log("⚠️ Error translating labels:", e);
+    }
+
+    // ============================================
+    // 4. Translate "Show on Map" button
+    // ============================================
+    try {
+      const showOnMapBtn = document.getElementById("showOnMapBtn");
+      if (showOnMapBtn && TRANSLATION_PATCH.buttons?.showOnMap?.[lang]) {
+        showOnMapBtn.textContent = TRANSLATION_PATCH.buttons.showOnMap[lang];
+      }
+    } catch (e) {
+      console.log("⚠️ Error translating showOnMap button:", e);
+    }
+
+    console.log("✅ translateDropdown() completed");
+  } finally {
+    // ✅ Release the lock at the END of the function
+    window._translationLock = false;
+  }
 }
 
 function translateSavedReportsLabel() {
@@ -4990,22 +5443,10 @@ function translateSavedReportsLabel() {
 
 // ▼▼▼ Add this with translateDropdown(), translateSavedReportsLabel(), etc. ▼▼▼
 function updateAllWarnings() {
-  // Use appLanguage (which has the selected language) instead of userLanguage
-  const lang =
-    localStorage.getItem("appLanguage") ||
-    localStorage.getItem("userLanguage") ||
-    "en";
-  console.log("🔄 updateAllWarnings using language:", lang);
-
+  const lang = window.currentLanguage || "en";
   document.querySelectorAll("[data-warning]").forEach((el) => {
     const key = el.getAttribute("data-warning");
-    const translation = TRANSLATION_PATCH.warnings[key]?.[lang];
-    if (translation) {
-      el.textContent = translation;
-    } else {
-      // Fallback to English if translation missing
-      el.textContent = TRANSLATION_PATCH.warnings[key]?.en || key;
-    }
+    el.textContent = TRANSLATION_PATCH.warnings[key]?.[lang] || key;
   });
 }
 

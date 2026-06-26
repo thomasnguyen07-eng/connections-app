@@ -52,6 +52,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // ▼▼▼ REPLACE this block ▼▼▼
       applyTranslations();
 
+      // 👇 ADD THIS LINE 👇
+      if (typeof loadCompactWarning === "function") {
+        loadCompactWarning(); // Reload the compact warning with new language
+      }
+      // 👆 ADD THIS LINE 👆
+
       // ▲▲▲ Add your function call RIGHT AFTER applyTranslations ▲▲▲
       if (typeof updateDashboardIntro === "function") {
         updateDashboardIntro();

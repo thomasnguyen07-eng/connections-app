@@ -20,7 +20,7 @@
   </head>
   <body>
     <h1>Terms of Service</h1>
-    <p><strong>Last updated:</strong> May 2026</p>
+    <p><strong>Last updated:</strong> June 2026</p>
 
     <h2>1. Acceptance of Terms</h2>
     <p>By using Connections, you agree to these Terms of Service.</p>
@@ -35,6 +35,14 @@
     <p>
       You retain ownership of your content. By posting, you grant us permission
       to display and share your content as described in the app.
+    </p>
+
+    <p>
+      <strong>Data Retention:</strong> Reports and images are stored for a
+      maximum of 180 days (6 months). After 180 days, they are automatically
+      deleted from our system. You are responsible for saving any important
+      information before this time. This policy applies to all users, including
+      premium subscribers.
     </p>
 
     <h2>4. Prohibited Content</h2>
@@ -53,18 +61,134 @@
       unless canceled 24 hours before renewal.
     </p>
 
-    <h2>6. Termination</h2>
+    <h2>6. Account Deletion</h2>
+    <p>
+      You may delete your account at any time. Upon deletion, all your reports
+      and images will be permanently removed. Email
+      <p>
+        <span id="supportLabel">📧 Support:</span>
+<a href="#" onclick="openContactModal(); return false;" style="color: #4267b2; text-decoration: none;">support@connectionsfinder.com</a>
+    </p>
+      to request account deletion.
+    </p>
+
+    <h2>7. Termination</h2>
     <p>We may terminate accounts that violate these terms.</p>
 
-    <h2>7. Limitation of Liability</h2>
+    <h2>8. Limitation of Liability</h2>
     <p>Connections is not liable for offline interactions between users.</p>
 
-    <h2>8. Contact</h2>
+    <h2>9. Changes to Terms</h2>
+    <p>We may update these terms. Continued use constitutes acceptance.</p>
+
+    <h2>10. Contact</h2>
     <p>
-      Email:
-      <a href="mailto:support@connectionsfinder.com"
-        >support@connectionsfinder.com</a
-      >
-    </p>
+  <span id="supportLabel">📧 Support:</span>
+  <a href="#" onclick="openContactModal(); return false;" style="color: #4267b2; text-decoration: none;">support@connectionsfinder.com</a>
+</p>
+
+<script>
+// ============================================
+// CONTACT MODAL FUNCTIONS
+// ============================================
+
+function openContactModal() {
+    // Check if contact modal exists in the page
+    let modal = document.getElementById('contactModal');
+    let overlay = document.getElementById('modalOverlay');
+    
+    // If modal doesn't exist, create it
+    if (!modal) {
+        // Create overlay
+        overlay = document.createElement('div');
+        overlay.id = 'modalOverlay';
+        overlay.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000;';
+        overlay.onclick = closeContactModal;
+        document.body.appendChild(overlay);
+        
+        // Create modal
+        modal = document.createElement('div');
+        modal.id = 'contactModal';
+        modal.style.cssText = 'display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10001; max-width: 400px; width: 90%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;';
+        modal.innerHTML = `
+            <div style="background: linear-gradient(135deg, #4267b2, #365899); padding: 20px; border-radius: 16px 16px 0 0; color: white;">
+                <h3 style="margin: 0; font-size: 20px;">📧 Contact Support</h3>
+                <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">We're here to help!</p>
+            </div>
+            <div style="padding: 20px;">
+                <p style="margin: 0 0 15px; color: #666; font-size: 14px; text-align: center;">
+                    Email us at: <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
+                </p>
+                <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">📋 Copy Email Address</button>
+                <button id="contactGmailBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #ea4335; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🌐 Compose in Gmail</button>
+                <button id="contactOutlookBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #0078d4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🌐 Compose in Outlook</button>
+                <button id="contactYahooBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #7b0099; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🌐 Compose in Yahoo Mail</button>
+                <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">✖️ Cancel</button>
+            </div>
+            <div style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
+                <p style="margin: 0; font-size: 12px; color: #999; text-align: center;">Response within 24-48 hours</p>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Setup event listeners
+        document.getElementById('contactCopyBtn').onclick = function() {
+            navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = '#218838';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#28a745';
+                }, 2000);
+            }).catch(() => alert('Email: support@connectionsfinder.com'));
+        };
+        
+        document.getElementById('contactGmailBtn').onclick = function() {
+            const email = "support@connectionsfinder.com";
+            const subject = encodeURIComponent("Connections App Support Request");
+            const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`, '_blank');
+            closeContactModal();
+        };
+        
+        document.getElementById('contactOutlookBtn').onclick = function() {
+            const email = "support@connectionsfinder.com";
+            const subject = encodeURIComponent("Connections App Support Request");
+            const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+            window.open(`https://outlook.live.com/mail/0/deeplink/compose?to=${email}&subject=${subject}&body=${body}`, '_blank');
+            closeContactModal();
+        };
+        
+        document.getElementById('contactYahooBtn').onclick = function() {
+            const email = "support@connectionsfinder.com";
+            const subject = encodeURIComponent("Connections App Support Request");
+            const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+            window.open(`https://compose.mail.yahoo.com/?to=${email}&subject=${subject}&body=${body}`, '_blank');
+            closeContactModal();
+        };
+        
+        document.getElementById('contactCloseBtn').onclick = closeContactModal;
+    }
+    
+    // Show modal
+    modal.style.display = 'block';
+    overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeContactModal() {
+    const modal = document.getElementById('contactModal');
+    const overlay = document.getElementById('modalOverlay');
+    if (modal) modal.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Make functions global
+window.openContactModal = openContactModal;
+window.closeContactModal = closeContactModal;
+</script>
   </body>
 </html>

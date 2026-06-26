@@ -526,19 +526,6 @@ function showSignupForm() {
                  style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
         </div>
         
-<div style="margin-bottom:15px;">
-  <div style="margin-bottom:5px;">${getAuthTranslation(
-    "passcodeLabel",
-    "Sponsorship Passcode (Optional)",
-  )}</div>
-  <input type="text" id="authPasscode" placeholder="SPON-XXXX-XXXX" 
-         style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
-  <small style="color:#666;">${getAuthTranslation(
-    "passcodeHelp",
-    "Leave blank for an individual account",
-  )}</small>
-</div>
-
         <div style="display:flex; gap:10px;">
           <button id="authSubmit" style="flex:1; padding:12px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">
             ${getAuthTranslation("createAccountBtn")}
@@ -585,31 +572,23 @@ async function handleSigninSubmit() {
   try {
     const { signInWithEmailAndPassword } =
       await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js");
-
     const userCredential = await signInWithEmailAndPassword(
       window.fb.auth,
       email,
       password,
     );
 
-    // After successful sign in, add this:
+    // ============================================
+    // GET THE CURRENT LANGUAGE (selected while signed out)
+    // ============================================
+    const currentLang =
+      localStorage.getItem("appLanguage") ||
+      localStorage.getItem("userLanguage") ||
+      "en";
+    console.log("🌐 Language selected while signed out:", currentLang);
 
-    // Restore language after sign in
-    let savedLang = localStorage.getItem("preSignoutLanguage");
-    if (!savedLang) {
-      savedLang =
-        localStorage.getItem("appLanguage") ||
-        localStorage.getItem("userLanguage") ||
-        "en";
-    }
-    localStorage.setItem("userLanguage", savedLang);
-    localStorage.setItem("appLanguage", savedLang);
-    console.log("🔄 Restored language after sign in:", savedLang);
-
-    // Apply the language
-    if (typeof setLanguage === "function") {
-      setLanguage(savedLang);
-    }
+    // DO NOT use preSignoutLanguage - it's been removed
+    // DO NOT change the language - keep exactly what was selected
 
     // Ensure user profile exists
     const userId = userCredential.user.uid;
@@ -619,7 +598,6 @@ async function handleSigninSubmit() {
     if (typeof window.ensureUserProfile === "function") {
       await window.ensureUserProfile(userId, userEmail, displayName);
     } else {
-      console.log("🔄 Ensuring user profile exists...");
       const userDoc = await window.fb.firestore.getDoc(
         window.fb.firestore.doc(window.fb.db, "users", userId),
       );
@@ -629,12 +607,13 @@ async function handleSigninSubmit() {
           name: displayName,
           accountType: "individual",
         });
-        console.log("✅ User profile created during sign-in");
       }
     }
 
     alert(getAuthTranslation("signinSuccess", "Signed in successfully!"));
     closeAuthForm();
+
+    // Reload - the language in localStorage will be used
     window.location.href = window.location.href;
   } catch (error) {
     console.error("❌ Sign-in error:", error.code);
@@ -803,8 +782,31 @@ function setupLogout() {
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.onclick = async function () {
+      // 🔒 CONFIRMATION DIALOG
+      const lang =
+        localStorage.getItem("userLanguage") ||
+        localStorage.getItem("appLanguage") ||
+        "en";
+      const confirmMessages = {
+        en: "Are you sure you want to log out? Please be sure to save your report before logging out.",
+        vi: "Bạn có chắc chắn muốn đăng xuất? Vui lòng lưu báo cáo của bạn trước khi đăng xuất.",
+        zh: "您确定要退出吗？请确保在退出前保存您的报告。",
+        es: "¿Estás seguro de que quieres cerrar sesión? Asegúrate de guardar tu informe antes de cerrar sesión.",
+        hi: "क्या आप वाकई लॉगआउट करना चाहते हैं? कृपया लॉगआउट करने से पहले अपनी रिपोर्ट सहेज लें।",
+        ar: "هل أنت متأكد من أنك تريد تسجيل الخروج؟ يرجى التأكد من حفظ تقريرك قبل تسجيل الخروج.",
+      };
+      const confirmMessage = confirmMessages[lang] || confirmMessages.en;
+
+      if (!confirm(confirmMessage)) {
+        console.log("❌ Logout cancelled by user");
+        return;
+      }
+
       try {
-        // ✅ ADD THIS - Save current language before sign out
+        // ✅ Clear saved form data on logout
+        localStorage.removeItem("reportFormData");
+        console.log("🗑️ Form data cleared on logout");
+
         const currentLang =
           localStorage.getItem("userLanguage") ||
           localStorage.getItem("appLanguage") ||
@@ -969,6 +971,11 @@ window.addEventListener("load", function () {
 
 // ========== SIMPLE LANGUAGE SWITCHER ==========
 // ========== HYBRID LANGUAGE SYSTEM ==========
+// ============================================
+// DELETED: Conflicting language system
+// Now using unified system from reports.js
+// ============================================
+/*
 setTimeout(function () {
   console.log("🌐 Setting up hybrid language system...");
 
@@ -1022,7 +1029,7 @@ setTimeout(function () {
 
   console.log("✅ Hybrid language system ready");
 }, 2000);
-
+*/
 // Helper 1: Validate a passcode
 // users-auth.js - USE THE FIRESTORE FROM window.usersAuth
 // users-auth.js - NO IMPORT STATEMENTS AT THE TOP

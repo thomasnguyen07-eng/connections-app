@@ -3,6 +3,11 @@ const admin = require("firebase-admin");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 admin.initializeApp();
 
+// ============================================
+// IMPORT CLEANUP FUNCTIONS  // <-- ADD THIS
+// ============================================
+const cleanup = require("./cleanup"); // <-- ADD THIS
+
 // Initialize Firebase Admin (only if not already initialized)
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -1389,7 +1394,7 @@ exports.checkQRPayment = functions.https.onRequest((req, res) => {
 // ADD PAYPAL FUNCTION AT THE VERY END
 // =====================
 // =====================
-// MANUAL PAYPAL FLOW (BETA VERSION)
+// MANUAL PAYPAL FLOW
 // =====================
 exports.createPayPalOrder = functions.https.onRequest(async (req, res) => {
   // Set CORS headers
@@ -1444,7 +1449,6 @@ exports.createPayPalOrder = functions.https.onRequest(async (req, res) => {
       planType: planType,
       currency: currency,
       isManual: true, // Flag for manual processing
-      note: "Manual payment processing for beta version",
     };
 
     console.log("✅ PayPal manual order created:", paypalData);
@@ -1459,3 +1463,14 @@ exports.createPayPalOrder = functions.https.onRequest(async (req, res) => {
 });
 
 // This should be the VERY LAST LINE of your index.js file
+
+// ============================================
+// EXPORT CLEANUP FUNCTIONS  // <-- ADD THIS
+// ============================================
+module.exports.cleanupOldReports = cleanup.cleanupOldReports;
+module.exports.cleanupImagePackages = cleanup.cleanupImagePackages;
+module.exports.cleanupInactiveUsers = cleanup.cleanupInactiveUsers;
+module.exports.progressiveCleanup = cleanup.progressiveCleanup;
+module.exports.cleanupExpiredSubscriptions =
+  cleanup.cleanupExpiredSubscriptions;
+module.exports.cleanupSummary = cleanup.cleanupSummary;

@@ -37,6 +37,7 @@ class SimpleAvatarUpload {
         blockedFilename: "Cannot upload: Filename contains prohibited word",
         blockedContent: "Cannot upload: Image contains prohibited content",
         accountBlocked: "Your account has been blocked due to violation",
+        sign_in_to_upload: "Please sign in to upload an avatar.",
       },
 
       vi: {
@@ -53,6 +54,7 @@ class SimpleAvatarUpload {
         blockedFilename: "Không thể tải lên: Tên file chứa từ bị cấm",
         blockedContent: "Không thể tải lên: Ảnh chứa nội dung bị cấm",
         accountBlocked: "Tài khoản của bạn đã bị khóa do vi phạm",
+        sign_in_to_upload: "Vui lòng đăng nhập để tải ảnh đại diện.",
       },
 
       zh: {
@@ -68,6 +70,7 @@ class SimpleAvatarUpload {
         blockedFilename: "无法上传：文件名包含禁止的词语",
         blockedContent: "无法上传：图像包含禁止的内容",
         accountBlocked: "您的帐户已被封锁",
+        sign_in_to_upload: "请登录以上传头像。",
       },
 
       es: {
@@ -88,6 +91,7 @@ class SimpleAvatarUpload {
         blockedContent:
           "No se puede subir: La imagen contiene contenido prohibido",
         accountBlocked: "Tu cuenta ha sido bloqueada",
+        sign_in_to_upload: "Inicia sesión para subir un avatar.",
       },
 
       hi: {
@@ -105,6 +109,7 @@ class SimpleAvatarUpload {
         blockedFilename: "अपलोड नहीं कर सकते: फ़ाइल नाम में प्रतिबंधित शब्द है",
         blockedContent: "अपलोड नहीं कर सकते: छवि में प्रतिबंधित सामग्री है",
         accountBlocked: "आपका खाता ब्लॉक कर दिया गया है",
+        sign_in_to_upload: "अवतार अपलोड करने के लिए कृपया साइन इन करें।",
       },
 
       ar: {
@@ -121,6 +126,7 @@ class SimpleAvatarUpload {
         blockedFilename: "لا يمكن الرفع: اسم الملف يحتوي على كلمة محظورة",
         blockedContent: "لا يمكن الرفع: الصورة تحتوي على محتوى محظور",
         accountBlocked: "تم حظر حسابك",
+        sign_in_to_upload: "يرجى تسجيل الدخول لتحميل الصورة الرمزية.",
       },
     };
 
@@ -185,7 +191,7 @@ class SimpleAvatarUpload {
         alert(this.getTranslation("premiumRequired"));
         window.open("./premium-iap.html", "_blank");
       } else if (permissions.reason === "not_logged_in") {
-        alert("Please sign in to upload an avatar.");
+        alert(this.getTranslation("sign_in_to_upload"));
       } else {
         alert(this.getTranslation("premiumRequired"));
         window.open("./premium-iap.html", "_blank");
@@ -431,7 +437,7 @@ class SimpleAvatarUpload {
           alert(this.getTranslation("premiumRequired"));
           window.open("./premium-iap.html", "_blank");
         } else if (permissions.reason === "not_logged_in") {
-          alert("Please sign in to upload an avatar.");
+          alert(this.getTranslation("sign_in_to_upload"));
         }
         e.target.value = "";
         return;
@@ -843,7 +849,16 @@ class SimpleAvatarUpload {
     }
 
     // ============================================
-    // STEP 3: SPONSORED CHECK
+    // STEP 3: OWNER CHECK
+    // ============================================
+    if (user.email === "thomasnguyen07@gmail.com") {
+      console.log("👑 App owner detected, proceeding with upload");
+      await this.uploadFile(file);
+      return;
+    }
+
+    // ============================================
+    // STEP 4: SPONSORED CHECK
     // ============================================
     const isSponsored =
       localStorage.getItem(`sponsored_${user.uid}`) === "true";
@@ -857,15 +872,6 @@ class SimpleAvatarUpload {
         ar: "هذا حساب برعاية. الصورة الرمزية ثابتة ولا يمكن تغييرها.",
       };
       alert(sponsoredMessages[lang] || sponsoredMessages.en);
-      return;
-    }
-
-    // ============================================
-    // STEP 4: OWNER CHECK
-    // ============================================
-    if (user.email === "thomasnguyen07@gmail.com") {
-      console.log("👑 App owner detected, proceeding with upload");
-      await this.uploadFile(file);
       return;
     }
 
@@ -958,7 +964,7 @@ class SimpleAvatarUpload {
         alert(this.getTranslation("premiumRequired"));
         window.open("./premium-iap.html", "_blank");
       } else if (permissions.reason === "not_logged_in") {
-        alert("Please sign in to upload an avatar.");
+        alert(this.getTranslation("sign_in_to_upload"));
       } else {
         alert(this.getTranslation("premiumRequired"));
         window.open("./premium-iap.html", "_blank");
@@ -1117,7 +1123,7 @@ class SimpleAvatarUpload {
         return true;
       }
 
-      // ✅ ADD THIS - STILL MISSING FROM YOUR CODE
+      // 2. SPONSORED USER CHECK
       const isSponsored = await this.checkIfSponsored(user.uid);
       if (isSponsored) {
         console.log("✅ Sponsored user detected - premium access granted");
@@ -1125,32 +1131,27 @@ class SimpleAvatarUpload {
         return true;
       }
 
-      // 2. CHECK LOCALSTORAGE CACHE (For incognito/offline)
+      // 3. CHECK LOCALSTORAGE CACHE
       const cachedPremium = localStorage.getItem(`premium_${user.uid}`);
       if (cachedPremium === "true") {
         console.log("✅ Using cached premium status from localStorage");
         return true;
       }
 
-      // 3. GET FIRESTORE INSTANCE - Use the CORRECT method
+      // 4. GET FIRESTORE INSTANCE
       let firestoreDb;
 
-      // Method A: Use db from window.fb (from firebase-loader.js)
       if (window.fb && window.fb.db) {
         console.log("📁 Using window.fb.db");
         firestoreDb = window.fb.db;
-      }
-      // Method B: Try to get it from firestore() function
-      else if (
+      } else if (
         window.fb &&
         window.fb.firestore &&
         typeof window.fb.firestore === "function"
       ) {
         console.log("📁 Using window.fb.firestore()");
         firestoreDb = window.fb.firestore();
-      }
-      // Method C: Last resort - check if firestore is already an object
-      else if (window.fb && window.fb.firestore && window.fb.firestore.db) {
+      } else if (window.fb && window.fb.firestore && window.fb.firestore.db) {
         console.log("📁 Using window.fb.firestore.db");
         firestoreDb = window.fb.firestore.db;
       } else {
@@ -1159,15 +1160,13 @@ class SimpleAvatarUpload {
         return false;
       }
 
-      // 4. QUERY USER DOCUMENT
-      let userData = null; // ← DECLARE HERE
+      // 5. QUERY USER DOCUMENT
+      let userData = null;
 
       try {
-        // Import the modular functions
         const { doc, getDoc } =
           await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
 
-        // Create document reference
         const userDocRef = doc(firestoreDb, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -1176,15 +1175,16 @@ class SimpleAvatarUpload {
           return false;
         }
 
-        userData = userDoc.data(); // ← ASSIGN HERE
+        userData = userDoc.data();
         console.log("User data:", userData);
       } catch (importError) {
         console.error("❌ Failed to import Firebase modules:", importError);
         return false;
       }
 
-      // 5. CHECK PREMIUM FLAGS - NOW userData IS DEFINED
+      // 6. CHECK PREMIUM FLAGS - UPDATED to include 'isPremium' from RevenueCat
       const isPremium =
+        userData?.isPremium === true || // ← ADDED for RevenueCat
         userData?.hasActiveSubscription === true ||
         userData?.isSubscribed === true ||
         userData?.premium === true ||
@@ -1192,7 +1192,6 @@ class SimpleAvatarUpload {
 
       if (isPremium) {
         console.log("✅ User has active premium subscription");
-        // Cache for future incognito sessions
         localStorage.setItem(`premium_${user.uid}`, "true");
         return true;
       }
@@ -1203,6 +1202,7 @@ class SimpleAvatarUpload {
       console.error("💥 Premium check error:", error);
 
       // On error, check localStorage as fallback
+      const user = window.fb?.auth?.currentUser;
       if (user) {
         const cached = localStorage.getItem(`premium_${user.uid}`);
         if (cached === "true") {

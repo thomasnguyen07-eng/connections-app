@@ -3470,3 +3470,82 @@ header *,
 .footer-content p {
     margin: 5px 0;
 }
+footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    color: #666;
+    border-top: 1px solid #eee;
+}
+/* ============================================
+   REPORT TYPE ICON BUTTONS
+   ============================================ */
+.report-type-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.type-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 12px 8px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.type-btn .type-icon {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.type-btn .type-label {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+/* Hover effect */
+.type-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Active/Selected state */
+.type-btn.active {
+  border-color: #4CAF50;
+  background: #e8f5e9;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  transform: scale(1.02);
+}
+
+/* Individual colors when selected */
+.type-btn[data-type="missing_person"].active {
+  border-color: #f44336;
+  background: #ffebee;
+}
+.type-btn[data-type="lost_item"].active {
+  border-color: #ff9800;
+  background: #fff3e0;
+}
+.type-btn[data-type="found_person"].active {
+  border-color: #4CAF50;
+  background: #e8f5e9;
+}
+.type-btn[data-type="found_item"].active {
+  border-color: #2196F3;
+  background: #e3f2fd;
+}
+.type-btn[data-type="event"].active {
+  border-color: #9C27B0;
+  background: #f3e5f5;
+}

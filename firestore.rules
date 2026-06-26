@@ -3,9 +3,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // 1. PUBLIC read for image packages (sharing)
     match /imagePackages/{packageId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
+  allow read: if true;  // Anyone can read shared packages
+  allow write: if request.auth != null;
+}
     
     // 2. Users: own data only + admin full access
     match /users/{userId} {
@@ -18,37 +18,30 @@ service cloud.firestore {
     
     // 3. Reports: community board with admin moderation
     match /reports/{reportId} {
-    allow read: if request.auth != null;
-    allow create: if request.auth != null;
-    allow update: if request.auth != null && 
-                  (request.auth.uid == resource.data.userId ||
-                   request.auth.token.email == 'thomasnguyen07@gmail.com');
-    // ✅ FIX DELETE PERMISSION
-    allow delete: if request.auth != null && 
-                  (request.auth.uid == resource.data.userId ||
-                   request.auth.token.email == 'thomasnguyen07@gmail.com');
-}
-    
-    // 4. Passcodes: secure passcode system for sponsored users
-    match /passcodes/{passcodeId} {
-      allow read: if true;
-      allow create: if request.auth != null && 
-                     request.resource.data.sponsorId == request.auth.uid;
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
       allow update: if request.auth != null && 
-                    (resource.data.sponsorId == request.auth.uid ||
-                     request.resource.data.isUsed == true);
-      allow delete: if false;
+                    (request.auth.uid == resource.data.userId ||
+                     request.auth.token.email == 'thomasnguyen07@gmail.com');
+      allow delete: if request.auth != null && 
+                    (request.auth.uid == resource.data.userId ||
+                     request.auth.token.email == 'thomasnguyen07@gmail.com');
     }
-    // NEW: Pass codes for complimentary access (owner generates)
-match /pass_codes/{codeId} {
-    allow read: if true;
-    allow write: if request.auth != null && request.auth.token.email == 'thomasnguyen07@gmail.com';
-    allow update: if request.auth != null;
-}
-    // ====== PAYMENT COLLECTIONS ======
-    // All payment types follow same security pattern
     
-    // 5. Premium Payments
+  // Pass codes for sponsored users
+match /pass_codes/{codeId} {
+  // Anyone can read (to check if code exists)
+  allow read: if true;
+  // Only admin can create passcodes
+  allow write: if request.auth != null && 
+               request.auth.token.email == 'thomasnguyen07@gmail.com';
+  // Any authenticated user can update (redeem) - ONE TIME USE
+  allow update: if request.auth != null;
+}  
+ 
+    // ====== PAYMENT COLLECTIONS ======
+    
+    // 6. Premium Payments
     match /premium_payments/{paymentId} {
       allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid;
@@ -59,7 +52,7 @@ match /pass_codes/{codeId} {
       allow delete: if false;
     }
     
-    // 6. PayPal Payments
+    // 7. PayPal Payments
     match /paypalPayments/{paymentId} {
       allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid;
@@ -70,7 +63,7 @@ match /pass_codes/{codeId} {
       allow delete: if false;
     }
     
-    // 7. QR Payments
+    // 8. QR Payments
     match /qrPayments/{paymentId} {
       allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid;
@@ -81,7 +74,7 @@ match /pass_codes/{codeId} {
       allow delete: if false;
     }
     
-    // 8. Momo Payments
+    // 9. Momo Payments
     match /momoPayments/{paymentId} {
       allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid;
@@ -92,7 +85,7 @@ match /pass_codes/{codeId} {
       allow delete: if false;
     }
     
-    // 9. Bank Payments
+    // 10. Bank Payments
     match /bankPayments/{paymentId} {
       allow create: if request.auth != null && 
                      request.resource.data.userId == request.auth.uid;
@@ -103,7 +96,7 @@ match /pass_codes/{codeId} {
       allow delete: if false;
     }
     
-    // 10. Bulk Orders
+    // 11. Bulk Orders
     match /bulkOrders/{orderId} {
       allow create: if request.auth != null && 
                      request.resource.data.sponsorId == request.auth.uid;
@@ -112,36 +105,37 @@ match /pass_codes/{codeId} {
       allow update, delete: if false;
     }
     
-    // 11. Premium Subscriptions
-    match /premium_subscriptions/{subscriptionId} {
-      allow create: if request.auth != null && 
-                     request.resource.data.userId == request.auth.uid;
-      allow read: if request.auth != null && 
-                   resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null && 
-                    resource.data.userId == request.auth.uid;
-      allow delete: if false;
-    }
+    // 12. Premium Subscriptions (RevenueCat integration)
+match /premium_subscriptions/{subscriptionId} {
+  // Admin can read all subscriptions
+  allow read: if request.auth != null && 
+               request.auth.token.email == 'thomasnguyen07@gmail.com';
+  
+  // Users can read/write their own subscriptions
+  allow create: if request.auth != null && 
+                 request.resource.data.userId == request.auth.uid;
+  allow read: if request.auth != null && 
+               resource.data.userId == request.auth.uid;
+  allow update: if request.auth != null && 
+                resource.data.userId == request.auth.uid;
+  allow delete: if false;
+}
     
     // ============================================
     // SECURITY & MODERATION COLLECTIONS
     // ============================================
     
-    // 12. Security Logs - Track security events
+    // 13. Security Logs - Track security events
     match /security_logs/{logId} {
-      // Anyone can create logs (for security tracking)
       allow create: if request.auth != null;
-      // Only admin can read logs
       allow read: if request.auth != null && 
                    request.auth.token.email == 'thomasnguyen07@gmail.com';
-      // No updates allowed (logs are immutable)
       allow update: if false;
-      // Admin can delete old logs
       allow delete: if request.auth != null && 
                     request.auth.token.email == 'thomasnguyen07@gmail.com';
     }
     
-    // 13. Mobile Logs - For debugging
+    // 14. Mobile Logs - For debugging
     match /mobile_logs/{logId} {
       allow create: if request.auth != null;
       allow read: if request.auth != null && 
@@ -151,7 +145,7 @@ match /pass_codes/{codeId} {
       allow update: if false;
     }
     
-    // 14. Blocked IPs - For IP banning
+    // 15. Blocked IPs - For IP banning
     match /blocked_ips/{ipId} {
       allow read: if request.auth != null && 
                    request.auth.token.email == 'thomasnguyen07@gmail.com';
@@ -159,27 +153,24 @@ match /pass_codes/{codeId} {
                     request.auth.token.email == 'thomasnguyen07@gmail.com';
     }
     
-    // 15. Cancellation Surveys - User feedback collection
+    // 16. Cancellation Surveys - User feedback collection
     match /cancellation_surveys/{surveyId} {
-      // Admin can read all surveys
       allow read: if request.auth != null && 
                    request.auth.token.email == 'thomasnguyen07@gmail.com';
-      // Any authenticated user can submit a survey
       allow create: if request.auth != null;
-      // No updates allowed (surveys are final)
       allow update: if false;
-      // Admin can delete surveys
       allow delete: if request.auth != null && 
                     request.auth.token.email == 'thomasnguyen07@gmail.com';
     }
 
+    // 17. Appeal Requests
     match /appeal_requests/{requestId} {
-    allow create: if request.auth != null;
-    allow read: if request.auth != null && 
-                 request.auth.token.email == 'thomasnguyen07@gmail.com';
-    allow update: if request.auth != null && 
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && 
                    request.auth.token.email == 'thomasnguyen07@gmail.com';
-}
+      allow update: if request.auth != null && 
+                     request.auth.token.email == 'thomasnguyen07@gmail.com';
+    }
     
     // ============================================
     // DEFAULT DENY ALL - KEEP AT THE END

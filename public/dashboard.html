@@ -208,17 +208,8 @@ console.log("🚀 App started - logging initialized");
   </div>
 </div>
   </div>
-
-  <!-- App Intro Section -->
-  <section id="app-intro" class="app-intro-section">
-    <p id="intro-text" class="intro-text"></p>
-  </section>
+  
 </header>
-
-    <!-- WARNING BANNER (Standardized) -->
-    <div class="warning-banner abuse-warning">
-      ⚠️ <span data-warning="fraud"></span> 🔄 <span data-warning="spam"></span>
-    </div>
 
     <div class="dashboard-container">
   <!-- Tabs (keep exactly as you have them now) -->
@@ -255,21 +246,38 @@ console.log("🚀 App started - logging initialized");
 
       <div id="new-report" class="tab-content active">
         <form id="report-form" novalidate>
-          <!-- Single Report Type Selector -->
+         
+           <!-- REPORT TYPE - ICON BUTTONS (Replaces dropdown) -->
     <div class="form-group">
-      <label for="report-type" data-translate="reportTypeLabel">Report Type*</label>
-      <select id="report-type" class="form-control" required>
-  <option value="" data-translate="reportTypes.select">-- Select Type --</option>
-  <option value="missing_person" data-translate="reportTypes.missing_person">🚨 Missing Person</option>
-  <option value="lost_item" data-translate="reportTypes.lost_item">🔍 Lost Item</option>
-  <option value="found_person" data-translate="reportTypes.found_person">🙏 Found Person</option>
-  <option value="found_item" data-translate="reportTypes.found_item">🔄 Found Item</option>
-  <option value="event" data-translate="reportTypes.event">🎉 Event</option>
-</select>
+      <label data-translate="reportTypeLabel">Report Type</label>
+      <div class="report-type-buttons">
+  <button type="button" class="type-btn" data-type="missing_person" onclick="selectReportType('missing_person')">
+    <span class="type-icon">🚨</span>
+    <span class="type-label">Missing Person</span>
+  </button>
+  <button type="button" class="type-btn" data-type="lost_item" onclick="selectReportType('lost_item')">
+    <span class="type-icon">🔍</span>
+    <span class="type-label">Lost Item</span>
+  </button>
+  <button type="button" class="type-btn" data-type="found_person" onclick="selectReportType('found_person')">
+    <span class="type-icon">🙏</span>
+    <span class="type-label">Found Person</span>
+  </button>
+  <button type="button" class="type-btn" data-type="found_item" onclick="selectReportType('found_item')">
+    <span class="type-icon">🔄</span>
+    <span class="type-label">Found Item</span>
+  </button>
+  <button type="button" class="type-btn" data-type="event" onclick="selectReportType('event')">
+    <span class="type-icon">🎉</span>
+    <span class="type-label">Event</span>
+  </button>
+</div>
+      <!-- Hidden input to store selected type (for form submission) -->
+      <input type="hidden" id="report-type" value="">
     </div>
 
           <div class="form-group">
-            <label for="report-title" data-translate="titleLabel">Title:</label>
+            <label for="report-title" data-translate="titleLabel"></label>
             <input
               type="text"
               id="report-title"
@@ -279,16 +287,12 @@ console.log("🚀 App started - logging initialized");
           </div>
 
           <div class="form-group">
-            <label for="report-description" data-translate="descriptionLabel"
-              >Description:</label
-            >
+            <label for="report-description" data-translate="descriptionLabel"></label>
             <textarea id="report-description" required></textarea>
           </div>
 
           <div class="form-group">
-            <label for="location-text-input" data-translate="locationLabel"
-              >Location Details:</label
-            >
+            <label for="location-text-input" data-translate="locationLabel"></label>
             <input
               type="text"
               id="location-text-input"
@@ -300,13 +304,7 @@ console.log("🚀 App started - logging initialized");
               id="address-input"
               placeholder="Search address"
             />
-            <button
-              type="button"
-              onclick="findAddress()"
-              data-translate="buttons.showOnMap"
-            >
-              Show on Map
-            </button>
+            <button type="button" id="showOnMapBtn" onclick="findAddress()">Show on Map</button>
             <button
               type="button"
               onclick="useCurrentLocation()"
@@ -322,9 +320,7 @@ console.log("🚀 App started - logging initialized");
           <div id="map"></div>
 
           <div class="form-group">
-            <label for="reporter-contact" data-translate="contactLabel"
-              >Your Contact:</label
-            >
+            <label for="reporter-contact" data-translate="contactLabel"></label>
             <input type="text" id="reporter-contact" required />
           </div>
 
@@ -341,12 +337,6 @@ console.log("🚀 App started - logging initialized");
           <button type="submit" data-translate="buttons.submit">
             Submit Report
           </button>
-
-          <!-- PRIVACY WARNING (Standardized) -->
-          <div class="warning-banner privacy-warning">
-            🔒 <span data-warning="privacy"></span> 📸
-            <span data-warning="images"></span>
-          </div>
 
           <div id="share-section" style="display: none">
             <h3 id="share-subheading">Share This Report</h3>
@@ -435,12 +425,7 @@ console.log("🚀 App started - logging initialized");
       </div>
     </div>
 
-    <!-- LEGAL WARNINGS (Standardized) -->
-    <div class="legal-warnings">
-      📜 <span data-warning="tos"></span> 👮 <span data-warning="legal"></span>
-    </div>
-
-     // Admin Panel - Only visible to app owner
+    // Admin Panel - Only visible to app owner
 <!-- In dashboard.html, find your admin panel div and add this button -->
 <div id="adminPanel" style="display: none; position: fixed; bottom: 20px; right: 120px; z-index: 9999;">
     <button onclick="toggleAdminPanel()" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
@@ -616,19 +601,21 @@ async function checkLogsDirectly() {
       window.firebase = { __esModule: true };
     </script>
 
-<div id="ownerPassPanel" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-    <h3>👑 Generate Complimentary Pass Code</h3>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <input type="email" id="passEmail" placeholder="Friend's email" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-        <select id="passPlan" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+<!-- Bulk Pass Code Panel (Owner Only) -->
+<div id="bulkPassPanel" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h3>👑 Generate Bulk Pass Codes (Organizations)</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <input type="email" id="bulkEmail" placeholder="Organization email" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <input type="number" id="bulkCount" placeholder="Number of codes" min="1" max="1000" value="10" style="width: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <select id="bulkPlan" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             <option value="monthly">1 Month</option>
             <option value="three_months">3 Months</option>
             <option value="six_months">6 Months</option>
             <option value="yearly">1 Year</option>
         </select>
-        <button id="generatePassBtn" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Generate</button>
+        <button id="generateBulkBtn" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 4px;">Generate Bulk Codes</button>
     </div>
-    <div id="passResult" style="margin-top: 10px;"></div>
+    <div id="bulkResult" style="margin-top: 10px; max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
 </div>
 
     <script type="module">
@@ -681,40 +668,6 @@ async function checkLogsDirectly() {
       // Make available globally
       window.fb = { auth, db, storage };
 
-      // ============================================
-      // OWNER PANEL - COMPLIMENTARY PASS CODES
-      // ============================================
-
-      // Function to generate pass code
-      window.generatePassCode = async function(email, plan) {
-        const user = auth.currentUser;
-        if (!user || user.email !== "thomasnguyen07@gmail.com") {
-          console.error("Unauthorized");
-          return null;
-        }
-        
-        const code = Math.random().toString(36).substring(2, 12).toUpperCase();
-        const expiryDate = new Date();
-        switch(plan) {
-          case 'monthly': expiryDate.setMonth(expiryDate.getMonth() + 1); break;
-          case 'three_months': expiryDate.setMonth(expiryDate.getMonth() + 3); break;
-          case 'six_months': expiryDate.setMonth(expiryDate.getMonth() + 6); break;
-          case 'yearly': expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
-        }
-        
-        await setDoc(doc(db, "pass_codes", code), {
-          code: code,
-          recipientEmail: email,
-          plan: plan,
-          used: false,
-          createdBy: user.uid,
-          createdAt: new Date(),
-          expiresAt: expiryDate
-        });
-        
-        return code;
-      };
-
       // Show owner panel after page loads
       setTimeout(() => {
         const panel = document.getElementById("ownerPassPanel");
@@ -722,35 +675,144 @@ async function checkLogsDirectly() {
           panel.style.display = "block";
         }
       }, 1000);
+  
+// Generate single pass code (Owner only)
+const generateBtn = document.getElementById("generatePassBtn");
+if (generateBtn) {
+  generateBtn.addEventListener("click", async () => {
+    const plan = document.getElementById("passPlan")?.value;
+    
+    const user = window.fb?.auth?.currentUser;
+    if (!user || user.email !== "thomasnguyen07@gmail.com") {
+      alert("Unauthorized");
+      return;
+    }
+    
+    // IMPORT modular SDK functions
+    const { collection, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
+    
+    // Get Firestore instance
+    const db = window.fb.firestore.db;  // Note: .db is the actual Firestore instance
+    
+    if (!db) {
+      alert("Firestore not available");
+      return;
+    }
+    
+    const code = Math.random().toString(36).substring(2, 12).toUpperCase();
+    const expiryDate = new Date();
+    switch(plan) {
+      case 'monthly': expiryDate.setMonth(expiryDate.getMonth() + 1); break;
+      case 'three_months': expiryDate.setMonth(expiryDate.getMonth() + 3); break;
+      case 'six_months': expiryDate.setMonth(expiryDate.getMonth() + 6); break;
+      case 'yearly': expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
+    }
+    
+    // Create document with custom ID using modular SDK
+    const passcodesRef = collection(db, "pass_codes");
+    await setDoc(doc(passcodesRef, code), {
+      code: code,
+      plan: plan,
+      used: false,
+      createdBy: user.uid,
+      createdAt: new Date(),
+      expiresAt: expiryDate,
+      isBulk: false
+    });
+    
+    const resultDiv = document.getElementById("passResult");
+    if (resultDiv) {
+      resultDiv.innerHTML = `
+        ✅ Pass Code Created!<br>
+        <strong style="font-size: 1.2rem;">${code}</strong><br>
+        Give this code to your user. They can redeem it with any email address.
+      `;
+      document.getElementById("passEmail").value = "";
+    }
+  });
+}
 
-      // Generate button handler (will work after panel is visible)
-      document.addEventListener('DOMContentLoaded', () => {
-        const generateBtn = document.getElementById("generatePassBtn");
-        if (generateBtn) {
-          generateBtn.addEventListener("click", async () => {
-            const email = document.getElementById("passEmail")?.value;
-            const plan = document.getElementById("passPlan")?.value;
-            
-            if (!email) {
-              alert("Please enter recipient email");
-              return;
-            }
-            
-            const code = await window.generatePassCode(email, plan);
-            const resultDiv = document.getElementById("passResult");
-            if (code && resultDiv) {
-              resultDiv.innerHTML = `
-                ✅ Pass Code Created!<br>
-                <strong style="font-size: 1.2rem;">${code}</strong><br>
-                Give this code to ${email}.
-              `;
-              document.getElementById("passEmail").value = "";
-            } else if (resultDiv) {
-              resultDiv.innerHTML = "❌ Failed to create pass code";
-            }
-          });
-        }
+      // ============================================
+// BULK PASS CODE GENERATION (Owner only)
+// ============================================
+
+// Show bulk panel for owner
+onAuthStateChanged(auth, (user) => {
+    const bulkPanel = document.getElementById("bulkPassPanel");
+    if (bulkPanel && user && user.email === "thomasnguyen07@gmail.com") {
+        bulkPanel.style.display = "block";
+    }
+});
+
+// ============================================
+// GENERATE BULK PASS CODES (USING MODULAR SDK)
+// ============================================
+// Generate bulk pass codes
+const generateBulkBtn = document.getElementById("generateBulkBtn");
+if (generateBulkBtn) {
+  generateBulkBtn.addEventListener("click", async () => {
+    const count = parseInt(document.getElementById("bulkCount")?.value) || 1;
+    const plan = document.getElementById("bulkPlan")?.value;
+    const resultDiv = document.getElementById("bulkResult");
+    
+    if (count < 1 || count > 1000) {
+      alert("Please enter a number between 1 and 1000");
+      return;
+    }
+    
+    const user = window.fb?.auth?.currentUser;
+    if (!user || user.email !== "thomasnguyen07@gmail.com") {
+      alert("Unauthorized");
+      return;
+    }
+    
+    // IMPORT modular SDK functions
+    const { collection, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
+    
+    // Get Firestore instance
+    const db = window.fb.firestore.db;  // Note: .db is the actual Firestore instance
+    
+    if (!db) {
+      alert("Firestore not available");
+      return;
+    }
+    
+    const codes = [];
+    const expiryDate = new Date();
+    switch(plan) {
+      case 'monthly': expiryDate.setMonth(expiryDate.getMonth() + 1); break;
+      case 'three_months': expiryDate.setMonth(expiryDate.getMonth() + 3); break;
+      case 'six_months': expiryDate.setMonth(expiryDate.getMonth() + 6); break;
+      case 'yearly': expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
+    }
+    
+    resultDiv.innerHTML = "⏳ Generating codes...";
+    
+    const passcodesRef = collection(db, "pass_codes");
+    
+    for (let i = 0; i < count; i++) {
+      const code = Math.random().toString(36).substring(2, 12).toUpperCase();
+      codes.push(code);
+      
+      await setDoc(doc(passcodesRef, code), {
+        code: code,
+        plan: plan,
+        used: false,
+        createdBy: user.uid,
+        createdAt: new Date(),
+        expiresAt: expiryDate,
+        isBulk: true,
+        batchId: Date.now()
       });
+    }
+    
+    resultDiv.innerHTML = `
+      ✅ Generated ${codes.length} pass codes<br>
+      <strong>Codes (can be used by ANY email, one-time use):</strong><br>
+      ${codes.join('<br>')}
+    `;
+  });
+}
     
   // ============================================
   // AUTO CACHE CLEANUP
@@ -813,15 +875,68 @@ async function checkLogsDirectly() {
   });
           // Logout Handler - ULTRA-PROTECTED from ALL crawlers
     // Logout Handler - DISABLED REDIRECT for Facebook debugging
+
+// ============================================
+// SAVE FORM DATA TO LOCALSTORAGE
+// ============================================
+
+function saveFormData() {
+    try {
+        const data = {
+            title: document.getElementById('report-title')?.value || '',
+            description: document.getElementById('report-description')?.value || '',
+            location: document.getElementById('location-text-input')?.value || '',
+            contact: document.getElementById('reporter-contact')?.value || '',
+        };
+        localStorage.setItem('reportFormData', JSON.stringify(data));
+        console.log("💾 Form data saved");
+    } catch (e) {
+        console.log("⚠️ Error saving form data:", e);
+    }
+}
+
+function clearSavedFormData() {
+    localStorage.removeItem('reportFormData');
+    console.log("🗑️ Form data cleared");
+}
+
+// ============================================
+// LOGOUT CONFIRMATION
+// ============================================
+
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
+    logoutBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        console.log("🚪 Logout button clicked");
+
+        // ✅ Step 1: Save form data before showing popup
+        saveFormData();
+
+        // 🔒 Step 2: Show confirmation dialog
+        const lang = localStorage.getItem("appLanguage") || localStorage.getItem("userLanguage") || "en";
+        const confirmMessages = {
+            en: "Are you sure you want to log out? Please be sure to save your report before logging out.",
+            vi: "Bạn có chắc chắn muốn đăng xuất? Vui lòng lưu báo cáo của bạn trước khi đăng xuất.",
+            zh: "您确定要退出吗？请确保在退出前保存您的报告。",
+            es: "¿Estás seguro de que quieres cerrar sesión? Asegúrate de guardar tu informe antes de cerrar sesión.",
+            hi: "क्या आप वाकई लॉगआउट करना चाहते हैं? कृपया लॉगआउट करने से पहले अपनी रिपोर्ट सहेज लें।",
+            ar: "هل أنت متأكد من أنك تريد تسجيل الخروج؟ يرجى التأكد من حفظ تقريرك قبل تسجيل الخروج."
+        };
+        const confirmMessage = confirmMessages[lang] || confirmMessages.en;
+
+        if (!confirm(confirmMessage)) {
+            console.log("❌ Logout cancelled by user");
+            return;
+        }
+
         try {
-            // Save current language before sign out
+            localStorage.removeItem('reportFormData');
+            console.log("🗑️ Form data cleared on logout");
+
             const currentLang = localStorage.getItem("appLanguage") || localStorage.getItem("userLanguage") || "en";
-            localStorage.setItem("preSignoutLanguage", currentLang);
             console.log("📝 Saved language before sign out:", currentLang);
-            
+
             await window.fb.auth.signOut();
             window.location.href = "/index.html";
         } catch (error) {
@@ -829,6 +944,7 @@ if (logoutBtn) {
         }
     });
 }
+
 
       // Map Initialization (Keep your existing)
       function initMap() {
@@ -851,7 +967,7 @@ if (logoutBtn) {
 
     <!-- Load Scripts (Keep your existing order) -->
     <!-- Firebase Loader (MUST COME FIRST) -->
-    <script type="module" src="./js/firebase-loader.js"></script>
+<script type="module" src="./js/firebase-loader.js"></script>
 
 <!-- DEBUG: Check what firebase-loader.js provides -->
 <script>
@@ -879,34 +995,44 @@ setTimeout(() => {
 </script>
 
  <!-- Footer -->
-    <footer class="app-footer">
-        <div class="footer-content">
-            <p>© 2026 Connections. All rights reserved.</p>
-            <p>📧 Support: <a href="mailto:support@connectionsfinder.com">support@connectionsfinder.com</a></p>
-        </div>
-    </footer>
+    <footer>
+      <!-- COMPACT WARNING - ONE LINE (Replaces all old warnings) -->
+<div class="warning-banner compact-warning" style="font-size: 12px; color: #666; padding: 6px 12px; background: #f8f9fa; border-radius: 4px; margin: 5px 0; border-left: 3px solid #ffc107;">
+  <span id="compactWarningText">Loading...</span>
+</div>  
+    <p>
+        &copy; 2026 Connections App.
+        <span id="footerCopyright">All rights reserved.</span>
+    </p>
+    <p>
+        <span id="supportLabel">📧 Support:</span>
+<a href="#" onclick="openContactModal(); return false;" style="color: #4267b2; text-decoration: none;">support@connectionsfinder.com</a>
+    </p>
+</footer>
 
-<script src="./js/premium-iap.js"></script>
+<script src="./js/signedout-translations.js"></script>
 
-<script src="./js/sightengine.js"></script>
-
-    <!-- Make sure this is included AFTER firebase-loader.js -->
+<!-- Make sure this is included AFTER firebase-loader.js -->
 <script src="./js/avatar-upload.js"></script>
 
-    <!-- Other dependencies -->
-    <script src="./js/language-switcher.js"></script>
-    <script src="./js/sharing.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- NEW: Load the image compression library and our compressor code -->
-<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
 <script src="./js/image-compressor.js"></script> <!-- Add this line -->
 
 <!-- Now load storage.js, which uses the function from the file above -->
 <script type="module" src="./js/storage.js"></script>
 
+<!-- Other dependencies -->
+<script src="./js/language-switcher.js"></script>
+<script src="./js/sharing.js"></script>
+
+<script src="./js/sightengine.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- NEW: Load the image compression library and our compressor code -->
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.0/dist/browser-image-compression.js"></script>
+
     <!-- Main app code (loads last) -->
-    <script src="./js/reports.js" defer></script>
+<script src="./js/reports.js" defer></script>
 
     <script>
       // Initialize empty map
@@ -966,7 +1092,7 @@ document.getElementById('whatsapp-share').addEventListener('click', async functi
   }
 
   // 2. Get language
-  const lang = localStorage.getItem("userLanguage") || "en";
+  const lang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
 
   // ============================================
 // ✅ ADD WHATSAPP NOTICE TRANSLATIONS HERE
@@ -1123,239 +1249,239 @@ setTimeout(() => {
 }, 1000);
 </script>
 
+
 <script>
 // ============================================
-// SIGNED-OUT TRANSLATIONS ONLY
-// (Does NOT interfere with signed-in experience)
+// SINGLE UNIFIED TRANSLATION SCRIPT
 // ============================================
 (function() {
-    // Check if user is signed in
-    const isSignedIn = !!(window.fb?.auth?.currentUser);
-    
-    // Only apply for signed-out users
-    if (isSignedIn) {
-        console.log("✅ User signed in - using main translation system");
-        return;
-    }
-    
-    console.log("🌐 Applying signed-out translations");
-    
-    const lang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
-    
-    const signedOutTranslations = {
-        en: {
-            shareHeading: "Share This Report",
-            dashboard: "Dashboard",
-            useMyLocation: "Use My Location",
-            chooseFiles: "Choose files (max 5)",
-            titlePlaceholder: "e.g. Missing boy, Lost wallet",
-            locationPlaceholder: "Specific place",
-            addressPlaceholder: "Search address",
-            submitReport: "Submit Report",
-            saveReport: "Save Report",
-            newReport: "New Report",
-            savedReports: "Saved Reports"
-        },
-        vi: {
-            shareHeading: "Chia sẻ báo cáo này",
-            dashboard: "Bảng điều khiển",
-            useMyLocation: "Dùng vị trí của tôi",
-            chooseFiles: "Chọn tệp (tối đa 5)",
-            titlePlaceholder: "vd. Bé trai mất tích, Ví bị mất",
-            locationPlaceholder: "Địa điểm cụ thể",
-            addressPlaceholder: "Tìm kiếm địa chỉ",
-            submitReport: "Gửi báo cáo",
-            saveReport: "Lưu báo cáo",
-            newReport: "Tin Nhắn Mới",
-            savedReports: "Tin Nhắn Đã Lưu"
-        },
-        zh: {
-            shareHeading: "分享此报告",
-            dashboard: "仪表板",
-            useMyLocation: "使用我的位置",
-            chooseFiles: "选择文件（最多5个）",
-            titlePlaceholder: "例如：失踪男孩，丢失钱包",
-            locationPlaceholder: "具体地点",
-            addressPlaceholder: "搜索地址",
-            submitReport: "提交报告",
-            saveReport: "保存报告",
-            newReport: "新报告",
-            savedReports: "已保存报告"
-        },
-        es: {
-            shareHeading: "Compartir este informe",
-            dashboard: "Tablero",
-            useMyLocation: "Usar mi ubicación",
-            chooseFiles: "Elegir archivos (máx 5)",
-            titlePlaceholder: "Ej: Niño desaparecido, Cartera perdida",
-            locationPlaceholder: "Lugar específico",
-            addressPlaceholder: "Buscar dirección",
-            submitReport: "Enviar informe",
-            saveReport: "Guardar informe",
-            newReport: "Nuevo Informe",
-            savedReports: "Informes Guardados"
-        },
-        hi: {
-            shareHeading: "यह रिपोर्ट साझा करें",
-            dashboard: "डैशबोर्ड",
-            useMyLocation: "मेरा स्थान उपयोग करें",
-            chooseFiles: "फ़ाइलें चुनें (अधिकतम 5)",
-            titlePlaceholder: "जैसे: लापता लड़का, खोया हुआ बटुआ",
-            locationPlaceholder: "विशिष्ट स्थान",
-            addressPlaceholder: "पता खोजें",
-            submitReport: "रिपोर्ट सबमिट करें",
-            saveReport: "रिपोर्ट सहेजें",
-            newReport: "नई रिपोर्ट",
-            savedReports: "सहेजी गई रिपोर्टें"
-        },
-        ar: {
-            shareHeading: "مشاركة هذا التقرير",
-            dashboard: "لوحة التحكم",
-            useMyLocation: "استخدم موقعي",
-            chooseFiles: "اختر الملفات (حد أقصى 5)",
-            titlePlaceholder: "مثال: فتى مفقود، محفظة ضائعة",
-            locationPlaceholder: "مكان محدد",
-            addressPlaceholder: "ابحث عن العنوان",
-            submitReport: "إرسال التقرير",
-            saveReport: "حفظ التقرير",
-            newReport: "تقرير جديد",
-            savedReports: "التقارير المحفوظة"
+    function initTranslations() {
+        const user = window.fb?.auth?.currentUser;
+        const lang = localStorage.getItem("appLanguage") || "en";
+        
+        if (user && typeof setLanguage === "function") {
+            console.log("🌐 Signed in - applying translations via setLanguage");
+            setLanguage(lang);
+        } else if (!user && typeof window.applySignedOutTranslations === "function") {
+            console.log("🌐 Signed out - applying signed-out translations");
+            window.applySignedOutTranslations();
         }
-    };
-    
-    const t = signedOutTranslations[lang] || signedOutTranslations.en;
-    
-    // Update elements only if they exist (don't break signed-in view)
-    const shareHeading = document.getElementById("share-subheading");
-    if (shareHeading && shareHeading.textContent !== t.shareHeading) shareHeading.textContent = t.shareHeading;
-    
-    const dashboardBtn = document.querySelector("#floating-dashboard-btn .back-text");
-    if (dashboardBtn && dashboardBtn.textContent !== t.dashboard) dashboardBtn.textContent = t.dashboard;
-    
-    const locationBtn = document.querySelector('[onclick*="useCurrentLocation"] span');
-    if (locationBtn && locationBtn.textContent !== t.useMyLocation) locationBtn.textContent = t.useMyLocation;
-    
-    const fileLabel = document.querySelector(".file-input-text");
-    if (fileLabel && fileLabel.textContent !== t.chooseFiles) fileLabel.textContent = t.chooseFiles;
-    
-    const titleInput = document.getElementById("report-title");
-    if (titleInput && titleInput.placeholder !== t.titlePlaceholder) titleInput.placeholder = t.titlePlaceholder;
-    
-    const locationInput = document.getElementById("location-text-input");
-    if (locationInput && locationInput.placeholder !== t.locationPlaceholder) locationInput.placeholder = t.locationPlaceholder;
-    
-    const addressInput = document.getElementById("address-input");
-    if (addressInput && addressInput.placeholder !== t.addressPlaceholder) addressInput.placeholder = t.addressPlaceholder;
-    
-    const submitBtn = document.querySelector('button[type="submit"]');
-    if (submitBtn && submitBtn.textContent !== t.submitReport) submitBtn.textContent = t.submitReport;
-    
-    const saveBtn = document.getElementById("save-report-btn");
-    if (saveBtn) {
-        const span = saveBtn.querySelector('span');
-        if (span && span.textContent !== t.saveReport) span.textContent = t.saveReport;
     }
     
-    const newReportTab = document.querySelector('[data-tab="new-report"]');
-    if (newReportTab) {
-        const icon = '<i class="fas fa-plus"></i> ';
-        if (newReportTab.innerHTML !== icon + t.newReport) newReportTab.innerHTML = icon + t.newReport;
+    // Wait for Firebase
+    let attempts = 0;
+    function waitForFirebase() {
+        attempts++;
+        if (window.fb?.auth) {
+            setTimeout(initTranslations, 200);
+        } else if (attempts < 20) {
+            setTimeout(waitForFirebase, 200);
+        } else {
+            console.log("⚠️ Firebase timeout, using fallback");
+            setTimeout(initTranslations, 200);
+        }
     }
     
-    const savedReportsTab = document.querySelector('[data-tab="saved-reports"]');
-    if (savedReportsTab) {
-        const icon = '<i class="fas fa-save"></i> ';
-        if (savedReportsTab.innerHTML !== icon + t.savedReports) savedReportsTab.innerHTML = icon + t.savedReports;
-    }
-    
-    console.log("✅ Signed-out translations applied for:", lang);
+    waitForFirebase();
 })();
 </script>
 
+<!-- ============================================ -->
+<!-- CONTACT MODAL - ALL EMAIL PROVIDERS -->
+<!-- ============================================ -->
+<div id="contactModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10001; max-width: 400px; width: 90%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <div style="background: linear-gradient(135deg, #4267b2, #365899); padding: 20px; border-radius: 16px 16px 0 0; color: white;">
+        <h3 style="margin: 0; font-size: 20px;">📧 Contact Support</h3>
+        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">We're here to help!</p>
+    </div>
+    <div style="padding: 20px;">
+        <p style="margin: 0 0 15px; color: #666; font-size: 14px; text-align: center;">
+            Email us at: <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
+        </p>
+        
+        <!-- Copy Email Button -->
+        <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            📋 Copy Email Address
+        </button>
+        
+        <!-- Gmail Button -->
+        <button id="contactGmailBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #ea4335; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            🌐 Compose in Gmail
+        </button>
+        
+        <!-- Outlook Button -->
+        <button id="contactOutlookBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #0078d4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            🌐 Compose in Outlook
+        </button>
+        
+        <!-- Yahoo Button -->
+        <button id="contactYahooBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #7b0099; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            🌐 Compose in Yahoo Mail
+        </button>
+        
+        <!-- Cancel Button -->
+        <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            ✖️ Cancel
+        </button>
+    </div>
+    <div style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
+        <p style="margin: 0; font-size: 12px; color: #999; text-align: center;">
+            Response within 24-48 hours
+        </p>
+    </div>
+</div>
+
+<div id="modalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000;" onclick="closeContactModal()"></div>
+
 <script>
-// Apply translations for signed-out users
-(function() {
-    const lang = localStorage.getItem("appLanguage") || localStorage.getItem("userLanguage") || "en";
-    console.log("🌐 Applying guest translations for:", lang);
+// ============================================
+// CONTACT MODAL FUNCTIONS - ALL PROVIDERS (FIXED YAHOO)
+// ============================================
+
+function openContactModal() {
+    document.getElementById('contactModal').style.display = 'block';
+    document.getElementById('modalOverlay').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeContactModal() {
+    document.getElementById('contactModal').style.display = 'none';
+    document.getElementById('modalOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function copyEmailToClipboard() {
+    const email = "support@connectionsfinder.com";
+    navigator.clipboard.writeText(email).then(() => {
+        const copyBtn = document.getElementById('contactCopyBtn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✅ Copied!';
+        copyBtn.style.background = '#218838';
+        setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+            copyBtn.style.background = '#28a745';
+        }, 2000);
+    }).catch(() => {
+        alert('Email: support@connectionsfinder.com');
+    });
+}
+
+function openSupportGmail() {
+    const email = "support@connectionsfinder.com";
+    const subject = encodeURIComponent("Connections App Support Request");
+    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, '_blank');
+    closeContactModal();
+}
+
+function openOutlook() {
+    const email = "support@connectionsfinder.com";
+    const subject = encodeURIComponent("Connections App Support Request");
+    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+    const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${email}&subject=${subject}&body=${body}`;
+    window.open(outlookUrl, '_blank');
+    closeContactModal();
+}
+
+function openYahoo() {
+    const email = "support@connectionsfinder.com";
+    const subject = encodeURIComponent("Connections App Support Request");
+    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+    // FIXED: Correct Yahoo Mail compose URL
+    const yahooUrl = `https://compose.mail.yahoo.com/?to=${email}&subject=${subject}&body=${body}`;
+    window.open(yahooUrl, '_blank');
+    closeContactModal();
+}
+
+// Set up event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const copyBtn = document.getElementById('contactCopyBtn');
+    const gmailBtn = document.getElementById('contactGmailBtn');
+    const outlookBtn = document.getElementById('contactOutlookBtn');
+    const yahooBtn = document.getElementById('contactYahooBtn');
+    const closeBtn = document.getElementById('contactCloseBtn');
+    const overlay = document.getElementById('modalOverlay');
     
-    // Simple translations for guest view
-    const guestTexts = {
-        en: {
-            newReport: "New Report",
-            savedReports: "Saved Reports",
-            submit: "Submit Report",
-            shareHeading: "Share This Report",
-            saveReport: "Save Report",
-            dashboard: "Dashboard"
-        },
-        vi: {
-            newReport: "Tin Nhắn Mới",
-            savedReports: "Tin Nhắn Đã Lưu",
-            submit: "Gửi báo cáo",
-            shareHeading: "Chia sẻ báo cáo này",
-            saveReport: "Lưu báo cáo",
-            dashboard: "Bảng điều khiển"
-        },
-        zh: {
-            newReport: "新报告",
-            savedReports: "已保存报告",
-            submit: "提交报告",
-            shareHeading: "分享此报告",
-            saveReport: "保存报告",
-            dashboard: "仪表板"
-        },
-        es: {
-            newReport: "Nuevo Informe",
-            savedReports: "Informes Guardados",
-            submit: "Enviar informe",
-            shareHeading: "Compartir este informe",
-            saveReport: "Guardar informe",
-            dashboard: "Tablero"
-        },
-        hi: {
-            newReport: "नई रिपोर्ट",
-            savedReports: "सहेजी गई रिपोर्टें",
-            submit: "रिपोर्ट सबमिट करें",
-            shareHeading: "यह रिपोर्ट साझा करें",
-            saveReport: "रिपोर्ट सहेजें",
-            dashboard: "डैशबोर्ड"
-        },
-        ar: {
-            newReport: "تقرير جديد",
-            savedReports: "التقارير المحفوظة",
-            submit: "إرسال التقرير",
-            shareHeading: "مشاركة هذا التقرير",
-            saveReport: "حفظ التقرير",
-            dashboard: "لوحة التحكم"
-        }
-    };
-    
-    const t = guestTexts[lang] || guestTexts.en;
-    
-    // Update tab buttons
-    const newReportTab = document.querySelector('[data-tab="new-report"]');
-    const savedReportsTab = document.querySelector('[data-tab="saved-reports"]');
-    if (newReportTab) newReportTab.innerHTML = '<i class="fas fa-plus"></i> ' + t.newReport;
-    if (savedReportsTab) savedReportsTab.innerHTML = '<i class="fas fa-save"></i> ' + t.savedReports;
-    
-    // Update submit button
-    const submitBtn = document.querySelector('button[type="submit"]');
-    if (submitBtn) submitBtn.textContent = t.submit;
-    
-    // Update share heading
-    const shareHeading = document.getElementById("share-subheading");
-    if (shareHeading) shareHeading.textContent = t.shareHeading;
-    
-    // Update save button
-    const saveBtn = document.getElementById("save-report-btn");
-    if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> ' + t.saveReport;
-    
-    // Update dashboard button
-    const dashboardBtn = document.querySelector("#floating-dashboard-btn .back-text");
-    if (dashboardBtn) dashboardBtn.textContent = t.dashboard;
-})();
+    if (copyBtn) copyBtn.onclick = copyEmailToClipboard;
+    if (gmailBtn) gmailBtn.onclick = openSupportGmail;
+    if (outlookBtn) outlookBtn.onclick = openOutlook;
+    if (yahooBtn) yahooBtn.onclick = openYahoo;
+    if (closeBtn) closeBtn.onclick = closeContactModal;
+    if (overlay) overlay.onclick = closeContactModal;
+});
+
+// Make functions global
+window.openContactModal = openContactModal;
+window.closeContactModal = closeContactModal;
+window.copyEmailToClipboard = copyEmailToClipboard;
+window.openSupportGmail = openSupportGmail;
+window.openOutlook = openOutlook;
+window.openYahoo = openYahoo;
 </script>
 
+<script>
+// Load compact warning from TRANSLATION_PATCH
+function loadCompactWarning() {
+  try {
+    // Get current language
+    const lang = localStorage.getItem('userLanguage') || 'en';
+    
+    // Get translation from TRANSLATION_PATCH
+    let warningText = 'By using this app, you agree to our Terms & Privacy Policy. No sensitive info. Reports auto-delete after 180 days.';
+    
+    if (typeof TRANSLATION_PATCH !== 'undefined' && TRANSLATION_PATCH?.compact_warning) {
+      warningText = TRANSLATION_PATCH.compact_warning[lang] || 
+                    TRANSLATION_PATCH.compact_warning.en || 
+                    warningText;
+    }
+    
+    // Display it
+    document.getElementById('compactWarningText').innerHTML = warningText;
+  } catch (e) {
+    console.log('Warning load error:', e);
+    // Fallback
+    document.getElementById('compactWarningText').innerHTML = 'By using this app, you agree to our Terms & Privacy Policy. No sensitive info. Reports auto-delete after 180 days.';
+  }
+}
+
+// Load when page is ready
+document.addEventListener('DOMContentLoaded', function() {
+  loadCompactWarning();
+});
+
+// Also reload when language changes
+// Call loadCompactWarning() from your language switcher
+
+  // ============================================
+  // REPORT TYPE - ICON BUTTONS
+  // ============================================
+
+  function selectReportType(type) {
+    // Clear all selections
+    document.querySelectorAll('.type-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Highlight selected button
+    const selectedBtn = document.querySelector(`.type-btn[data-type="${type}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
+    }
+    
+    // Store selection in hidden input (for form submission)
+    document.getElementById('report-type').value = type;
+    
+    // Trigger change event for any existing listeners
+    const event = new Event('change');
+    document.getElementById('report-type').dispatchEvent(event);
+  }
+
+  // Optional: Auto-select a default type (uncomment if you want)
+  // document.addEventListener('DOMContentLoaded', function() {
+  //   selectReportType('missing_person');
+  // });
+ 
 // ============================================
 // AUTO CLEANUP ON PAGE LOAD
 // ============================================
@@ -1389,7 +1515,7 @@ setTimeout(() => {
         console.log("✅ No old backups to clean");
     }
 })();
+</script>
 
-</body>
   </body>
 </html>
