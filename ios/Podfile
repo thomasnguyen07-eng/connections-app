@@ -1,0 +1,13 @@
+project 'App/App.xcodeproj'
+
+platform :ios, '14.0'
+
+target 'App' do
+use_frameworks!
+pod 'Capacitor'
+pod 'Firebase'
+pod 'FirebaseAnalytics'
+pod 'FirebaseAuth'
+pod 'FirebaseFirestore'
+pod 'FirebaseStorage'
+end
