@@ -173,11 +173,9 @@
                 <p style="margin: 0 0 15px; color: #666; font-size: 14px; text-align: center;">
                     Email us at: <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
                 </p>
-                <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">📋 Copy Email Address</button>
-                <button id="contactGmailBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #ea4335; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🌐 Compose in Gmail</button>
-                <button id="contactOutlookBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #0078d4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🌐 Compose in Outlook</button>
-                <button id="contactYahooBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #7b0099; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🌐 Compose in Yahoo Mail</button>
-                <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">✖️ Cancel</button>
+<button id="contactSendBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #4267b2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">📧 Send Email</button>
+<button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">📋 Copy Email Address</button>
+<button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">✖️ Cancel</button>
             </div>
             <div style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
                 <p style="margin: 0; font-size: 12px; color: #999; text-align: center;">Response within 24-48 hours</p>
@@ -186,68 +184,21 @@
           document.body.appendChild(modal);
 
           // Setup event listeners
-          document.getElementById("contactCopyBtn").onclick = function () {
-            navigator.clipboard
-              .writeText("support@connectionsfinder.com")
-              .then(() => {
-                const btn = this;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = "✅ Copied!";
-                btn.style.background = "#218838";
-                setTimeout(() => {
-                  btn.innerHTML = originalText;
-                  btn.style.background = "#28a745";
-                }, 2000);
-              })
-              .catch(() => alert("Email: support@connectionsfinder.com"));
-          };
+document.getElementById("contactSendBtn").onclick = function () {
+    const email = "support@connectionsfinder.com";
+    const subject = encodeURIComponent("Connections App Support Request");
+    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    closeContactModal();
+};
 
-          document.getElementById("contactGmailBtn").onclick = function () {
-            const email = "support@connectionsfinder.com";
-            const subject = encodeURIComponent(
-              "Connections App Support Request",
-            );
-            const body = encodeURIComponent(
-              "Hello Connections Team,\n\nI need assistance with...\n\nThank you.",
-            );
-            window.open(
-              `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`,
-              "_blank",
-            );
-            closeContactModal();
-          };
+document.getElementById("contactCopyBtn").onclick = function () {
+    navigator.clipboard.writeText("support@connectionsfinder.com").then(() => {
+        alert("Copied: support@connectionsfinder.com");
+    }).catch(() => alert("Email: support@connectionsfinder.com"));
+};
 
-          document.getElementById("contactOutlookBtn").onclick = function () {
-            const email = "support@connectionsfinder.com";
-            const subject = encodeURIComponent(
-              "Connections App Support Request",
-            );
-            const body = encodeURIComponent(
-              "Hello Connections Team,\n\nI need assistance with...\n\nThank you.",
-            );
-            window.open(
-              `https://outlook.live.com/mail/0/deeplink/compose?to=${email}&subject=${subject}&body=${body}`,
-              "_blank",
-            );
-            closeContactModal();
-          };
-
-          document.getElementById("contactYahooBtn").onclick = function () {
-            const email = "support@connectionsfinder.com";
-            const subject = encodeURIComponent(
-              "Connections App Support Request",
-            );
-            const body = encodeURIComponent(
-              "Hello Connections Team,\n\nI need assistance with...\n\nThank you.",
-            );
-            window.open(
-              `https://compose.mail.yahoo.com/?to=${email}&subject=${subject}&body=${body}`,
-              "_blank",
-            );
-            closeContactModal();
-          };
-
-          document.getElementById("contactCloseBtn").onclick =
+document.getElementById("contactCloseBtn").onclick = closeContactModal;
             closeContactModal;
         }
 

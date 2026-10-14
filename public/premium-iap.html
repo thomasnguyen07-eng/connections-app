@@ -1600,26 +1600,16 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
             Email us at: <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
         </p>
         
+        <!-- Send Email Button (uses system chooser) -->
+        <button id="contactSendBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #4267b2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            📧 Send Email
+        </button>
+
         <!-- Copy Email Button -->
         <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
             📋 Copy Email Address
         </button>
-        
-        <!-- Gmail Button -->
-        <button id="contactGmailBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #ea4335; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            🌐 Compose in Gmail
-        </button>
-        
-        <!-- Outlook Button -->
-        <button id="contactOutlookBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #0078d4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            🌐 Compose in Outlook
-        </button>
-        
-        <!-- Yahoo Button -->
-        <button id="contactYahooBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #7b0099; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            🌐 Compose in Yahoo Mail
-        </button>
-        
+
         <!-- Cancel Button -->
         <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
             ✖️ Cancel
@@ -1667,47 +1657,26 @@ function copyEmailToClipboard() {
     });
 }
 
-function openSupportGmail() {
+function sendSupportEmail() {
     const email = "support@connectionsfinder.com";
     const subject = encodeURIComponent("Connections App Support Request");
     const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`;
-    window.open(gmailUrl, '_blank');
-    closeContactModal();
-}
-
-function openOutlook() {
-    const email = "support@connectionsfinder.com";
-    const subject = encodeURIComponent("Connections App Support Request");
-    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
-    const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${email}&subject=${subject}&body=${body}`;
-    window.open(outlookUrl, '_blank');
-    closeContactModal();
-}
-
-function openYahoo() {
-    const email = "support@connectionsfinder.com";
-    const subject = encodeURIComponent("Connections App Support Request");
-    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
-    // FIXED: Correct Yahoo Mail compose URL
-    const yahooUrl = `https://compose.mail.yahoo.com/?to=${email}&subject=${subject}&body=${body}`;
-    window.open(yahooUrl, '_blank');
+    const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+    window.location.href = mailtoUrl;
     closeContactModal();
 }
 
 // Set up event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    const sendBtn = document.getElementById('contactSendBtn');
     const copyBtn = document.getElementById('contactCopyBtn');
-    const gmailBtn = document.getElementById('contactGmailBtn');
-    const outlookBtn = document.getElementById('contactOutlookBtn');
-    const yahooBtn = document.getElementById('contactYahooBtn');
     const closeBtn = document.getElementById('contactCloseBtn');
     const overlay = document.getElementById('modalOverlay');
-    
+
+    if (sendBtn) sendBtn.onclick = sendSupportEmail;
     if (copyBtn) copyBtn.onclick = copyEmailToClipboard;
-    if (gmailBtn) gmailBtn.onclick = openSupportGmail;
-    if (outlookBtn) outlookBtn.onclick = openOutlook;
-    if (yahooBtn) yahooBtn.onclick = openYahoo;
+    if (closeBtn) closeBtn.onclick = closeContactModal;
+    if (overlay) overlay.onclick = closeContactModal;
     if (closeBtn) closeBtn.onclick = closeContactModal;
     if (overlay) overlay.onclick = closeContactModal;
 });
@@ -1716,9 +1685,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.openContactModal = openContactModal;
 window.closeContactModal = closeContactModal;
 window.copyEmailToClipboard = copyEmailToClipboard;
-window.openSupportGmail = openSupportGmail;
-window.openOutlook = openOutlook;
-window.openYahoo = openYahoo;
+window.sendSupportEmail = sendSupportEmail;
 </script>
 
 <!-- ============================================ -->
