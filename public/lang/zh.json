@@ -57,9 +57,13 @@
     "submit": "提交报告出错。请重试。",
     "load": "加载报告失败。请刷新。",
     "delete": "删除报告失败",
-    "clearAll": "清除所有报告失败",  
+    "clearAll": "清除所有报告失败",
     "location": "获取位置出错",
-    "clearAllFailed": "清除报告失败。请重试。"
+    "clearAllFailed": "清除报告失败。请重试。",
+    "locationDenied": "位置访问被拒绝。请在设备设置中启用位置。",
+    "locationUnavailable": "Location unavailable. Please try again.",
+    "locationTimeout": "Location request timed out. Please try again.",
+    "generic": "Something went wrong. Please try again."
   },
   "labels": {
     "yourCurrentLocation": "您当前的位置",
@@ -95,5 +99,4 @@
   },
   "deleting": "删除中...",
   "clearing": "清除中..."
-
 }

@@ -20,7 +20,7 @@ const SIGNOUT_TRANSLATIONS = {
       "📸 Upload only relevant item photos. No explicit/offensive content. Repeat violations will ban your account.",
     // 👇 ADD THIS 👇
     compact_warning:
-      '⚠️ By using this app, you agree to our <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Terms</a> &amp; <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>. No sensitive info. Reports auto-delete after 180 days.',
+      '⚠️ By using this app, you agree to our <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Terms</a> &amp; <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>. No sensitive info. Reports auto-delete after 180 days.',
     savedReports: {
       title: "Your Saved Reports",
       loginPrompt: "Please sign in to view your saved reports",
@@ -59,7 +59,7 @@ const SIGNOUT_TRANSLATIONS = {
       "📸 Chỉ tải lên ảnh liên quan. Nội dung khiêu dâm/xúc phạm sẽ bị xóa.",
     // 👇 ADD THIS 👇
     compact_warning:
-      '⚠️ Khi sử dụng ứng dụng này, bạn đồng ý với <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Điều khoản</a> &amp; <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Chính sách bảo mật</a> của chúng tôi. Không chia sẻ thông tin nhạy cảm. Báo cáo tự động xóa sau 180 ngày.',
+      '⚠️ Khi sử dụng ứng dụng này, bạn đồng ý với <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Điều khoản</a> &amp; <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Chính sách bảo mật</a> của chúng tôi. Không chia sẻ thông tin nhạy cảm. Báo cáo tự động xóa sau 180 ngày.',
     savedReports: {
       title: "Tin Nhắn Đã Lưu Của Bạn",
       loginPrompt: "Vui lòng đăng nhập để xem tin nhắn đã lưu của bạn",
@@ -95,7 +95,7 @@ const SIGNOUT_TRANSLATIONS = {
     warningImages: "📸 仅上传相关物品照片。禁止露骨/冒犯性内容。",
     // 👇 ADD THIS 👇
     compact_warning:
-      '⚠️ 使用本应用即表示您同意我们的<a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">服务条款</a>和<a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">隐私政策</a>。请勿分享敏感信息。报告将在180天后自动删除。',
+      '⚠️ 使用本应用即表示您同意我们的<a href="./terms.html" style="color: #4CAF50; text-decoration: none;">服务条款</a>和<a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">隐私政策</a>。请勿分享敏感信息。报告将在180天后自动删除。',
     savedReports: {
       title: "您保存的报告",
       loginPrompt: "请登录查看您保存的报告",
@@ -134,7 +134,7 @@ const SIGNOUT_TRANSLATIONS = {
       "📸 Suba solo fotos de artículos relevantes. Sin contenido explícito/ofensivo.",
     // 👇 ADD THIS 👇
     compact_warning:
-      '⚠️ Al usar esta aplicación, aceptas nuestros <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Términos</a> y <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Política de Privacidad</a>. No compartas información sensible. Los informes se eliminan automáticamente después de 180 días.',
+      '⚠️ Al usar esta aplicación, aceptas nuestros <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Términos</a> y <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Política de Privacidad</a>. No compartas información sensible. Los informes se eliminan automáticamente después de 180 días.',
     savedReports: {
       title: "Tus Informes Guardados",
       loginPrompt: "Inicia sesión para ver tus informes guardados",
@@ -170,7 +170,7 @@ const SIGNOUT_TRANSLATIONS = {
     warningImages: "📸 केवल प्रासंगिक वस्तु फ़ोटो अपलोड करें।",
     // 👇 ADD THIS 👇
     compact_warning:
-      '⚠️ इस ऐप का उपयोग करके, आप हमारी <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">सेवा शर्तों</a> और <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">गोपनीयता नीति</a> से सहमत होते हैं। कोई संवेदनशील जानकारी नहीं। रिपोर्ट 180 दिनों के बाद स्वचालित रूप से हटा दी जाती हैं।',
+      '⚠️ इस ऐप का उपयोग करके, आप हमारी <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">सेवा शर्तों</a> और <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">गोपनीयता नीति</a> से सहमत होते हैं। कोई संवेदनशील जानकारी नहीं। रिपोर्ट 180 दिनों के बाद स्वचालित रूप से हटा दी जाती हैं।',
     savedReports: {
       title: "आपकी सहेजी गई रिपोर्टें",
       loginPrompt: "अपनी सहेजी गई रिपोर्टें देखने के लिए कृपया साइन इन करें",
@@ -206,7 +206,7 @@ const SIGNOUT_TRANSLATIONS = {
     warningImages: "📸 قم بتحميل صور العناصر ذات الصلة فقط.",
     // 👇 ADD THIS 👇
     compact_warning:
-      '⚠️ باستخدام هذا التطبيق، فإنك توافق على <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">الشروط</a> و<a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">سياسة الخصوصية</a> الخاصة بنا. لا تشارك معلومات حساسة. يتم حذف التقارير تلقائيًا بعد 180 يومًا.',
+      '⚠️ باستخدام هذا التطبيق، فإنك توافق على <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">الشروط</a> و<a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">سياسة الخصوصية</a> الخاصة بنا. لا تشارك معلومات حساسة. يتم حذف التقارير تلقائيًا بعد 180 يومًا.',
     savedReports: {
       title: "تقاريرك المحفوظة",
       loginPrompt: "يرجى تسجيل الدخول لعرض تقاريرك المحفوظة",
@@ -231,8 +231,12 @@ const SIGNOUT_TRANSLATIONS = {
 };
 
 function applySignedOutTranslations() {
-  const user = window.fb?.auth?.currentUser;
-  if (user) {
+  // Check both SDK and localStorage user (SDK unreliable on iOS)
+  const sdkUser = window.fb?.auth?.currentUser;
+  let localUser = null;
+  try { localUser = JSON.parse(localStorage.getItem("user") || "null"); }
+  catch { localUser = null; }
+  if (sdkUser || localUser) {
     console.log("✅ User signed in - skipping signed-out translations");
     return;
   }

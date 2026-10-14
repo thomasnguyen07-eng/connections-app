@@ -3547,5 +3547,595 @@ footer {
 }
 .type-btn[data-type="event"].active {
   border-color: #9C27B0;
+
   background: #f3e5f5;
+}
+/* ========================================
+   HEADER FIX - Move Down from Top Edge
+   ======================================== */
+
+body {
+    padding-top: 80px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+
+header {
+    padding: 20px 15px 15px 15px !important;
+    margin-top: 20px !important;
+    background: #fff !important;
+    border-radius: 16px !important;
+    border-bottom: 1px solid #eee !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+}
+
+/* ============================================
+   FULL-HEIGHT LAYOUT FIX
+   Added to fill viewport and put footer at bottom
+   ============================================ */
+
+html {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #f5f5f5 !important;
+}
+
+body {
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    background-color: #f5f5f5 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 📱 Phone-sized: keep sticky footer (unchanged from before) */
+@media (max-width: 1023px) {
+    body {
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        min-height: calc(var(--vh, 1vh) * 100) !important;
+    }
+    .dashboard-container {
+        flex: 1 0 auto !important;
+    }
+    footer {
+        margin-top: auto !important;
+    }
+}
+
+/* 📱 iPad and wider: dashboard grows naturally, no forced 100vh */
+.dashboard-container {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* ============================================
+   COLLAPSE EMPTY MAP UNTIL INITIALIZED
+   ============================================ */
+#map {
+    min-height: 0 !important;
+    height: 0 !important;
+    background: #f0f0f0 !important;
+    transition: height 0.3s ease !important;
+}
+
+#map.leaflet-container,
+#map.has-map {
+    min-height: 300px !important;
+    height: 300px !important;
+}
+
+/* ============================================
+   MAP: HIDDEN BY DEFAULT, SHOWN WHEN NEEDED
+   ============================================ */
+#map {
+    min-height: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+
+#map.has-map,
+#map.leaflet-container {
+    min-height: 220px !important;
+    height: 220px !important;
+    max-height: 220px !important;
+    margin: 10px 0 !important;
+    overflow: hidden !important;
+    background: #f0f0f0 !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* ============================================
+   COMPACT MOBILE FORM
+   ============================================ */
+@media (max-width: 600px) {
+
+    /* Tighter form fields */
+    .form-group {
+        margin-bottom: 10px !important;
+    }
+    .form-group label {
+        margin-bottom: 4px !important;
+        font-size: 13px !important;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    select {
+        padding: 8px 10px !important;
+        font-size: 14px !important;
+    }
+    textarea {
+        min-height: 60px !important;
+    }
+
+    /* Report type buttons — 5 in a row, compact */
+    .report-type-buttons {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 6px !important;
+        margin: 6px 0 !important;
+    }
+    .report-type-btn,
+    .report-type-buttons button {
+        padding: 8px 4px !important;
+        font-size: 10px !important;
+        min-height: 60px !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+    .report-type-btn i,
+    .report-type-buttons button i {
+        font-size: 18px !important;
+    }
+
+    /* Share buttons — 6 in a row, same size feel as report types */
+    .share-buttons,
+    .share-container {
+        display: grid !important;
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: 6px !important;
+    }
+    .share-buttons button,
+    .share-btn {
+        padding: 8px 4px !important;
+        font-size: 10px !important;
+        min-height: 55px !important;
+    }
+    .share-buttons button i,
+    .share-btn i {
+        font-size: 18px !important;
+    }
+
+    /* Save Report below shares, full-width, small gap */
+    #save-report,
+    button[type="submit"] {
+        width: 100% !important;
+        margin-top: 12px !important;
+        padding: 12px !important;
+        font-size: 15px !important;
+    }
+
+    /* Kill extra bottom space on body */
+    body {
+        padding-bottom: 20px !important;
+    }
+}
+
+/* ============================================
+   SAVE REPORT BUTTON SPACING
+   ============================================ */
+#save-report-btn {
+    margin-top: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+/* ============================================
+   MAP FINAL OVERRIDE (wins by cascade order)
+   ============================================ */
+#map {
+    min-height: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+
+#map.leaflet-container:not(.has-map) {
+    min-height: 0 !important;
+    height: 0 !important;
+}
+
+#map.has-map {
+    min-height: 220px !important;
+    height: 220px !important;
+    max-height: 220px !important;
+    margin: 10px 0 !important;
+    overflow: hidden !important;
+    background: #f0f0f0 !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+
+
+/* ============================================
+   2-ROW HEADER RESTRUCTURE
+   ============================================ */
+header .header-controls {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 8px 0 !important;
+  align-items: stretch !important;
+  border-bottom: 2px solid #e0e0e0 !important;
+  margin-bottom: 12px !important;
+}
+
+.header-row {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.header-row-1,
+.header-row-2 {
+  grid-template-columns: 1fr auto 1fr !important;
+}
+
+.row-1-left {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  max-width: 45% !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+}
+
+.user-signed-out .row-1-left {
+  max-width: 55% !important;
+}
+
+.row-1-left .auth-btn,
+.row-1-left .control-btn {
+  padding: 5px 8px !important;
+  font-size: 0.72rem !important;
+}
+
+.row-1-left #usersAuthButtons,
+.row-1-left #userControls {
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Respect JS-set display:none on userControls */
+.row-1-left #userControls[style*="display: none"] { display: none !important; }
+.row-1-left #usersAuthButtons[style*="display: none"] { display: none !important; }
+
+.row-1-right {
+  max-width: 15% !important;
+  flex-shrink: 0 !important;
+}
+
+.row-1-center {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+.row-1-center .avatar-section {
+  position: relative !important;
+  display: inline-block !important;
+}
+
+.row-1-center .app-title {
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  color: #34a853 !important;
+  margin: 0 !important;
+}
+
+.row-1-right {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  max-width: 15% !important;
+  flex-shrink: 0 !important;
+}
+
+.row-1-right .app-logo-image {
+  width: 36px !important;
+  height: 36px !important;
+  object-fit: contain !important;
+}
+
+.row-2-left {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+}
+
+.row-2-left #usersLanguageSwitcher,
+.row-2-left #language-switcher {
+  display: inline-flex !important;
+  font-size: 0.8rem !important;
+}
+
+/* Show only the appropriate language switcher per auth state */
+.user-signed-in #usersLanguageSwitcher { display: none !important; }
+.user-signed-in #language-switcher { display: inline-flex !important; }
+.user-signed-out #language-switcher { display: none !important; }
+.user-signed-out #usersLanguageSwitcher { display: inline-flex !important; }
+
+/* Default: hidden until JS decides */
+#language-switcher { display: none !important; }
+#usersLanguageSwitcher { display: none !important; }
+.user-signed-in #language-switcher { display: inline-flex !important; }
+.user-signed-out #usersLanguageSwitcher { display: inline-flex !important; }
+
+.row-2-center {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Subscribe: visible only when signed in */
+.user-signed-in .row-2-center #subscribeBtn { display: inline-flex !important; }
+.user-signed-out .row-2-center #subscribeBtn { display: none !important; }
+
+.row-2-right {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+
+/* Compact control buttons in the header */
+.header-controls .control-btn {
+  padding: 6px 10px !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap !important;
+}
+
+.header-controls .avatar-image {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+/* Neutralize old mobile stacking on header */
+@media (max-width: 768px) {
+  header .header-controls {
+    flex-direction: column !important;
+    text-align: left !important;
+  }
+  header .controls-left,
+  header .controls-right,
+  header .header-center {
+    order: initial !important;
+    flex: initial !important;
+    justify-content: initial !important;
+  }
+}
+
+/* ============================================
+   END 2-ROW HEADER
+   ============================================ */
+
+
+/* ============================================
+   HEADER LANGUAGE SWITCHER FINAL OVERRIDE
+   ============================================ */
+/* Neutralize old absolute positioning for both language selectors */
+.header-controls #language-switcher,
+.header-controls #usersLanguageSwitcher {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  font-size: 0.8rem !important;
+  padding: 6px 10px !important;
+}
+
+/* Ensure they live in row-2-left only */
+.row-2-left #language-switcher,
+.row-2-left #usersLanguageSwitcher {
+  position: static !important;
+  display: none !important;
+}
+
+.user-signed-in .row-2-left #language-switcher { display: inline-flex !important; }
+.user-signed-out .row-2-left #usersLanguageSwitcher { display: inline-flex !important; }
+
+/* Force Subscribe hidden when signed out (stronger rule) */
+.user-signed-out #subscribeBtn,
+.user-signed-out .row-2-center #subscribeBtn,
+body.user-signed-out #subscribeBtn {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Guide button language fix (fallback in CSS via content attr if JS fails) */
+#guide-text { white-space: nowrap; }
+
+/* ============================================
+   END LANGUAGE SWITCHER OVERRIDE
+   ============================================ */
+
+
+/* ============================================
+   HEADER ALIGNMENT FIX
+   ============================================ */
+
+/* Full-width grid — removes centering wrapper effect */
+header .header-controls {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.header-row {
+  width: 100% !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  gap: 4px !important;
+  box-sizing: border-box !important;
+}
+
+/* Left cell: don't shrink below content */
+.row-1-left {
+  min-width: 0 !important;
+  max-width: none !important;
+  overflow: visible !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Right cell: push logo to far right */
+.row-1-right {
+  min-width: 0 !important;
+  max-width: none !important;
+  justify-content: flex-end !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Same for row 2 — align guide to far right */
+.row-2-right {
+  justify-content: flex-end !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Center cell: tighter spacing so left cell can breathe */
+.row-1-center {
+  gap: 6px !important;
+  padding: 0 4px !important;
+}
+
+.row-1-center .app-title {
+  font-size: 1.25rem !important;
+}
+
+.row-1-center .avatar-image {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.row-1-right .app-logo-image {
+  width: 32px !important;
+  height: 32px !important;
+  margin-right: 0 !important;
+}
+
+/* Compact all header buttons */
+.header-controls .control-btn {
+  padding: 5px 8px !important;
+  font-size: 0.72rem !important;
+  gap: 4px !important;
+}
+
+.header-controls .control-btn i {
+  font-size: 0.85rem !important;
+}
+
+
+/* ============================================
+   HEADER: SWITCH ROW 1 TO FLEXBOX (fixes overlap)
+   ============================================ */
+.header-row-1 {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.row-1-left {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 4px !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.row-1-center {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  padding: 0 !important;
+}
+
+.row-1-right {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  gap: 0 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* Shrink center content so left/right have room */
+.row-1-center .app-title {
+  font-size: 1.1rem !important;
+}
+
+.row-1-center .avatar-image {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.row-1-right .app-logo-image {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+/* Compact auth buttons when signed out */
+.user-signed-out .row-1-left .control-btn {
+  padding: 4px 7px !important;
+  font-size: 0.68rem !important;
+}
+
+.user-signed-out .row-1-left .control-btn i {
+  font-size: 0.8rem !important;
+  margin-right: 2px !important;
+}
+
+/* Ensure row 2 keeps its grid layout */
+.header-row-2 {
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
 }

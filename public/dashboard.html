@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+            
+<script>
   // ULTRA crawler detection at page load
   (function() {
     const ua = navigator.userAgent || '';
@@ -126,89 +130,109 @@ console.log("🚀 App started - logging initialized");
 <script>
 // Restore language on every page load
 (function() {
-    let savedLang = localStorage.getItem("preSignoutLanguage");
-    if (!savedLang) {
-        savedLang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
+    // 🔧 FIX: Only honor preSignoutLanguage if we JUST signed in (flagged by the auth flow).
+    // Otherwise, respect the user's currently-chosen language.
+    const justSignedIn = localStorage.getItem("justSignedIn") === "true";
+    let savedLang;
+
+    if (justSignedIn) {
+        // User just signed in — restore the language they had when they signed out
+        savedLang = localStorage.getItem("preSignoutLanguage")
+                 || localStorage.getItem("userLanguage")
+                 || localStorage.getItem("appLanguage")
+                 || "en";
+        // Clear the one-shot flags so this only runs once
+        localStorage.removeItem("justSignedIn");
+        localStorage.removeItem("preSignoutLanguage");
+    } else {
+        // Normal page load — respect the CURRENT language, no override
+        savedLang = localStorage.getItem("userLanguage")
+                 || localStorage.getItem("appLanguage")
+                 || "en";
     }
+
     localStorage.setItem("userLanguage", savedLang);
     localStorage.setItem("appLanguage", savedLang);
-    console.log("🌐 Language restored on page load:", savedLang);
+    console.log("🌐 Language restored on page load:", savedLang, "| justSignedIn:", justSignedIn);
 })();
 </script>
 
  <header>
-  <!-- Top Bar with Controls -->
   <div class="header-controls">
-    <!-- Left side: User controls -->
-    <div class="controls-left">
-  <!-- NEW: Auth buttons for users WITH language switcher -->
-  <div id="usersAuthButtons" class="auth-buttons">
-    <button id="usersSignInBtn" class="control-btn auth-btn">
-      <i class="fas fa-sign-in-alt"></i>
-      <span>Sign In</span>
-    </button>
-    <button id="usersSignUpBtn" class="control-btn auth-btn">
-      <i class="fas fa-user-plus"></i>
-      <span>Sign Up</span>
-    </button>
-    <!-- ADD LANGUAGE SWITCHER FOR GUESTS -->
-    <select id="usersLanguageSwitcher" class="language-switcher control-btn">
-      <option value="en">English</option>
-      <option value="es">Español</option>
-      <option value="zh">中文</option>
-      <option value="vi">Tiếng Việt</option>
-      <option value="hi">हिन्दी</option>
-      <option value="ar">العربية</option>
-    </select>
-  </div>
+    <!-- ROW 1 -->
+    <div class="header-row header-row-1">
+      <div class="row-1-left">
+        <div id="usersAuthButtons" class="auth-buttons">
+          <button id="usersSignInBtn" class="control-btn auth-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Sign In</span>
+          </button>
+          <button id="usersSignUpBtn" class="control-btn auth-btn">
+            <i class="fas fa-user-plus"></i>
+            <span>Sign Up</span>
+          </button>
+        </div>
 
-  <a href="/manual.html" class="control-btn" target="_blank">
-    <i class="fas fa-book"></i>
-    <span id="guide-text">Guide</span>
-</a>
+        <div id="userControls" class="user-controls" style="display: none;">
+          <button id="logoutBtn" class="control-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span data-lang-key="buttons.logout">Logout</span>
+          </button>
+        </div>
+      </div>
 
-  <!-- EXISTING: Your current controls (will be hidden initially) -->
-  <div id="userControls" class="user-controls" style="display: none;">
-    <button id="logoutBtn" class="control-btn">
-      <i class="fas fa-sign-out-alt"></i>
-      <span data-lang-key="buttons.logout">Logout</span>
-    </button>
-    <select id="language-switcher" class="language-switcher control-btn">
-      <option value="en">English</option>
-      <option value="es">Español</option>
-      <option value="zh">中文</option>
-      <option value="vi">Tiếng Việt</option>
-      <option value="hi">हिन्दी</option>
-      <option value="ar">العربية</option>
-    </select>
-    <button id="subscribeBtn" class="control-btn subscribe-btn">
-      <i class="fas fa-crown"></i>
-      <span>Subscribe</span>
-    </button>
-  </div>
-</div>
+      <div class="row-1-center">
+        <div class="avatar-section">
+          <img id="userAvatar" src="./images/default-avatar.png" alt="Avatar" class="avatar-image">
+          <button id="uploadAvatarBtn" class="avatar-upload-btn">
+            <i class="fas fa-camera"></i>
+          </button>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+        </div>
+        <h1 class="app-title">Connections</h1>
+      </div>
 
-    <!-- Center: App Logo + Title -->
-<div class="header-center">
-  <div class="app-branding">
-    <img src="./images/logo-new.png" alt="Logo" class="app-logo-image">
-    <h1 class="app-title">Connections</h1>
-</div>
-</div>
+      <div class="row-1-right">
+        <img src="./images/logo-new.png" alt="Logo" class="app-logo-image">
+      </div>
+    </div>
 
-    <!-- Right side: Avatar -->
-<div class="controls-right">
-  <div class="avatar-section">
-    <img id="userAvatar" src="./images/default-avatar.png" alt="Avatar" class="avatar-image">
-    <button id="uploadAvatarBtn" class="avatar-upload-btn">
-      <i class="fas fa-camera"></i>
-    </button>
-    <!-- Single hidden file input for avatar upload -->
-    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+    <!-- ROW 2 -->
+    <div class="header-row header-row-2">
+      <div class="row-2-left">
+        <select id="usersLanguageSwitcher" class="language-switcher control-btn">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ar">العربية</option>
+        </select>
+        <select id="language-switcher" class="language-switcher control-btn">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ar">العربية</option>
+        </select>
+      </div>
+
+      <div class="row-2-center">
+        <button id="subscribeBtn" class="control-btn subscribe-btn">
+          <i class="fas fa-crown"></i>
+          <span>Subscribe</span>
+        </button>
+      </div>
+
+      <div class="row-2-right">
+        <a href="manual.html" class="control-btn" onclick="window.location.href='manual.html'; return false;">
+          <i class="fas fa-book"></i>
+          <span id="guide-text">Guide</span>
+        </a>
+      </div>
+    </div>
   </div>
-</div>
-  </div>
-  
 </header>
 
     <div class="dashboard-container">
@@ -354,8 +378,8 @@ console.log("🚀 App started - logging initialized");
 </button>
 
 <!-- Twitter button -->
-<button id="twitter-share" type="button" class="share-btn" style="background-color: #1DA1F2;">
-    <i class="fab fa-twitter"></i>
+<button id="twitter-share" type="button" class="share-btn" style="background-color: #000000;">
+    <i class="fab fa-x-twitter"></i>
 </button>
 
 <!-- Facebook button -->
@@ -424,165 +448,7 @@ console.log("🚀 App started - logging initialized");
         </form>
       </div>
     </div>
-
-    // Admin Panel - Only visible to app owner
-<!-- In dashboard.html, find your admin panel div and add this button -->
-<div id="adminPanel" style="display: none; position: fixed; bottom: 20px; right: 120px; z-index: 9999;">
-    <button onclick="toggleAdminPanel()" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
-        ⚙️ Admin
-    </button>
-    <div id="adminContent" style="display: none; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-top: 5px; width: 300px; max-height: 400px; overflow: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <h4 style="margin-top: 0;">Admin Tools</h4>
-        <button onclick="viewMobileLogs()" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            📱 View Mobile Logs
-        </button>
-        <!-- ✅ ADD THIS NEW BUTTON -->
-        <button onclick="checkLogsDirectly()" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            🔍 Force Check Logs
-        </button>
-        <button onclick="clearMobileLogs()" style="width: 100%; padding: 8px; margin-bottom: 5px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            🗑️ Clear Logs
-        </button>
-        <div id="logDisplay" style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-size: 12px; max-height: 250px; overflow: auto; white-space: pre-wrap;"></div>
-    </div>
-</div>
-
-<script>
-// ============================================
-// ADMIN PANEL FUNCTIONS
-// ============================================
-
-// Show/hide admin panel
-function toggleAdminPanel() {
-    const content = document.getElementById('adminContent');
-    if (content) {
-        content.style.display = content.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-// Initialize admin panel visibility
-function initAdminPanel() {
-    const user = window.fb?.auth?.currentUser;
-    if (user?.email === 'thomasnguyen07@gmail.com') {
-        document.getElementById('adminPanel').style.display = 'block';
-    }
-    
-    if (window.fb?.auth) {
-        window.fb.auth.onAuthStateChanged((user) => {
-            document.getElementById('adminPanel').style.display = 
-                user?.email === 'thomasnguyen07@gmail.com' ? 'block' : 'none';
-        });
-    }
-}
-
-// View mobile logs
-async function viewMobileLogs() {
-    const display = document.getElementById('logDisplay');
-    if (!display) return;
-    
-    display.innerHTML = 'Loading logs...';
-    
-    try {
-        const { collection, query, orderBy, limit, getDocs } = 
-            await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
-        
-        const db = window.fb.firestore.db;
-        const logsQuery = query(
-            collection(db, "mobile_logs"),
-            orderBy("receivedAt", "desc"),
-            limit(20)
-        );
-        
-        const snapshot = await getDocs(logsQuery);
-        
-        if (snapshot.empty) {
-            display.innerHTML = 'No logs found. Make sure mobile users have generated some logs.';
-            return;
-        }
-        
-        let html = '';
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const time = data.receivedAt?.toDate 
-                ? data.receivedAt.toDate().toLocaleString() 
-                : 'Unknown';
-            
-            html += `<div style="border-bottom: 1px solid #ddd; padding: 5px; margin-bottom: 5px;">`;
-            html += `<small style="color: #666;">${time}</small><br>`;
-            html += `<small>User: ${data.userId || 'anonymous'}</small><br>`;
-            
-            if (data.logs && data.logs.length > 0) {
-                data.logs.slice(-5).forEach(log => {
-                    const color = log.type === 'error' ? '#f44336' : '#333';
-                    html += `<div style="color: ${color}; font-size: 11px; margin-left: 10px;">`;
-                    html += `[${log.type}] ${log.message.substring(0, 100)}`;
-                    html += log.message.length > 100 ? '...' : '';
-                    html += `</div>`;
-                });
-            }
-            html += `</div>`;
-        });
-        
-        display.innerHTML = html;
-    } catch (error) {
-        display.innerHTML = `Error: ${error.message}`;
-    }
-}
-
-// Clear mobile logs
-async function clearMobileLogs() {
-    if (!confirm('Clear all mobile logs?')) return;
-    
-    try {
-        const { collection, getDocs, deleteDoc } = 
-            await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
-        
-        const db = window.fb.firestore.db;
-        const snapshot = await getDocs(collection(db, "mobile_logs"));
-        
-        const deletePromises = [];
-        snapshot.forEach(doc => deletePromises.push(deleteDoc(doc.ref)));
-        await Promise.all(deletePromises);
-        
-        document.getElementById('logDisplay').innerHTML = 'Logs cleared';
-    } catch (error) {
-        alert('Error clearing logs: ' + error.message);
-    }
-}
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAdminPanel);
-} else {
-    initAdminPanel();
-}
-</script>
-
-<script>
-async function checkLogsDirectly() {
-    try {
-        const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
-        const db = window.fb.firestore.db;
-        
-        const snapshot = await getDocs(collection(db, "mobile_logs"));
-        console.log("📊 Total logs in Firestore:", snapshot.size);
-        
-        if (snapshot.empty) {
-            alert("No logs found in Firestore");
-        } else {
-            let count = 0;
-            snapshot.forEach(doc => {
-                console.log(`Log ${++count}:`, doc.data());
-            });
-            alert(`Found ${count} logs. Check console for details.`);
-        }
-    } catch (error) {
-        console.error("Error checking logs:", error);
-        alert("Error: " + error.message);
-    }
-}
-</script>
-
+  
     <script>
       // Debugging helper
       window.debugFirebase = () => {
@@ -603,7 +469,7 @@ async function checkLogsDirectly() {
 
 <!-- Bulk Pass Code Panel (Owner Only) -->
 <div id="bulkPassPanel" style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-    <h3>👑 Generate Bulk Pass Codes (Organizations)</h3>
+    <h3 id="bulk-pass-heading">👑 Generate Bulk Pass Codes (Organizations)</h3>
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
         <input type="email" id="bulkEmail" placeholder="Organization email" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
         <input type="number" id="bulkCount" placeholder="Number of codes" min="1" max="1000" value="10" style="width: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -668,69 +534,33 @@ async function checkLogsDirectly() {
       // Make available globally
       window.fb = { auth, db, storage };
 
-      // Show owner panel after page loads
+      // Show owner panel after page loads (localStorage-based — iOS-safe)
       setTimeout(() => {
-        const panel = document.getElementById("ownerPassPanel");
-        if (panel && auth.currentUser && auth.currentUser.email === "thomasnguyen07@gmail.com") {
+        const panel = document.getElementById("bulkPassPanel");
+        let isOwner = false;
+        try {
+          const u = JSON.parse(localStorage.getItem("user") || "null");
+          isOwner = u && u.email === "thomasnguyen07@gmail.com";
+        } catch (e) {}
+        if (!isOwner && auth.currentUser) {
+          isOwner = auth.currentUser.email === "thomasnguyen07@gmail.com";
+        }
+        if (panel && isOwner) {
           panel.style.display = "block";
+          console.log("👑 Bulk Pass Code panel revealed for owner");
+          // 🌐 Translate the bulk panel immediately upon reveal
+          if (typeof window.updateBulkPassPanel === "function") {
+            const _lang = localStorage.getItem("userLanguage")
+              || localStorage.getItem("appLanguage")
+              || "en";
+            window.updateBulkPassPanel(_lang);
+          } else {
+            console.warn("⚠️ updateBulkPassPanel not yet defined at reveal time");
+          }
         }
       }, 1000);
   
-// Generate single pass code (Owner only)
-const generateBtn = document.getElementById("generatePassBtn");
-if (generateBtn) {
-  generateBtn.addEventListener("click", async () => {
-    const plan = document.getElementById("passPlan")?.value;
-    
-    const user = window.fb?.auth?.currentUser;
-    if (!user || user.email !== "thomasnguyen07@gmail.com") {
-      alert("Unauthorized");
-      return;
-    }
-    
-    // IMPORT modular SDK functions
-    const { collection, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
-    
-    // Get Firestore instance
-    const db = window.fb.firestore.db;  // Note: .db is the actual Firestore instance
-    
-    if (!db) {
-      alert("Firestore not available");
-      return;
-    }
-    
-    const code = Math.random().toString(36).substring(2, 12).toUpperCase();
-    const expiryDate = new Date();
-    switch(plan) {
-      case 'monthly': expiryDate.setMonth(expiryDate.getMonth() + 1); break;
-      case 'three_months': expiryDate.setMonth(expiryDate.getMonth() + 3); break;
-      case 'six_months': expiryDate.setMonth(expiryDate.getMonth() + 6); break;
-      case 'yearly': expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
-    }
-    
-    // Create document with custom ID using modular SDK
-    const passcodesRef = collection(db, "pass_codes");
-    await setDoc(doc(passcodesRef, code), {
-      code: code,
-      plan: plan,
-      used: false,
-      createdBy: user.uid,
-      createdAt: new Date(),
-      expiresAt: expiryDate,
-      isBulk: false
-    });
-    
-    const resultDiv = document.getElementById("passResult");
-    if (resultDiv) {
-      resultDiv.innerHTML = `
-        ✅ Pass Code Created!<br>
-        <strong style="font-size: 1.2rem;">${code}</strong><br>
-        Give this code to your user. They can redeem it with any email address.
-      `;
-      document.getElementById("passEmail").value = "";
-    }
-  });
-}
+// (dead handler removed — replaced by bulk handler below)
 
       // ============================================
 // BULK PASS CODE GENERATION (Owner only)
@@ -741,6 +571,24 @@ onAuthStateChanged(auth, (user) => {
     const bulkPanel = document.getElementById("bulkPassPanel");
     if (bulkPanel && user && user.email === "thomasnguyen07@gmail.com") {
         bulkPanel.style.display = "block";
+
+        // 🌐 Translate bulk panel now, or as soon as reports.js defines the fn.
+        // Uses a short bounded retry because reports.js has `defer` and may
+        // not have run yet when this inline script fires.
+        const _lang = localStorage.getItem("userLanguage")
+            || localStorage.getItem("appLanguage")
+            || "en";
+        let _tries = 0;
+        const _tryTranslate = () => {
+            if (typeof window.updateBulkPassPanel === "function") {
+                window.updateBulkPassPanel(_lang);
+            } else if (_tries++ < 20) {           // up to ~2s (20 × 100ms)
+                setTimeout(_tryTranslate, 100);
+            } else {
+                console.warn("⚠️ updateBulkPassPanel never became available");
+            }
+        };
+        _tryTranslate();
     }
 });
 
@@ -752,64 +600,109 @@ const generateBulkBtn = document.getElementById("generateBulkBtn");
 if (generateBulkBtn) {
   generateBulkBtn.addEventListener("click", async () => {
     const count = parseInt(document.getElementById("bulkCount")?.value) || 1;
-    const plan = document.getElementById("bulkPlan")?.value;
+    const plan = document.getElementById("bulkPlan")?.value || "monthly";
+    const email = document.getElementById("bulkEmail")?.value || "";
     const resultDiv = document.getElementById("bulkResult");
-    
+
     if (count < 1 || count > 1000) {
       alert("Please enter a number between 1 and 1000");
       return;
     }
-    
-    const user = window.fb?.auth?.currentUser;
-    if (!user || user.email !== "thomasnguyen07@gmail.com") {
+
+    // Owner check via localStorage (iOS-safe)
+    let ownerUser = null;
+    try {
+      const u = JSON.parse(localStorage.getItem("user") || "null");
+      if (u && u.email === "thomasnguyen07@gmail.com") ownerUser = u;
+    } catch (e) {}
+    if (!ownerUser && window.fb?.auth?.currentUser) {
+      ownerUser = window.fb.auth.currentUser;
+    }
+    if (!ownerUser || ownerUser.email !== "thomasnguyen07@gmail.com") {
       alert("Unauthorized");
       return;
     }
-    
-    // IMPORT modular SDK functions
-    const { collection, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js");
-    
-    // Get Firestore instance
-    const db = window.fb.firestore.db;  // Note: .db is the actual Firestore instance
-    
-    if (!db) {
-      alert("Firestore not available");
+
+    // Fresh token for REST write
+    let token = ownerUser.idToken;
+    if (!token && ownerUser.getIdToken) {
+      try { token = await ownerUser.getIdToken(true); } catch (e) {}
+    }
+    if (!token) {
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "{}");
+        if (stored.refreshToken) {
+          const API_KEY = "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0";
+          const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(stored.refreshToken)}`,
+          });
+          if (r.ok) token = (await r.json()).id_token;
+        }
+      } catch (e) {}
+    }
+    if (!token) {
+      alert("Auth token unavailable — please sign out and sign in again.");
       return;
     }
-    
-    const codes = [];
+
+    // Expiry
     const expiryDate = new Date();
-    switch(plan) {
-      case 'monthly': expiryDate.setMonth(expiryDate.getMonth() + 1); break;
-      case 'three_months': expiryDate.setMonth(expiryDate.getMonth() + 3); break;
-      case 'six_months': expiryDate.setMonth(expiryDate.getMonth() + 6); break;
-      case 'yearly': expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
+    switch (plan) {
+      case "monthly": expiryDate.setMonth(expiryDate.getMonth() + 1); break;
+      case "three_months": expiryDate.setMonth(expiryDate.getMonth() + 3); break;
+      case "six_months": expiryDate.setMonth(expiryDate.getMonth() + 6); break;
+      case "yearly": expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
     }
-    
+
     resultDiv.innerHTML = "⏳ Generating codes...";
-    
-    const passcodesRef = collection(db, "pass_codes");
-    
+    const projectId = "connectionsfinder-app";
+    const codes = [];
+
     for (let i = 0; i < count; i++) {
-      const code = Math.random().toString(36).substring(2, 12).toUpperCase();
+      const code = "CONN-" + Math.random().toString(36).substring(2, 10).toUpperCase();
       codes.push(code);
-      
-      await setDoc(doc(passcodesRef, code), {
-        code: code,
-        plan: plan,
-        used: false,
-        createdBy: user.uid,
-        createdAt: new Date(),
-        expiresAt: expiryDate,
-        isBulk: true,
-        batchId: Date.now()
-      });
+
+      const body = {
+        fields: {
+          code: { stringValue: code },
+          plan: { stringValue: plan },
+          used: { booleanValue: false },
+          createdBy: { stringValue: ownerUser.uid || ownerUser.localId },
+          createdAt: { timestampValue: new Date().toISOString() },
+          expiresAt: { timestampValue: expiryDate.toISOString() },
+          isBulk: { booleanValue: true },
+          organizationEmail: { stringValue: email },
+        },
+      };
+
+      try {
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/pass_codes?documentId=${encodeURIComponent(code)}`;
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+        if (!resp.ok) {
+          const err = await resp.text();
+          console.warn("Code write failed:", code, resp.status, err);
+        }
+      } catch (e) {
+        console.warn("Code write error:", code, e.message);
+      }
     }
-    
+
     resultDiv.innerHTML = `
-      ✅ Generated ${codes.length} pass codes<br>
-      <strong>Codes (can be used by ANY email, one-time use):</strong><br>
-      ${codes.join('<br>')}
+      ✅ Generated ${codes.length} codes for ${email || "(no email)"}<br><br>
+      <strong>Plan:</strong> ${plan}<br>
+      <strong>Expires:</strong> ${expiryDate.toLocaleDateString()}<br><br>
+      <div style="font-family: monospace; font-size: 11px; max-height: 150px; overflow: auto; background: #fff; padding: 8px; border-radius: 4px;">
+        ${codes.join("<br>")}
+      </div>
     `;
   });
 }
@@ -945,22 +838,9 @@ if (logoutBtn) {
     });
 }
 
-
-      // Map Initialization (Keep your existing)
-      function initMap() {
-        const mapContainer = document.getElementById("map");
-        if (!mapContainer || mapContainer._leaflet_id) return;
-        window.map = L.map("map").setView([10.7610112, 106.6893312], 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-          window.map
-        );
-      }
-      function loadMap() {
-        if (typeof L === "undefined") setTimeout(loadMap, 100);
-        else initMap();
-      }
-      if (document.readyState === "complete") loadMap();
-      else window.addEventListener("load", loadMap);
+        // Map initialization moved to reports.js (on-demand, called by "Show on Map")
+        // The inline auto-init was removed to keep the map hidden by default.
+        
     </script>
 
     <script></script>
@@ -1034,21 +914,9 @@ setTimeout(() => {
     <!-- Main app code (loads last) -->
 <script src="./js/reports.js" defer></script>
 
-    <script>
-      // Initialize empty map
-      function initMap() {
-        if (!window.map && typeof L !== "undefined") {
-          window.map = L.map("map").setView([0, 0], 2);
-          L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          ).addTo(window.map);
-        }
-      }
-      // Load when both DOM and Leaflet are ready
-      if (document.readyState === "complete") initMap();
-      else window.addEventListener("load", initMap);
-    </script>
- <a href="#" id="floating-dashboard-btn" class="floating-back-btn">
+<!-- Map auto-init removed (was conflicting with on-demand init in reports.js) -->
+
+    <a href="#" id="floating-dashboard-btn" class="floating-back-btn">
   <i class="fas fa-home"></i>
   <span class="back-text">Dashboard</span>
 </a>
@@ -1072,6 +940,7 @@ setTimeout(() => {
 
 document.getElementById('whatsapp-share').addEventListener('click', async function(e) {
   e.preventDefault();
+  console.log("🔵 WHATSAPP HANDLER FIRED");
   
   // 1. Get report data
   let report;
@@ -1136,7 +1005,7 @@ const whatsappNotice = {
   if (imagePart) messageParts.push(imagePart);
   messageParts.push(`\n\n_${t(`closingLines.${report.type}`, lang)}_`);
   messageParts.push(`\n_${t('closingLines.thank_you', lang)}_`);
-  messageParts.push(`\n\n_${t('reportSharedVia', lang)} ${window.location.href}_`);
+  messageParts.push(`\n\n_${t('reportSharedVia', lang)} ${window.getShareUrl()}_`);
 
   const message = messageParts.filter(Boolean).join('');
   console.log("📱 WhatsApp message length:", message.length);
@@ -1517,5 +1386,183 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
-  </body>
+<script src="./js/debug-console.js"></script>
+  
+<script>
+// 🌐 5-tap gesture on "Connections" title — owner-only debug console activation
+(function() {
+    const OWNER_EMAIL = 'thomasnguyen07@gmail.com';
+    const TAP_WINDOW_MS = 3500;      // 5 taps must occur within 3.5 seconds
+    const REQUIRED_TAPS = 5;
+
+    let tapTimes = [];
+
+    function isOwner() {
+        try {
+            const u = JSON.parse(localStorage.getItem('user') || 'null');
+            if (u && u.email === OWNER_EMAIL) return true;
+        } catch (e) {}
+        if (window.fb && window.fb.auth && window.fb.auth.currentUser) {
+            return window.fb.auth.currentUser.email === OWNER_EMAIL;
+        }
+        return false;
+    }
+
+    function activateGesture() {
+        const titleEl = document.querySelector('.app-title');
+        if (!titleEl) {
+            console.warn('🌐 5-tap: .app-title not found');
+            return;
+        }
+
+        titleEl.style.userSelect = 'none';
+        titleEl.style.webkitUserSelect = 'none';
+        titleEl.style.touchAction = 'manipulation';
+        titleEl.style.webkitTouchCallout = 'none';
+
+        titleEl.addEventListener('click', function(e) {
+            if (!isOwner()) return;   // silently ignore non-owners
+
+            const now = Date.now();
+            tapTimes.push(now);
+            // Keep only taps within the window
+            tapTimes = tapTimes.filter(t => now - t < TAP_WINDOW_MS);
+
+            if (tapTimes.length >= REQUIRED_TAPS) {
+                tapTimes = [];
+                const current = localStorage.getItem('debugConsoleVisible') === 'true';
+                const next = !current;
+                localStorage.setItem('debugConsoleVisible', next ? 'true' : 'false');
+                console.log('🐛 Debug console toggled to:', next ? 'ON' : 'OFF');
+
+                // 📸 Save current language so it doesn't revert on reload
+                try {
+                    const langSelect = document.getElementById('language-switcher');
+                    if (langSelect && langSelect.value) {
+                        localStorage.setItem('appLanguage', langSelect.value);
+                        localStorage.setItem('userLanguage', langSelect.value);
+                    }
+                } catch (e) {}
+
+                // 📸 Save current form state so it survives the reload
+                try {
+                    const formSnapshot = {
+                        title:        (document.getElementById('report-title') || {}).value || '',
+                        type:         (document.getElementById('report-type') || {}).value || '',
+                        description:  (document.getElementById('report-description') || {}).value || '',
+                        contact:      (document.getElementById('reporter-contact') || {}).value || '',
+                        locationText: (document.getElementById('location-text-input') || {}).value || '',
+                        coordinates:  (document.getElementById('selected-coordinates') || {}).value || '',
+                        addressInput: (document.getElementById('address-input') || {}).value || '',
+                        activeTab:    document.querySelector('.tab.active')?.id || 'new-report-tab',
+                        // 📷 Save uploaded image URLs so they survive the reload
+                        imageUrls:    Array.isArray(window.lastUploadedImages) ? window.lastUploadedImages.slice() : []
+                    };
+                    localStorage.setItem('worm_reload_snapshot', JSON.stringify(formSnapshot));
+                    console.log('📸 Form snapshot saved before worm reload:', formSnapshot);
+                } catch (e) {
+                    console.warn('Could not save form snapshot:', e);
+                }
+
+                // Tiny toast so you know it worked
+                const toast = document.createElement('div');
+                toast.textContent = next ? '🐛 Debug ON' : '🛡️ Debug OFF';
+                toast.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000;color:#0f0;padding:8px 16px;border-radius:20px;font-family:monospace;font-size:14px;z-index:2147483647;opacity:0.95;';
+                document.body.appendChild(toast);
+                setTimeout(() => location.reload(), 600);
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateGesture);
+    } else {
+        activateGesture();
+    }
+})();
+</script>
+
+<script>
+// 🔄 Restore form state + language after worm-triggered reload
+(function() {
+    try {
+        const raw = localStorage.getItem('worm_reload_snapshot');
+        if (!raw) return;
+
+        const snapshot = JSON.parse(raw);
+        localStorage.removeItem('worm_reload_snapshot');
+
+        // Wait for the page to be fully ready before restoring
+        // (2.5s — gives reports.js, avatar-upload.js, and DOM time to settle)
+        setTimeout(() => {
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (!el || val === undefined || val === null) return;
+                if (el.value !== val) {
+                    el.value = val;
+                    el.dispatchEvent(new Event('input',  { bubbles: true }));
+                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            };
+
+            setVal('report-title',         snapshot.title);
+            setVal('report-type',          snapshot.type);
+            setVal('report-description',   snapshot.description);
+            setVal('reporter-contact',     snapshot.contact);
+            setVal('location-text-input',  snapshot.locationText);
+            setVal('selected-coordinates', snapshot.coordinates);
+            setVal('address-input',        snapshot.addressInput);
+
+            // 📷 Restore uploaded image URLs
+            try {
+                if (Array.isArray(snapshot.imageUrls) && snapshot.imageUrls.length > 0) {
+                    window.lastUploadedImages = snapshot.imageUrls.slice();
+                    console.log('📷 Restored', window.lastUploadedImages.length, 'image URLs after worm reload');
+
+                    // Update the file label and any preview count
+                    const labelEl = document.getElementById('file-input-label');
+                    if (labelEl) labelEl.textContent = `${snapshot.imageUrls.length} file(s) selected`;
+
+                    const countEl = document.getElementById('image-count');
+                    if (countEl) countEl.textContent = `${snapshot.imageUrls.length} files selected`;
+                }
+            } catch (e) {
+                console.warn('Image restore failed:', e);
+            }
+
+            // Restore language selector if it drifted
+            try {
+                const lang = localStorage.getItem('appLanguage') || localStorage.getItem('userLanguage');
+                const langSelect = document.getElementById('language-switcher');
+                if (lang && langSelect && langSelect.value !== lang) {
+                    langSelect.value = lang;
+                    langSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            } catch (e) {}
+
+            console.log('✅ Form + language restored after worm toggle');
+
+            // 📷 Retry image preview restoration a bit later if needed
+            setTimeout(() => {
+                try {
+                    const imgs = window.lastUploadedImages;
+                    const count = Array.isArray(imgs) ? imgs.length : 0;
+                    if (count > 0) {
+                        const labelEl = document.getElementById('file-input-label');
+                        if (labelEl && !labelEl.textContent.match(/\d+ file/)) {
+                            labelEl.textContent = `${count} file(s) selected`;
+                        }
+                        const countEl = document.getElementById('image-count');
+                        if (countEl) countEl.textContent = `${count} files selected`;
+                        console.log('📷 Image preview restore retry: count =', count);
+                    }
+                } catch (e) {}
+            }, 1500);
+        }, 2500);
+    } catch (e) {
+        console.warn('Worm restore failed:', e);
+    }
+})();
+</script>
+</body>
 </html>

@@ -398,6 +398,31 @@
         </div>
       </div>
 
+      <!-- Restore Purchases + Renewal Terms (Apple requirement) -->
+      <div style="text-align: center; margin: 30px 20px 20px 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <button id="restorePurchasesBtn" onclick="if(window.restorePurchases){window.restorePurchases()}else{alert('Restore function not ready. Please reload the page.')}" style="
+          background: #ffffff;
+          color: #333;
+          border: 2px solid #ccc;
+          padding: 12px 28px;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 15px;
+          transition: all 0.2s;">
+          🔄 Restore Purchases
+        </button>
+
+        <p style="font-size: 11px; color: #666; line-height: 1.6; max-width: 620px; margin: 15px auto 0 auto; text-align: center;">
+          Payment will be charged to your Apple ID account at confirmation of purchase.
+          Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period.
+          Your account will be charged for renewal within 24 hours prior to the end of the current period.
+          You can manage and cancel your subscriptions by going to your account settings on the App Store after purchase.
+        </p>
+
+      </div>
+
       <!-- Pass Code Redemption Section -->
 <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
   <h3 id="passCodeTitle">🎫 Have a Pass Code?</h3>
@@ -704,10 +729,11 @@
   }
 };
 
-function getMessage(key) {
+function getRedemptionMessage(key) {
   const lang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
   return redemptionMessages[lang]?.[key] || redemptionMessages.en[key];
 }
+window.getRedemptionMessage = getRedemptionMessage;
 
 function showSuccessNotification(planName) {
   const resultDiv = document.getElementById("redeemResult");
@@ -721,9 +747,9 @@ function showSuccessNotification(planName) {
   resultDiv.innerHTML = `
     <div style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
       <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
-      <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${getMessage("successTitle")}</div>
-      <div style="font-size: 16px; margin-bottom: 15px;">${planDisplay[planName] || "Premium"} ${getMessage("success")}</div>
-      <div style="font-size: 14px; opacity: 0.9;">${getMessage("redirecting")}</div>
+      <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${getRedemptionMessage("successTitle")}</div>
+      <div style="font-size: 16px; margin-bottom: 15px;">${planDisplay[planName] || "Premium"} ${getRedemptionMessage("success")}</div>
+      <div style="font-size: 14px; opacity: 0.9;">${getRedemptionMessage("redirecting")}</div>
       <div style="margin-top: 15px;">
         <div class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite;"></div>
       </div>
@@ -755,8 +781,18 @@ function showSuccessNotification(planName) {
         return;
       }
 
-      // Get current user
-      const user = firebase.auth().currentUser;
+      // Get current user — localStorage works on iOS (SDK user is null)
+      let user = null;
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "null");
+        if (stored && stored.uid && stored.email) {
+          user = { uid: stored.uid, email: stored.email };
+        }
+      } catch (e) {}
+      if (!user && firebase.auth().currentUser) {
+        const sdkUser = firebase.auth().currentUser;
+        user = { uid: sdkUser.uid, email: sdkUser.email };
+      }
       if (!user) {
         alert(getRedemptionMessage("pleaseSignIn"));
         window.location.href = "/index.html";
@@ -775,221 +811,232 @@ function showSuccessNotification(planName) {
       const userEmail = user.email;
       const userId = user.uid;
 
-      // Check if Firestore is properly authenticated
-console.log("=== AUTH CHECK ===");
-console.log("Is user authenticated?", !!user);
-console.log("User email:", user.email);
-console.log("User UID:", user.uid);
-console.log("Firestore instance:", firebase.firestore());
-console.log("=== END AUTH CHECK ===");
-
-// Test a simple Firestore read
-try {
-  const testDoc = await firebase.firestore().collection("users").doc(user.uid).get();
-  console.log("Test read successful! Can read own user document:", testDoc.exists);
-} catch (testError) {
-  console.error("Test read FAILED:", testError.message);
-}
-
       try {
-  console.log("🔍 Attempting to read passcode from Firestore:", code);
-  console.log("🔍 Using collection: pass_codes");
-  
-  // Check if pass code exists
-  const passDoc = await firebase
-    .firestore()
-    .collection("pass_codes")
-    .doc(code)
-    .get();
-    
-  console.log("🔍 Passcode document exists:", passDoc.exists);
-  
-  if (!passDoc.exists) {
-    console.log("❌ Passcode not found in Firestore");
-    resultDiv.innerHTML = getRedemptionMessage("invalidCode");
-    return;
-  }
-  
-  const data = passDoc.data();
-console.log("🔍 Passcode data:", data);
+        console.log("🔍 REST read passcode:", code);
 
-console.log("=== CHECKING DATA FIELDS ===");
-console.log("data.used value:", data.used);
-console.log("data.used type:", typeof data.used);
-console.log("data.used === true?", data.used === true);
+        const projectId = "connectionsfinder-app";
+        const restUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/pass_codes/${encodeURIComponent(code)}`;
 
-// 2. Check if already used
-console.log("=== BEFORE ALREADY USED CHECK ===");
-if (data.used === true) {
-  console.log("✅ Entering ALREADY USED block");
-  resultDiv.innerHTML = getRedemptionMessage("alreadyUsed");
-  // Log attempted reuse
-  await firebase.firestore().collection("passcode_usage_logs").add({
-    code: code,
-    attemptedBy: userId,
-    attemptedEmail: userEmail,
-    attemptedAt: new Date(),
-    status: "already_used",
-    originalRedeemedBy: data.redeemedBy
-  });
-  return;
-}
-console.log("✅ Passed ALREADY USED check");
+        const passResp = await fetch(restUrl);
+        if (!passResp.ok) {
+          console.log("❌ Passcode not found (REST status:", passResp.status, ")");
+          resultDiv.innerHTML = getRedemptionMessage("invalidCode");
+          return;
+        }
 
-// ============================================
-// DEBUG: CHECK EXPIRY
-// ============================================
-console.log("=== DEBUG: CHECKING EXPIRY ===");
-console.log("data.expiresAt:", data.expiresAt);
-console.log("Current time:", new Date());
+        const passDoc = await passResp.json();
+        if (!passDoc || !passDoc.fields) {
+          resultDiv.innerHTML = getRedemptionMessage("invalidCode");
+          return;
+        }
 
-// 3. Check if expired
-if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
-  console.log("❌ Passcode expired");
-  resultDiv.innerHTML = getRedemptionMessage("expired");
-  return;
-}
-console.log("✅ Passed expiry check");
+        // Convert REST fields to plain object
+        const f = passDoc.fields;
+        const data = {
+          used: f.used?.booleanValue ?? f.isUsed?.booleanValue ?? false,
+          plan: f.plan?.stringValue || "monthly",
+          expiresAt: f.expiresAt?.timestampValue || f.expiresAt?.stringValue || null,
+          createdBy: f.createdBy?.stringValue || null,
+          organizationEmail: f.organizationEmail?.stringValue || "",
+          isBulk: f.isBulk?.booleanValue ?? true,
+        };
 
-// ============================================
-// EMAIL CHECK REMOVED - Sponsored users can redeem with any email
-// Passcode is one-time use only (checked by 'used' flag)
-// ============================================
-console.log("=== SKIPPING EMAIL CHECK (sponsored mode) ===");
+        console.log("🔍 Passcode data:", data);
 
-// ============================================
-// DEBUG: CALCULATE EXPIRY DATE
-// ============================================
-console.log("=== DEBUG: CALCULATING EXPIRY DATE ===");
-console.log("data.plan:", data.plan);
-console.log("Initial expiryDate:", new Date());
+        // Already used?
+        if (data.used === true) {
+          console.log("❌ Passcode already used");
+          resultDiv.innerHTML = getRedemptionMessage("alreadyUsed");
+          return;
+        }
 
-const expiryDate = new Date();
-switch (data.plan) {
-  case "monthly":
-    expiryDate.setMonth(expiryDate.getMonth() + 1);
-    break;
-  case "three_months":
-    expiryDate.setMonth(expiryDate.getMonth() + 3);
-    break;
-  case "six_months":
-    expiryDate.setMonth(expiryDate.getMonth() + 6);
-    break;
-  case "yearly":
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    break;
-  default:
-    expiryDate.setMonth(expiryDate.getMonth() + 1);
-}
-console.log("Final expiryDate:", expiryDate);
-console.log("✅ Expiry date calculated");
+        // Expired?
+        if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
+          console.log("❌ Passcode expired");
+          resultDiv.innerHTML = getRedemptionMessage("expired");
+          return;
+        }
 
-// ============================================
-// DEBUG: BEFORE UPDATE
-// ============================================
-console.log("=== BEFORE UPDATE SECTION ===");
-console.log("Step 1: About to update passcode...");
-console.log("Step 2: passDoc.ref exists?", !!passDoc.ref);
-console.log("Step 3: passDoc.ref.path:", passDoc.ref?.path);
-console.log("Step 4: User info - userId:", userId, "userEmail:", userEmail);
-console.log("Step 5: code value:", code);
-console.log("=== STARTING UPDATE ===");
-// ============================================
-// DEBUG: Check the code variable
-// ============================================
-console.log("=== CODE VARIABLE DEBUG ===");
-console.log("code value:", code);
-console.log("code type:", typeof code);
-console.log("code length:", code.length);
-console.log("============================");
+        // Compute subscription expiry from plan
+        const expiryDate = new Date();
+        switch (data.plan) {
+          case "monthly": expiryDate.setMonth(expiryDate.getMonth() + 1); break;
+          case "three_months": expiryDate.setMonth(expiryDate.getMonth() + 3); break;
+          case "six_months": expiryDate.setMonth(expiryDate.getMonth() + 6); break;
+          case "yearly": expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
+          default: expiryDate.setMonth(expiryDate.getMonth() + 1);
+        }
+        console.log("✅ Expiry date calculated:", expiryDate);
 
-// ============================================
-// USE DIRECT FIRESTORE REFERENCE (SAME AS MANUAL TEST)
-// ============================================
-console.log("=== UPDATE DATA BEING SENT ===");
-console.log("used:", true);
-console.log("redeemedBy:", userId);
-console.log("redeemedByEmail:", userEmail);
-console.log("redeemedAt:", new Date());
-console.log("============================");
+        // Get a fresh auth token for REST writes
+        let token = null;
+        try {
+          const stored = JSON.parse(localStorage.getItem("user") || "{}");
+          if (stored.refreshToken) {
+            const API_KEY = "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0";
+            const r = await fetch(
+              `https://securetoken.googleapis.com/v1/token?key=${API_KEY}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(stored.refreshToken)}`,
+              }
+            );
+            if (r.ok) token = (await r.json()).id_token;
+          }
+        } catch (e) {
+          console.warn("Token refresh failed:", e);
+        }
+        if (!token) {
+          try {
+            const stored = JSON.parse(localStorage.getItem("user") || "{}");
+            token = stored.idToken;
+          } catch (e) {}
+        }
 
-const db = firebase.firestore();
+        // 1. Mark passcode as used (REST PATCH)
+        if (token) {
+          try {
+            const updateUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/pass_codes/${encodeURIComponent(code)}?updateMask.fieldPaths=used&updateMask.fieldPaths=redeemedBy&updateMask.fieldPaths=redeemedByEmail&updateMask.fieldPaths=redeemedAt`;
+            const updateBody = {
+              fields: {
+                used: { booleanValue: true },
+                redeemedBy: { stringValue: userId },
+                redeemedByEmail: { stringValue: userEmail },
+                redeemedAt: { timestampValue: new Date().toISOString() },
+              },
+            };
+            const updateResp = await fetch(updateUrl, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updateBody),
+            });
+            console.log("📤 Passcode update status:", updateResp.status);
+          } catch (e) {
+            console.warn("Passcode update failed (non-fatal):", e);
+          }
 
-// ============================================
-// FIRST: Test with a simple field (like manual test)
-// ============================================
-try {
-  console.log("=== RUNNING MANUAL STYLE UPDATE TEST ===");
-  await db.collection("pass_codes").doc(code).update({
-    testField: "test_" + Date.now()
-  });
-  console.log("✅ MANUAL STYLE UPDATE TEST SUCCEEDED!");
-  
-  // ============================================
-  // SECOND: Now do the real update
-  // ============================================
-  console.log("=== RUNNING REAL UPDATE ===");
-  await db.collection("pass_codes").doc(code).update({
-    used: true,
-    redeemedBy: userId,
-    redeemedByEmail: userEmail,
-    redeemedAt: new Date()
-  });
-  console.log("✅ REAL UPDATE SUCCEEDED!");
-  
-} catch (updateError) {
-  console.error("❌ UPDATE FAILED:", updateError.message);
-  console.error("Full error object:", updateError);
-  throw updateError;
-}
+          // 2. Write user profile premium flags (REST PATCH)
+          try {
+            const userUpdateUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${encodeURIComponent(userId)}?updateMask.fieldPaths=isPremium&updateMask.fieldPaths=premium&updateMask.fieldPaths=hasActiveSubscription&updateMask.fieldPaths=subscriptionType&updateMask.fieldPaths=subscriptionExpiry&updateMask.fieldPaths=planType&updateMask.fieldPaths=accountType&updateMask.fieldPaths=userType&updateMask.fieldPaths=sponsorId&updateMask.fieldPaths=passcodeId&updateMask.fieldPaths=email&updateMask.fieldPaths=name&updateMask.fieldPaths=status`;
+            const userUpdateBody = {
+              fields: {
+                isPremium: { booleanValue: true },
+                premium: { booleanValue: true },
+                hasActiveSubscription: { booleanValue: true },
+                subscriptionType: { stringValue: data.plan || "monthly" },
+                subscriptionExpiry: { stringValue: expiryDate.toISOString() },
+                planType: { stringValue: data.plan || "monthly" },
+                accountType: { stringValue: "sponsored" },
+                userType: { stringValue: "sponsored" },
+                sponsorId: { stringValue: data.sponsorId || "" },
+                passcodeId: { stringValue: code || "" },
+                email: { stringValue: userEmail || "" },
+                name: { stringValue: (data.name || (userEmail || "").split("@")[0]) },
+                status: { stringValue: "active" },
+              },
+            };
+            const userResp = await fetch(userUpdateUrl, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(userUpdateBody),
+            });
+            console.log("📤 User premium update status:", userResp.status);
+          } catch (e) {
+            console.warn("User update failed (non-fatal):", e);
+          }
+        }
 
-// ============================================
-// 6. Log successful redemption
-// ============================================
-try {
-  await firebase.firestore().collection("passcode_usage_logs").add({
-    code: code,
-    redeemedBy: userId,
-    redeemedEmail: userEmail,
-    redeemedAt: new Date(),
-    plan: data.plan,
-    sponsorId: data.createdBy,
-    status: "success"
-  });
-  console.log("✅ Log entry added successfully");
-} catch (logError) {
-  console.error("❌ Log entry failed:", logError.message);
-  // Don't throw here - log failure shouldn't stop redemption
-}
+        // 3. Save premium flags to localStorage (works offline)
+        localStorage.setItem(`premium_${userId}`, "true");
+        localStorage.setItem(`premium_expiry_${userId}`, expiryDate.toISOString());
+        console.log("💾 Premium flags saved to localStorage");
+
+        // 4. Success!
+        resultDiv.innerHTML = getRedemptionMessage("success");
+        console.log("🎉 Passcode redeemed successfully");
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = "/dashboard.html";
+        }, 2000);
+
+      } catch (error) {
+        console.error("❌ Redemption error:", error);
+        resultDiv.innerHTML = getRedemptionMessage("error") + (error.message || "");
+      }
 
 // ============================================
 // 7. Update user as sponsored
 // ============================================
-await firebase.firestore().collection("users").doc(userId).set(
-  {
-    accountType: "sponsored",
-    planType: data.plan,
-    isPremium: true,
-    hasActiveSubscription: true,
-    premiumUntil: expiryDate,
-    sponsoredBy: data.createdBy,
-    sponsoredCode: code,
-    sponsoredAt: new Date(),
-  },
-  { merge: true },
-);
+// REST PATCH to users/<uid>
+try {
+  if (token) {
+    const userDocUrl = `https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/users/${encodeURIComponent(userId)}?updateMask.fieldPaths=accountType&updateMask.fieldPaths=planType&updateMask.fieldPaths=isPremium&updateMask.fieldPaths=hasActiveSubscription&updateMask.fieldPaths=premiumUntil&updateMask.fieldPaths=sponsoredBy&updateMask.fieldPaths=sponsoredCode&updateMask.fieldPaths=sponsoredAt`;
+    const userBody = {
+      fields: {
+        accountType: { stringValue: "sponsored" },
+        planType: { stringValue: data.plan || "monthly" },
+        isPremium: { booleanValue: true },
+        hasActiveSubscription: { booleanValue: true },
+        premiumUntil: { timestampValue: expiryDate.toISOString() },
+        sponsoredBy: { stringValue: data.createdBy || "" },
+        sponsoredCode: { stringValue: code },
+        sponsoredAt: { timestampValue: new Date().toISOString() },
+      },
+    };
+    const uResp = await fetch(userDocUrl, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userBody),
+    });
+    console.log("📤 User sponsored update status:", uResp.status);
+  } else {
+    console.warn("No token available for user update");
+  }
+} catch (e) {
+  console.warn("User sponsored update failed (non-fatal):", e);
+}
 
 // ============================================
 // 8. Update premium_subscriptions
 // ============================================
-await firebase.firestore().collection("premium_subscriptions").doc(userId).set({
-  userId: userId,
-  plan: data.plan,
-  status: "active",
-  startDate: new Date(),
-  expiryDate: expiryDate,
-  source: "pass_code",
-});
+// REST PATCH to premium_subscriptions/<uid>
+try {
+  if (token) {
+    const subUrl = `https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/premium_subscriptions/${encodeURIComponent(userId)}?updateMask.fieldPaths=userId&updateMask.fieldPaths=plan&updateMask.fieldPaths=status&updateMask.fieldPaths=startDate&updateMask.fieldPaths=expiryDate&updateMask.fieldPaths=source`;
+    const subBody = {
+      fields: {
+        userId: { stringValue: userId },
+        plan: { stringValue: data.plan || "monthly" },
+        status: { stringValue: "active" },
+        startDate: { timestampValue: new Date().toISOString() },
+        expiryDate: { timestampValue: expiryDate.toISOString() },
+        source: { stringValue: "pass_code" },
+      },
+    };
+    const sResp = await fetch(subUrl, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subBody),
+    });
+    console.log("📤 Subscription update status:", sResp.status);
+  }
+} catch (e) {
+  console.warn("Subscription update failed (non-fatal):", e);
+}
 
 // ============================================
 // 9. Set localStorage flags
@@ -1014,7 +1061,7 @@ const planName = planDisplay[data.plan] || "Premium";
 resultDiv.innerHTML = `
   <div style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
     <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
-    <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${getMessage("successTitle")}</div>
+    <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${getRedemptionMessage("successTitle")}</div>
     <div style="font-size: 16px; margin-bottom: 15px;">${planName} subscription activated!</div>
     <div style="font-size: 14px; opacity: 0.9;">Redirecting to dashboard...</div>
   </div>
@@ -1028,29 +1075,33 @@ setTimeout(() => (window.location.href = "/dashboard.html"), 3000);
         console.error("Error stack:", error.stack);
         resultDiv.innerHTML = getRedemptionMessage("error") + error.message;
         
-        // Log error
+        // Log error (REST, fire-and-forget)
         try {
-          await firebase.firestore().collection("passcode_usage_logs").add({
-            code: code,
-            attemptedBy: userId,
-            attemptedEmail: userEmail,
-            attemptedAt: new Date(),
-            status: "error",
-            errorMessage: error.message
-          });
+          if (token) {
+            const logUrl = `https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/passcode_usage_logs`;
+            const logBody = {
+              fields: {
+                code: { stringValue: code },
+                attemptedBy: { stringValue: userId },
+                attemptedEmail: { stringValue: userEmail },
+                attemptedAt: { timestampValue: new Date().toISOString() },
+                status: { stringValue: "error" },
+                errorMessage: { stringValue: error.message || "" },
+              },
+            };
+            await fetch(logUrl, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(logBody),
+            }).catch(() => {});
+          }
         } catch (logError) {
-          console.error("Failed to log error:", logError);
+          console.warn("Failed to log error:", logError);
         }
       }
-    } catch (globalError) {
-      console.error("=== GLOBAL ERROR CATCH ===");
-      console.error("Error message:", globalError.message);
-      console.error("Error stack:", globalError.stack);
-      const resultDiv = document.getElementById("redeemResult");
-      if (resultDiv) {
-        resultDiv.innerHTML = getRedemptionMessage("error") + globalError.message;
-      }
-    }
   });
 
   // Optional: Get client IP for audit logging
@@ -1429,7 +1480,22 @@ function attachBulkButtonListener() {
             const userCount = document.getElementById("bulkUserCount")?.value || 10;
             const planSelect = document.getElementById("bulkPlanSelect");
             let planText = planSelect?.options[planSelect.selectedIndex]?.text || "Monthly";
-            openBulkQuoteModal(userCount, planText);
+            // Platform detection: iOS/Android native -> external browser; web -> modal
+            const isNative = window.Capacitor && 
+                             typeof window.Capacitor.isNativePlatform === "function" && 
+                             window.Capacitor.isNativePlatform();
+            const platform = isNative && window.Capacitor.getPlatform 
+                             ? window.Capacitor.getPlatform() 
+                             : "web";
+            console.log("📦 Bulk Quote button clicked - platform:", platform);
+
+            if (platform === "ios" || platform === "android") {
+                console.log("🌐 Opening organization-quote.html in external browser");
+                window.open("https://connectionsfinder.com/organization-quote.html", "_system");
+            } else {
+                console.log("🌐 Web - opening modal");
+                openBulkQuoteModal(userCount, planText);
+            }
         });
         return true;
     }
@@ -1493,7 +1559,22 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
             const planText = planSelect?.options[planSelect.selectedIndex]?.text || "Monthly";
             
             // Open the new bulk quote modal (not the old one)
-            openBulkQuoteModal(userCount, planText);
+            // Platform detection: iOS/Android native -> external browser; web -> modal
+            const isNative = window.Capacitor && 
+                             typeof window.Capacitor.isNativePlatform === "function" && 
+                             window.Capacitor.isNativePlatform();
+            const platform = isNative && window.Capacitor.getPlatform 
+                             ? window.Capacitor.getPlatform() 
+                             : "web";
+            console.log("📦 Bulk Quote button clicked - platform:", platform);
+
+            if (platform === "ios" || platform === "android") {
+                console.log("🌐 Opening organization-quote.html in external browser");
+                window.open("https://connectionsfinder.com/organization-quote.html", "_system");
+            } else {
+                console.log("🌐 Web - opening modal");
+                openBulkQuoteModal(userCount, planText);
+            }
         });
         console.log("✅ Bulk quote modal ready (professional email provider style)");
         return true;
@@ -1505,14 +1586,6 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
         setTimeout(attachBulkButtonListener, 1000);
       })();
     </script>
-
-// DEBUG: Check if elements exist
-console.log("=== BULK MODAL DEBUG ===");
-console.log("bulkQuoteModal exists:", document.getElementById('bulkQuoteModal'));
-console.log("bulkModalOverlay exists:", document.getElementById('bulkModalOverlay'));
-console.log("bulkCopyBtn exists:", document.getElementById('bulkCopyBtn'));
-console.log("bulkGmailBtn exists:", document.getElementById('bulkGmailBtn'));
-console.log("Current language:", getCurrentBulkModalLanguage());
 
 <!-- ============================================ -->
 <!-- CONTACT MODAL - ALL EMAIL PROVIDERS -->

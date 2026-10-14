@@ -1,7 +1,147 @@
+// ============================================
+// iOS VIEWPORT HEIGHT FIX
+// Fixes the "100vh bigger than visible screen" issue on iOS WebView
+// ============================================
+(function setViewportHeight() {
+    function setVH() {
+        document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+    }
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', () => setTimeout(setVH, 100));
+    setTimeout(setVH, 100);
+    setTimeout(setVH, 500);
+    setTimeout(setVH, 1500);
+})();
+
+// ============================================
+// LOCAL HELPER - Get user from localStorage
+// ============================================
+
+function getCurrentUser() {
+    try {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
 // At the top of reports.js, after existing constants but before functions
 // Add this at the top of your file, outside any function
 window._languageLock = false;
 window._translationLock = false;
+
+// ============================================
+// FIREBASE STORAGE REST API UPLOAD
+// ============================================
+
+async function uploadImageToFirebaseStorage(file, storagePath) {
+    try {
+        console.log("📤 Uploading to Firebase Storage REST API...");
+
+        // 🔑 Get a FRESH token
+        let token = null;
+        let uid = null;
+
+        // 1) Try SDK user (fast path, works in normal browsers)
+        const sdkUser = window.fb?.auth?.currentUser;
+        if (sdkUser) {
+            try {
+                token = await sdkUser.getIdToken(/* forceRefresh */ true);
+                uid = sdkUser.uid;
+                console.log("🔑 Using FRESH SDK token for user:", uid);
+            } catch (e) {
+                console.warn("SDK getIdToken failed, falling back to localStorage:", e);
+            }
+        }
+
+        // 2) Fall back to refreshing via the Identity Toolkit REST endpoint
+        if (!token) {
+            const stored = getCurrentUser();   // reads localStorage.user
+            if (!stored) {
+                throw new Error("No user found. Please sign out and sign in again.");
+            }
+
+            if (stored.refreshToken) {
+                console.log("🔑 Refreshing idToken via Identity Toolkit...");
+                const API_KEY = "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0";
+                const refreshUrl = `https://securetoken.googleapis.com/v1/token?key=${API_KEY}`;
+                const body = new URLSearchParams({
+                    grant_type: "refresh_token",
+                    refresh_token: stored.refreshToken
+                });
+
+                const refreshResp = await fetch(refreshUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: body.toString()
+                });
+
+                console.log("📤 Refresh response status:", refreshResp.status);
+
+                if (!refreshResp.ok) {
+                    const txt = await refreshResp.text();
+                    console.error("❌ Token refresh failed:", txt);
+                    throw new Error(`Token refresh failed: ${refreshResp.status}`);
+                }
+
+                const refreshData = await refreshResp.json();
+                token = refreshData.id_token;
+                uid = refreshData.user_id;
+                console.log("✅ Got FRESH idToken via refresh. Length:", token.length);
+
+                // Save the new idToken back to localStorage so future calls use it
+                try {
+                    const updated = { ...stored, idToken: token, refreshToken: refreshData.refresh_token || stored.refreshToken };
+                    localStorage.setItem("user", JSON.stringify(updated));
+                    console.log("💾 Updated localStorage.user with fresh idToken");
+                } catch (e) {
+                    console.warn("Could not update localStorage:", e);
+                }
+            } else if (stored.idToken) {
+                token = stored.idToken;
+                uid = stored.uid;
+                console.log("⚠️ No refreshToken — using stored idToken (may be stale)");
+            } else {
+                throw new Error("No token available. Please sign out and sign in again.");
+            }
+        }
+
+        const bucket = "connectionsfinder-app.firebasestorage.app";
+        const encodedPath = encodeURIComponent(storagePath);
+        const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodedPath}`;
+
+        console.log("📤 Upload URL:", url);
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": file.type || "image/jpeg"
+            },
+            body: file
+        });
+
+        console.log("📤 Response status:", response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("✅ Upload successful:", data);
+
+        const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media`;
+
+        return downloadURL;
+
+    } catch (error) {
+        console.error("❌ Firebase Storage upload error:", error);
+        throw error;
+    }
+}
 
 // ============================================
 // APPEAL MESSAGES AND FUNCTIONS
@@ -111,8 +251,8 @@ async function submitAppeal() {
       report: window.currentAppealReport,
       reason: reason,
       contact: contact,
-      userId: window.fb.auth.currentUser.uid,
-      userEmail: window.fb.auth.currentUser.email,
+      userId: getCurrentUser().uid,
+      userEmail: getCurrentUser()?.email,
       status: "pending",
       createdAt: new Date().toISOString(),
     });
@@ -163,30 +303,50 @@ function waitForSaveCurrentReport(callback, maxAttempts = 20) {
 
 // ✅ CORRECTED uploadImage function for reports.js
 async function uploadImage(file, storagePath = null) {
-  if (!file) return Promise.resolve(null);
+    if (!file) return Promise.resolve(null);
 
-  console.log("DEBUG: uploadImage in reports.js called.");
+    console.log("DEBUG: uploadImage in reports.js called.");
 
-  // 1. Compress the image (ensure compressImageForUpload is available)
-  const processedFile = await compressImageForUpload(file);
+    // 1. Compress the image
+    console.log("🔄 Compressing image...");
+    let processedFile;
+    try {
+        processedFile = await compressImageForUpload(file);
+        console.log("✅ Compression complete, size:", processedFile.size);
+    } catch (compressionError) {
+        console.error("❌ Compression failed:", compressionError);
+        throw new Error("Image compression failed: " + compressionError.message);
+    }
 
-  // 2. Generate the storage path
-  const finalStoragePath =
-    storagePath || `reports/${Date.now()}_${processedFile.name}`;
+    // 2. Generate the storage path
+    const finalStoragePath =
+        storagePath || `reports/${Date.now()}_${processedFile.name}`;
 
-  try {
-    // 3. ✅ USE THE PROVEN HELPER - This is the key line.
-    // This is your original, working helper. We assume it returns a correct URL.
-    const downloadUrl = await window.fb.storage.uploadFile(
-      finalStoragePath,
-      processedFile,
-    );
-    console.log("DEBUG: Upload successful, URL:", downloadUrl);
-    return downloadUrl;
-  } catch (error) {
-    console.error("Upload failed:", error);
-    throw error;
-  }
+    try {
+        // 3. ✅ Use REST API upload with timeout
+        console.log("🔄 Starting upload to Firebase Storage...");
+        console.log("📤 Path:", finalStoragePath);
+        console.log("📤 File size:", processedFile.size);
+        
+        // Add timeout protection (30 seconds)
+        const uploadPromise = uploadImageToFirebaseStorage(
+            processedFile,
+            finalStoragePath
+        );
+        
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Upload timed out after 30 seconds")), 30000);
+        });
+        
+        const downloadUrl = await Promise.race([uploadPromise, timeoutPromise]);
+        
+        console.log("✅ Upload successful, URL:", downloadUrl);
+        return downloadUrl;
+    } catch (error) {
+        console.error("❌ Upload failed:", error);
+        console.error("❌ Error message:", error.message);
+        throw error;
+    }
 }
 
 // ▼▼▼ COMPLETE RESTORE AFTER LANGUAGE RELOAD ▼▼▼
@@ -194,7 +354,7 @@ async function uploadImage(file, storagePath = null) {
   // ============================================
   // SKIP FOR SIGNED-OUT USERS
   // ============================================
-  const user = window.fb?.auth?.currentUser;
+  const user = getCurrentUser();
   if (!user) {
     console.log("⚠️ User not signed in - skipping form restore");
     return;
@@ -344,6 +504,13 @@ function showLoadingPopup(message = null) {
         font-family: Arial, sans-serif;
     `;
 
+  // Cancel button labels per language
+  const cancelTexts = {
+    en: "Cancel", vi: "Hủy", zh: "取消",
+    es: "Cancelar", hi: "रद्द करें", ar: "إلغاء",
+  };
+  const cancelLabel = cancelTexts[lang] || "Cancel";
+
   popup.innerHTML = `
         <div class="spinner" style="
             width: 40px;
@@ -357,10 +524,39 @@ function showLoadingPopup(message = null) {
         <div style="font-weight: bold; margin-bottom: 5px; font-size: 16px;">
             ${message || texts.submitting}
         </div>
-        <div style="font-size: 14px; opacity: 0.8;">
+        <div style="font-size: 14px; opacity: 0.8; margin-bottom: 12px;">
             ${texts.pleaseWait}
         </div>
+        <button id="cancel-submit-btn" type="button" style="
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 100px;
+        ">${cancelLabel}</button>
     `;
+
+  // Wire the cancel button to set the flag
+  setTimeout(() => {
+    const cancelBtn = document.getElementById("cancel-submit-btn");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window._submitCancelled = true;
+        if (window._submitAbortController) {
+          try { window._submitAbortController.abort(); } catch (err) {}
+        }
+        // Hide popup immediately
+        hideLoadingPopup();
+        disableSubmitButton(false);
+        console.log("🛑 Submission cancelled by user");
+      });
+    }
+  }, 0);
 
   // Add backdrop
   const backdrop = document.createElement("div");
@@ -494,6 +690,7 @@ function nuclearImageClear() {
   // 4. Clear localStorage for images
   try {
     localStorage.removeItem("lastUploadedImages"); // 🔥 ADD THIS LINE
+    localStorage.removeItem("lastEmailRecipient");   // 🧹 clear cached email recipient too
     const keys = Object.keys(localStorage).filter(
       (key) =>
         key.includes("image") ||
@@ -605,7 +802,7 @@ let isSubmitting = false;
 // Helper function for image validation
 async function validateImageSelection(files) {
   const currentLang = localStorage.getItem("userLanguage") || "en";
-  const userId = window.fb.auth.currentUser?.uid;
+  const userId = getCurrentUser()?.uid;
 
   if (files.length === 0) {
     return { valid: true };
@@ -747,7 +944,7 @@ function logButtonUpdate(action, btn) {
   buttonUpdateLog.push(entry);
   console.log("Button Update:", entry);
 }
-function initializeApp() {
+function initializeUI() {
   // 1. Notification permission
   if ("Notification" in window && Notification.permission !== "denied") {
     Notification.requestPermission();
@@ -840,7 +1037,7 @@ function setupSaveButton() {
     }
 
     // 🔥 FIX: Get current user and use user-specific key
-    const user = window.fb?.auth?.currentUser;
+    const user = getCurrentUser();
     if (!user) {
       alert("Please sign in to save reports");
       return;
@@ -955,10 +1152,10 @@ if (window.console && window.console.group) {
 }
 
 // Auth Check
-if (window.fb && window.fb.auth) {
+if (getCurrentUser()) {
   console.log("Auth: LOADED");
 } else {
-  console.log("Auth: MISSING");
+    console.log("Auth: USING REST API (emulated)");
 }
 
 // Storage Check
@@ -982,8 +1179,9 @@ console.log("Firestore Status:", firestoreOk);
 
 // User Check
 var userId = "Not signed in";
-if (window.fb && window.fb.auth && window.fb.auth.currentUser) {
-  userId = window.fb.auth.currentUser.uid;
+const currentUser = getCurrentUser();
+if (currentUser) {
+  userId = currentUser.uid;
 }
 console.log("Current User:", userId);
 
@@ -993,1692 +1191,1913 @@ if (window.console && window.console.groupEnd) {
 
 // ===== 2. INITIALIZATION GUARD =====
 if (typeof window.reportsInitialized === "undefined") {
-  window.reportsInitialized = true;
-  console.log("Reports.js initialized - starting setup");
-
-  // Your existing setup code here...
-
-  // ===== 1. GLOBAL VARIABLES ===== //
-  let formHandlerInitialized = false;
-  let map, marker;
-  let mapReady = false;
-  let mapInitializationInProgress = false;
-  let currentTab = "new-report";
-  let savedReports = [];
-  let currentTranslations = window.currentTranslations || {};
-
-  // ===== 2. CORE FUNCTIONS ===== //
-  function translate(key) {
-    // Skip dropdown option translation
-    if (
-      key &&
-      (key.startsWith("reportTypes.") || key === "reportType.select")
-    ) {
-      return key; // Return the key so it gets skipped
+    window.reportsInitialized = true;
+    console.log("Reports.js initialized - starting setup");
+    
+    // Your existing setup code here...
+    
+    // ===== 1. GLOBAL VARIABLES ===== //
+    let formHandlerInitialized = false;
+    let map, marker;
+    let mapReady = false;
+    let mapInitializationInProgress = false;
+    let currentTab = "new-report";
+    let savedReports = [];
+    let currentTranslations = window.currentTranslations || {};
+    
+    // ===== 2. CORE FUNCTIONS ===== //
+    function translate(key) {
+        // Skip dropdown option translation
+        if (
+            key &&
+            (key.startsWith("reportTypes.") || key === "reportType.select")
+            ) {
+                return key; // Return the key so it gets skipped
+            }
+        const value = key
+        .split(".")
+        .reduce((o, k) => (o || {})[k], currentTranslations);
+        return value || key;
     }
-    const value = key
-      .split(".")
-      .reduce((o, k) => (o || {})[k], currentTranslations);
-    return value || key;
-  }
-
-  // Add this function to reports.js
-  function showSavedReports() {
-    // ADD THIS LINE FIRST:
-    document.getElementById("saved-reports-section").style.display = "block";
-    // DEBUG: Verify data and dependencies FIRST
-    console.log("Saved reports debug:", {
-      storage: JSON.parse(localStorage.getItem("savedReports")) || [],
-      container: document.getElementById("saved-reports-container"),
-      renderFunc: typeof renderSavedReports,
-      section: document.getElementById("saved-reports-section"),
-    });
-    // 1. Force render the saved reports
-    if (typeof renderSavedReports === "function") {
-      renderSavedReports(); // Refresh the display
-    } else {
-      console.error("renderSavedReports() not found!");
-      return;
-    }
-
-    // 2. Scroll to the section
-    const savedSection = document.getElementById("saved-reports-section");
-    if (savedSection) {
-      // Make section visible if hidden
-      savedSection.style.display = "block";
-
-      // Smooth scroll
-      savedSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-
-      // Visual feedback (optional)
-      savedSection.style.transition = "box-shadow 0.3s";
-      savedSection.style.boxShadow = "0 0 0 3px rgba(52, 152, 219, 0.3)";
-      setTimeout(() => (savedSection.style.boxShadow = "none"), 1000);
-    }
-
-    // 3. Update tab states
-    document.querySelectorAll(".tab").forEach((tab) => {
-      tab.classList.toggle("active", tab.dataset.tab === "saved-reports");
-    });
-  }
-
-  function showAlert(key) {
-    const translation = translate(key);
-    console.log(`Showing alert [${key}]:`, translation);
-    alert(translation);
-  }
-
-  function showConfirm(key) {
-    const translation = translate(key);
-    console.log(`Showing confirm [${key}]:`, translation);
-    return confirm(translation);
-  }
-
-  // ===== DASHBOARD BUTTON TRANSLATION ===== //
-  function updateDashboardButton() {
-    const dashboardBtnText = document.querySelector(
-      "#floating-dashboard-btn .back-text",
-    );
-    if (!dashboardBtnText) return;
-
-    // Use appLanguage (consistent)
-    const lang =
-      localStorage.getItem("appLanguage") ||
-      localStorage.getItem("userLanguage") ||
-      "en";
-    console.log("🔄 Dashboard button language:", lang);
-
-    const texts = {
-      en: "Dashboard",
-      vi: "Bảng điều khiển",
-      zh: "仪表板",
-      es: "Tablero",
-      hi: "डैशबोर्ड",
-      ar: "لوحة التحكم",
-    };
-
-    dashboardBtnText.textContent = texts[lang] || texts.en;
-  }
-
-  // Initialize on load
-
-  // Update when language changes
-  document
-    .getElementById("language-switcher")
-    ?.addEventListener("change", () => {
-      setTimeout(updateDashboardButton, 100); // Short delay to ensure language is set
-
-      // ✅ ADD THIS
-      setTimeout(() => {
-        if (typeof window.renderSavedReports === "function") {
-          console.log("🔄 Reloading saved reports after language change");
-          window.renderSavedReports();
+    
+    // Add this function to reports.js
+    function showSavedReports() {
+        // ADD THIS LINE FIRST:
+        document.getElementById("saved-reports-section").style.display = "block";
+        // DEBUG: Verify data and dependencies FIRST
+        console.log("Saved reports debug:", {
+            storage: JSON.parse(localStorage.getItem("savedReports")) || [],
+            container: document.getElementById("saved-reports-container"),
+            renderFunc: typeof renderSavedReports,
+            section: document.getElementById("saved-reports-section"),
+        });
+        // 1. Force render the saved reports
+        if (typeof renderSavedReports === "function") {
+            renderSavedReports(); // Refresh the display
+        } else {
+            console.error("renderSavedReports() not found!");
+            return;
         }
-      }, 200);
-    });
-
-  function goToDashboard() {
-    switchTab("new-report");
-    window.scrollTo(0, 0);
-  }
-
-  // ===== 3. TAB MANAGEMENT ===== //
-  // Replace your existing tab handler with this enhanced version
-  // Find this function and UPDATE it:
-
-  function switchTab(tabName) {
-    if (tabName === "new-report") {
-      console.log("🔄 Switching to New Report tab...");
-
-      // 1. Clear file input FIRST
-      const fileInput = document.getElementById("report-image");
-      if (fileInput) {
-        fileInput.value = "";
-        console.log("🗑️ File input cleared");
-      }
-
-      // 2. Clear the label IMMEDIATELY
-      const fileLabel = document.getElementById("file-input-label");
-      if (fileLabel) {
-        const lang = localStorage.getItem("userLanguage") || "en";
-        // Use the EXACT same text as updateFileInputDisplay()
-        fileLabel.textContent = `${FILE_INPUT_TEXTS.chooseFile[lang]} • ${FILE_INPUT_TEXTS.noFile[lang]}`;
-        console.log("🔄 Label reset to default");
-      }
-
-      // 3. Clear other form fields
-      const fieldsToClear = [
-        "report-title",
-        "report-type",
-        "report-description",
-        "location-text-input",
-        "address-input",
-        "reporter-contact",
-      ];
-      fieldsToClear.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = el.tagName === "SELECT" ? "" : "";
-      });
-
-      // 4. Clear JavaScript variables
-      window.lastUploadedImages = [];
-      window.lastReport = null;
-
-      console.log("✅ Form cleared");
-
-      // Focus
-      document.getElementById("report-title")?.focus();
+        
+        // 2. Scroll to the section
+        const savedSection = document.getElementById("saved-reports-section");
+        if (savedSection) {
+            // Make section visible if hidden
+            savedSection.style.display = "block";
+            
+            // Smooth scroll
+            savedSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+            
+            // Visual feedback (optional)
+            savedSection.style.transition = "box-shadow 0.3s";
+            savedSection.style.boxShadow = "0 0 0 3px rgba(52, 152, 219, 0.3)";
+            setTimeout(() => (savedSection.style.boxShadow = "none"), 1000);
+        }
+        
+        // 3. Update tab states
+        document.querySelectorAll(".tab").forEach((tab) => {
+            tab.classList.toggle("active", tab.dataset.tab === "saved-reports");
+        });
     }
-
-    // Tab UI switching
-    document.querySelectorAll(".tab").forEach((tab) => {
-      tab.classList.toggle("active", tab.dataset.tab === tabName);
-    });
-    document.querySelectorAll(".tab-content").forEach((content) => {
-      content.classList.toggle("active", content.id === tabName);
-    });
-  }
-
-  // ===== 4. MAP FUNCTIONS ===== //
-  function initMap() {
-    const mapContainer = document.getElementById("map");
-    if (!mapContainer || mapContainer._leaflet_id) return null;
-    if (typeof L === "undefined") {
-      console.warn("Leaflet not loaded yet");
-      setTimeout(initMap, 100);
-      return null;
+    
+    function showAlert(key) {
+        const translation = translate(key);
+        console.log(`Showing alert [${key}]:`, translation);
+        alert(translation);
     }
-
-    try {
-      // Initialize map with default view
-      window.map = L.map("map").setView([10.7610112, 106.6893312], 13);
-
-      // Add tile layer
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-        maxZoom: 19,
-      }).addTo(window.map);
-
-      // Add zoom control
-      L.control.zoom({ position: "topright" }).addTo(window.map);
-
-      console.log("Map initialized successfully");
-      return window.map;
-    } catch (error) {
-      console.error("Map initialization error:", error);
-      setTimeout(initMap, 500); // Retry after delay
-      return null;
+    
+    function showConfirm(key) {
+        const translation = translate(key);
+        console.log(`Showing confirm [${key}]:`, translation);
+        return confirm(translation);
     }
-  }
-
-  function useCurrentLocation() {
-    if (!navigator.geolocation) {
-      showAlert("errors.geolocationUnavailable");
-      return;
-    }
-
-    const btn = document.querySelector('[onclick*="useCurrentLocation"]');
-    if (btn) {
-      btn.disabled = true;
-      const langNow =
+    
+    // ===== DASHBOARD BUTTON TRANSLATION ===== //
+    function updateDashboardButton() {
+        const dashboardBtnText = document.querySelector(
+                                                        "#floating-dashboard-btn .back-text",
+                                                        );
+        if (!dashboardBtnText) return;
+        
+        // Use appLanguage (consistent)
+        const lang =
         localStorage.getItem("appLanguage") ||
         localStorage.getItem("userLanguage") ||
         "en";
-      const locatingTranslations = {
-        en: "Locating...",
-        es: "Localizando...",
-        zh: "定位中...",
-        vi: "Đang định vị...",
-        hi: "लोकेशन ढूंढ रहा है...",
-        ar: "جاري تحديد الموقع...",
-      };
-      btn.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> ' +
-        (locatingTranslations[langNow] || locatingTranslations.en);
+        console.log("🔄 Dashboard button language:", lang);
+        
+        const texts = {
+            en: "Dashboard",
+            vi: "Bảng điều khiển",
+            zh: "仪表板",
+            es: "Tablero",
+            hi: "डैशबोर्ड",
+            ar: "لوحة التحكم",
+        };
+        
+        dashboardBtnText.textContent = texts[lang] || texts.en;
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const langNow =
-          localStorage.getItem("appLanguage") ||
-          localStorage.getItem("userLanguage") ||
-          "en";
-        const coords = pos.coords;
-        console.log("GPS Coordinates:", coords.latitude, coords.longitude);
-
-        document.getElementById("selected-coordinates").value =
-          `${coords.latitude}, ${coords.longitude}`;
-
-        if (window.map) {
-          window.map.flyTo([coords.latitude, coords.longitude], 15);
-          L.marker([coords.latitude, coords.longitude])
-            .addTo(window.map)
-            .bindPopup(
-              (() => {
-                const yourLocationTranslations = {
-                  en: "Your Location",
-                  es: "Tu Ubicación",
-                  zh: "你的位置",
-                  vi: "Vị trí của bạn",
-                  hi: "आपका स्थान",
-                  ar: "موقعك",
-                };
-                return (
-                  yourLocationTranslations[langNow] ||
-                  yourLocationTranslations.en
-                );
-              })(),
-            )
-            .openPopup();
+    
+    // Initialize on load
+    
+    // Update when language changes
+    document
+    .getElementById("language-switcher")
+    ?.addEventListener("change", () => {
+        setTimeout(updateDashboardButton, 100); // Short delay to ensure language is set
+        
+        // ✅ ADD THIS
+        setTimeout(() => {
+            if (typeof window.renderSavedReports === "function") {
+                console.log("🔄 Reloading saved reports after language change");
+                window.renderSavedReports();
+            }
+        }, 200);
+    });
+    
+    function goToDashboard() {
+        switchTab("new-report");
+        window.scrollTo(0, 0);
+    }
+    
+    // ===== 3. TAB MANAGEMENT ===== //
+    // Replace your existing tab handler with this enhanced version
+    // Find this function and UPDATE it:
+    
+    function switchTab(tabName) {
+        if (tabName === "new-report") {
+            console.log("🔄 Switching to New Report tab...");
+            
+            // 1. Clear file input FIRST
+            const fileInput = document.getElementById("report-image");
+            if (fileInput) {
+                fileInput.value = "";
+                console.log("🗑️ File input cleared");
+            }
+            
+            // 2. Clear the label IMMEDIATELY
+            const fileLabel = document.getElementById("file-input-label");
+            if (fileLabel) {
+                const lang = localStorage.getItem("userLanguage") || "en";
+                // Use the EXACT same text as updateFileInputDisplay()
+                fileLabel.textContent = `${FILE_INPUT_TEXTS.chooseFile[lang]} • ${FILE_INPUT_TEXTS.noFile[lang]}`;
+                console.log("🔄 Label reset to default");
+            }
+            
+            // 3. Clear other form fields
+            const fieldsToClear = [
+                "report-title",
+                "report-type",
+                "report-description",
+                "location-text-input",
+                "address-input",
+                "reporter-contact",
+            ];
+            fieldsToClear.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.value = el.tagName === "SELECT" ? "" : "";
+            });
+            
+            // 4. Clear JavaScript variables
+            window.lastUploadedImages = [];
+            window.lastReport = null;
+            
+            console.log("✅ Form cleared");
+            
+            // Focus
+            document.getElementById("report-title")?.focus();
         }
+        
+        // Tab UI switching
+        document.querySelectorAll(".tab").forEach((tab) => {
+            tab.classList.toggle("active", tab.dataset.tab === tabName);
+        });
+        document.querySelectorAll(".tab-content").forEach((content) => {
+            content.classList.toggle("active", content.id === tabName);
+        });
+    }
+    
+    // ===== 4. MAP FUNCTIONS ===== //
+    function initMap() {
+        const mapContainer = document.getElementById("map");
+        if (!mapContainer || mapContainer._leaflet_id) return null;
+        if (typeof L === "undefined") {
+            console.warn("Leaflet not loaded yet");
+            setTimeout(initMap, 100);
+            return null;
+        }
+        
+        try {
+            // Initialize map with default view
+            // Reveal the map container before Leaflet initializes
+            const _mapEl = document.getElementById("map");
+            if (_mapEl) _mapEl.classList.add("has-map");
+            
+            window.map = L.map("map").setView([10.7610112, 106.6893312], 13);
+            
+            // Add tile layer
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors",
+                maxZoom: 19,
+            }).addTo(window.map);
+            
+            // Add zoom control
+            L.control.zoom({ position: "topright" }).addTo(window.map);
+            
+            // Add a close button to the map
+            const closeBtn = document.createElement("button");
+            closeBtn.id = "mapCloseBtn";
+            closeBtn.type = "button";
+            closeBtn.innerHTML = "✕";
+            closeBtn.setAttribute("aria-label", "Close map");
+            closeBtn.style.cssText = `
+              position: absolute !important;
+              top: 8px !important;
+              right: 8px !important;
+              width: 32px !important;
+              height: 32px !important;
+              border-radius: 50% !important;
+              background: rgba(255,255,255,0.95) !important;
+              color: #333 !important;
+              border: 1px solid #ccc !important;
+              font-size: 16px !important;
+              font-weight: bold !important;
+              cursor: pointer !important;
+              z-index: 1000 !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              padding: 0 !important;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+            `;
+            closeBtn.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
+              const mapEl = document.getElementById("map");
+
+              // 1. Let Leaflet clean itself up FIRST
+              if (window.map && typeof window.map.remove === "function") {
+                try { window.map.remove(); } catch (err) { console.warn("map.remove:", err); }
+              }
+              window.map = null;
+
+              // 2. Then wipe the container and hide it
+              if (mapEl) {
+                mapEl.innerHTML = "";
+                mapEl._leaflet_id = null;
+                mapEl.classList.remove("has-map");
+              }
+
+              console.log("🗺️ Map closed");
+            });
+              document.getElementById("map").appendChild(closeBtn);
+            
+            console.log("Map initialized successfully");
+            return window.map;
+        } catch (error) {
+            console.error("Map initialization error:", error);
+            setTimeout(initMap, 500); // Retry after delay
+            return null;
+        }
+    }
+    
+    function useCurrentLocation() {
+        if (!navigator.geolocation) {
+            showAlert("errors.geolocationUnavailable");
+            return;
+        }
+        
+        const btn = document.querySelector('[onclick*="useCurrentLocation"]');
         if (btn) {
-          btn.disabled = false;
-          const buttonTranslations = {
-            en: "Use My Location",
-            vi: "Dùng vị trí của tôi",
-            ar: "استخدم موقعي",
-            es: "Usar mi ubicación",
-            hi: "میرا موقع استعمال کریں",
-            zh: "使用我的位置",
-          };
-          btn.textContent =
-            buttonTranslations[langNow] || buttonTranslations.en;
-        }
-      },
-      (err) => {
-        console.error("GPS Error:", err);
-
-        // Better error messages
-        let errorKey = "errors.locationAccess";
-        if (err.code === err.TIMEOUT) {
-          errorKey = "errors.locationTimeout";
-        } else if (err.code === err.PERMISSION_DENIED) {
-          errorKey = "errors.locationDenied";
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          errorKey = "errors.locationUnavailable";
-        }
-
-        showAlert(errorKey);
-
-        if (btn) {
-          const langNow =
+            btn.disabled = true;
+            const langNow =
             localStorage.getItem("appLanguage") ||
             localStorage.getItem("userLanguage") ||
             "en";
-          const buttonTranslations = {
-            en: "Use My Location",
-            vi: "Dùng vị trí của tôi",
-            ar: "استخدم موقعي",
-            es: "Usar mi ubicación",
-            hi: "میرا موقع استعمال کریں",
-            zh: "使用我的位置",
-          };
-          btn.textContent =
-            buttonTranslations[langNow] || buttonTranslations.en;
-          btn.disabled = false; // IMPORTANT: Re-enable button
+            const locatingTranslations = {
+                en: "Locating...",
+                es: "Localizando...",
+                zh: "定位中...",
+                vi: "Đang định vị...",
+                hi: "लोकेशन ढूंढ रहा है...",
+                ar: "جاري تحديد الموقع...",
+            };
+            btn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> ' +
+            (locatingTranslations[langNow] || locatingTranslations.en);
         }
-      },
-      {
-        timeout: 30000, // Increased from 10000 to 30000
-        enableHighAccuracy: true,
-        maximumAge: 60000, // Cache for 1 minute
-      },
-    );
-  }
-  // ▼▼▼ 1. PLACEHOLDER TRANSLATION FUNCTION (ADD THIS NEAR findAddress) ▼▼▼
-
-  // ▼▼▼ YOUR EXISTING findAddress FUNCTION (LEAVE UNTOUCHED) ▼▼▼
-  async function findAddress() {
-    const address = document.getElementById("address-input").value.trim();
-    // Suppress fetch errors in console (optional)
-    const originalConsoleError = console.error;
-    console.error = function (...args) {
-      if (args[0] && args[0].includes && args[0].includes("CORS")) {
-        return; // Ignore CORS errors
-      }
-      originalConsoleError.apply(console, args);
-    };
-    const locationName = document
-      .getElementById("location-text-input")
-      .value.trim();
-
-    if (!address) {
-      // Get the current language safely, default to English
-      const lang =
-        localStorage.getItem("appLanguage") ||
-        localStorage.getItem("userLanguage") ||
-        "en";
-
-      // Define the translations for the empty field error
-      const emptyLocationTranslations = {
-        en: "Error: Please enter an address",
-        es: "Error: Por favor ingrese una dirección",
-        zh: "错误：请输入地址",
-        vi: "Lỗi: Vui lòng nhập địa chỉ",
-        hi: "त्रुटि: कृपया एक पता दर्ज करें",
-        ar: "خطأ: يرجى إدخال عنوان",
-      };
-
-      const errorMessage =
-        emptyLocationTranslations[lang] || emptyLocationTranslations.en;
-      alert(errorMessage);
-      return;
+        
+        navigator.geolocation.getCurrentPosition(
+                                                 (pos) => {
+                                                     const langNow =
+                                                     localStorage.getItem("appLanguage") ||
+                                                     localStorage.getItem("userLanguage") ||
+                                                     "en";
+                                                     const coords = pos.coords;
+                                                     console.log("GPS Coordinates:", coords.latitude, coords.longitude);
+                                                     
+                                                     document.getElementById("selected-coordinates").value =
+                                                     `${coords.latitude}, ${coords.longitude}`;
+                                                     
+                                                     let theMap = window.map;
+                                                     if (!theMap || typeof theMap.flyTo !== "function") {
+                                                       theMap = initMap();
+                                                     }
+                                                     if (theMap && typeof theMap.flyTo === "function") {
+                                                       theMap.flyTo([coords.latitude, coords.longitude], 15);
+                                                       L.marker([coords.latitude, coords.longitude])
+                                                         .addTo(theMap)
+                                                         .bindPopup(   (() => {
+                                                                        const yourLocationTranslations = {
+                                                                            en: "Your Location",
+                                                                            es: "Tu Ubicación",
+                                                                            zh: "你的位置",
+                                                                            vi: "Vị trí của bạn",
+                                                                            hi: "आपका स्थान",
+                                                                            ar: "موقعك",
+                                                                        };
+                                                                        return (
+                                                                                yourLocationTranslations[langNow] ||
+                                                                                yourLocationTranslations.en
+                                                                                );
+                                                                    })(),
+                                                                    )
+                                                         .openPopup();
+                                                     }
+                                                     
+                                                     if (btn) {
+                                                         btn.disabled = false;
+                                                         const buttonTranslations = {
+                                                             en: "Use My Location",
+                                                             vi: "Dùng vị trí của tôi",
+                                                             ar: "استخدم موقعي",
+                                                             es: "Usar mi ubicación",
+                                                             hi: "میرا موقع استعمال کریں",
+                                                             zh: "使用我的位置",
+                                                         };
+                                                         btn.textContent =
+                                                         buttonTranslations[langNow] || buttonTranslations.en;
+                                                     }
+                                                 },
+                                                 (err) => {
+                                                     console.error("GPS Error:", err);
+                                                     
+                                                     // Better error messages
+                                                     let errorKey = "errors.locationAccess";
+                                                     if (err.code === err.TIMEOUT) {
+                                                         errorKey = "errors.locationTimeout";
+                                                     } else if (err.code === err.PERMISSION_DENIED) {
+                                                         errorKey = "errors.locationDenied";
+                                                     } else if (err.code === err.POSITION_UNAVAILABLE) {
+                                                         errorKey = "errors.locationUnavailable";
+                                                     }
+                                                     
+                                                     showAlert(errorKey);
+                                                     
+                                                     if (btn) {
+                                                         const langNow =
+                                                         localStorage.getItem("appLanguage") ||
+                                                         localStorage.getItem("userLanguage") ||
+                                                         "en";
+                                                         const buttonTranslations = {
+                                                             en: "Use My Location",
+                                                             vi: "Dùng vị trí của tôi",
+                                                             ar: "استخدم موقعي",
+                                                             es: "Usar mi ubicación",
+                                                             hi: "میرا موقع استعمال کریں",
+                                                             zh: "使用我的位置",
+                                                         };
+                                                         btn.textContent =
+                                                         buttonTranslations[langNow] || buttonTranslations.en;
+                                                         btn.disabled = false; // IMPORTANT: Re-enable button
+                                                     }
+                                                 },
+                                                 {
+                                                     timeout: 30000, // Increased from 10000 to 30000
+                                                     enableHighAccuracy: true,
+                                                     maximumAge: 60000, // Cache for 1 minute
+                                                 },
+                                                 );
     }
-
-    // Show loading state on the button
-    const findBtn = document.querySelector('button[onclick="findAddress()"]');
-    const originalText = findBtn.textContent;
-    findBtn.textContent = "Searching...";
-    findBtn.disabled = true;
-
-    try {
-      // 🔥 FIX: Add proper headers and implement retry logic
-      let data = null;
-      let attempts = 0;
-      const maxAttempts = 2;
-
-      while (attempts < maxAttempts && !data) {
-        attempts++;
-
+    // ▼▼▼ 1. PLACEHOLDER TRANSLATION FUNCTION (ADD THIS NEAR findAddress) ▼▼▼
+    
+    // ▼▼▼ YOUR EXISTING findAddress FUNCTION (LEAVE UNTOUCHED) ▼▼▼
+    async function findAddress() {
+        const address = document.getElementById("address-input").value.trim();
+        // Suppress fetch errors in console (optional)
+        const originalConsoleError = console.error;
+        console.error = function (...args) {
+            if (args[0] && args[0].includes && args[0].includes("CORS")) {
+                return; // Ignore CORS errors
+            }
+            originalConsoleError.apply(console, args);
+        };
+        const locationName = document
+        .getElementById("location-text-input")
+        .value.trim();
+        
+        if (!address) {
+            // Get the current language safely, default to English
+            const lang =
+            localStorage.getItem("appLanguage") ||
+            localStorage.getItem("userLanguage") ||
+            "en";
+            
+            // Define the translations for the empty field error
+            const emptyLocationTranslations = {
+                en: "Error: Please enter an address",
+                es: "Error: Por favor ingrese una dirección",
+                zh: "错误：请输入地址",
+                vi: "Lỗi: Vui lòng nhập địa chỉ",
+                hi: "त्रुटि: कृपया एक पता दर्ज करें",
+                ar: "خطأ: يرجى إدخال عنوان",
+            };
+            
+            const errorMessage =
+            emptyLocationTranslations[lang] || emptyLocationTranslations.en;
+            alert(errorMessage);
+            return;
+        }
+        
+        // Show loading state on the button
+        const findBtn = document.querySelector('button[onclick="findAddress()"]');
+        const originalText = findBtn.textContent;
+        findBtn.textContent = "Searching...";
+        findBtn.disabled = true;
+        
         try {
-          const response = await fetch(
+            // 🔥 FIX: Add proper headers and implement retry logic
+            let data = null;
+            let attempts = 0;
+            const maxAttempts = 2;
+            
+            while (attempts < maxAttempts && !data) {
+                attempts++;
+                
+                try {
+                    const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
               address,
             )}${attempts > 1 ? "&limit=1&addressdetails=1" : ""}`,
-            {
-              headers: {
-                Accept: "application/json",
-                "User-Agent": "ConnectionsFinder/1.0", // Required by Nominatim
-              },
-            },
-          );
-
-          if (response.ok) {
-            data = await response.json();
-          } else {
-            console.log(`Attempt ${attempts} failed, retrying...`);
-            // Wait a bit before retrying
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
-        } catch (fetchError) {
-          console.log(
-            `Fetch error on attempt ${attempts}:`,
-            fetchError.message,
-          );
-          // Wait before retry
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-      }
-
-      if (!data || !data.length) {
-        showAddressError();
-        return;
-      }
-
-      // Use the first result
-      const { lat, lon, display_name } = data[0];
-
-      // Update coordinates WITHOUT affecting location text
-      document.getElementById("selected-coordinates").value = `${lat}, ${lon}`;
-
-      // Update map only if coordinates changed
-      if (window.map) {
-        window.map.flyTo([lat, lon], 15);
-        L.marker([lat, lon])
-          .addTo(window.map)
-          .bindPopup(display_name)
-          .openPopup();
-      }
-    } catch (error) {
-      console.error("Address error:", error);
-      showAddressError();
-    } finally {
-      // Reset button
-      findBtn.textContent = originalText;
-      findBtn.disabled = false;
-    }
-  }
-
-  function updateMap(lat, lng, title) {
-    if (!mapReady) {
-      const initializedMap = initMap();
-      if (!initializedMap) {
-        setTimeout(() => updateMap(lat, lng, title), 100);
-        return;
-      }
-    }
-
-    try {
-      if (marker && map.hasLayer(marker)) {
-        map.removeLayer(marker);
-      }
-
-      marker = L.marker([lat, lng], {
-        icon: L.divIcon({
-          className: "map-marker-icon",
-          iconSize: [20, 20],
-        }),
-      })
-        .addTo(map)
-        .bindPopup(title || translate("labels.selectedLocation"))
-        .openPopup();
-
-      map.flyTo([lat, lng], 15, {
-        duration: 1,
-        easeLinearity: 0.25,
-      });
-    } catch (error) {
-      console.error("Map update failed:", error);
-      map.setView([lat, lng], 15);
-    }
-  }
-
-  // Before submitting report, check content
-  async function checkReportContent(title, description) {
-    try {
-      const checkContent = firebase
-        .functions()
-        .httpsCallable("checkReportContent");
-      const result = await checkContent({ title, description });
-
-      if (!result.data.allowed) {
-        alert(result.data.message);
-        return false;
-      }
-      return true;
-    } catch (error) {
-      console.error("Content check failed:", error);
-      return true; // Allow submission if check fails (fail open)
-    }
-  }
-
-  // ===== 5. FORM HANDLING ===== //
-  async function initializeFormHandler() {
-    if (formHandlerInitialized) return;
-    const form = document.getElementById("report-form");
-    if (!form) return;
-    formHandlerInitialized = true;
-
-    document.getElementById("report-image")?.addEventListener("change", () => {
-      const lang = localStorage.getItem("userLanguage") || "en";
-      showAlert(TRANSLATION_PATCH.popups.dataWarning[lang]);
-    });
-
-    // ============================================
-    // VIOLATION CHECKER FUNCTIONS
-    // ============================================
-    const VIOLATING_KEYWORDS = {
-      violence: {
-        en: [
-          "bomb",
-          "kill",
-          "murder",
-          "terror",
-          "weapon",
-          "gun",
-          "pistol",
-          "rifle",
-          "shoot",
-          "attack",
-          "threat",
-          "explosive",
-        ],
-        vi: [
-          "bom",
-          "giết",
-          "sát hại",
-          "khủng bố",
-          "vũ khí",
-          "súng",
-          "súng lục",
-          "súng trường",
-          "bắn",
-          "tấn công",
-          "đe dọa",
-          "chất nổ",
-        ],
-        zh: [
-          "炸弹",
-          "杀",
-          "谋杀",
-          "恐怖",
-          "武器",
-          "枪",
-          "手枪",
-          "步枪",
-          "射击",
-          "攻击",
-          "威胁",
-          "爆炸物",
-        ],
-        es: [
-          "bomba",
-          "matar",
-          "asesinato",
-          "terror",
-          "arma",
-          "pistola",
-          "rifle",
-          "disparar",
-          "ataque",
-          "amenaza",
-          "explosivo",
-        ],
-        hi: [
-          "बम",
-          "मारना",
-          "हत्या",
-          "आतंक",
-          "हथियार",
-          "बंदूक",
-          "पिस्तौल",
-          "राइफल",
-          "गोली",
-          "हमला",
-          "धमकी",
-          "विस्फोटक",
-        ],
-        ar: [
-          "قنبلة",
-          "قتل",
-          "اغتيال",
-          "إرهاب",
-          "سلاح",
-          "مسدس",
-          "بندقية",
-          "إطلاق نار",
-          "هجوم",
-          "تهديد",
-          "متفجرات",
-        ],
-      },
-      personal: {
-        en: [
-          "bank account",
-          "credit card",
-          "ssn",
-          "passport",
-          "id card",
-          "driver license",
-          "cvv",
-          "pin code",
-        ],
-        vi: [
-          "tài khoản ngân hàng",
-          "thẻ tín dụng",
-          "cmnd",
-          "cccd",
-          "hộ chiếu",
-          "thẻ căn cước",
-          "bằng lái xe",
-          "cvv",
-          "mã pin",
-        ],
-        zh: [
-          "银行账户",
-          "信用卡",
-          "社保号",
-          "护照",
-          "身份证",
-          "驾照",
-          "安全码",
-          "密码",
-        ],
-        es: [
-          "cuenta bancaria",
-          "tarjeta de crédito",
-          "número de seguro social",
-          "pasaporte",
-          "identificación",
-          "licencia de conducir",
-          "cvv",
-          "código pin",
-        ],
-        hi: [
-          "बैंक खाता",
-          "क्रेडिट कार्ड",
-          "सामाजिक सुरक्षा",
-          "पासपोर्ट",
-          "आधार कार्ड",
-          "ड्राइविंग लाइसेंस",
-          "सीवीवी",
-          "पिन कोड",
-        ],
-        ar: [
-          "حساب بنكي",
-          "بطاقة ائتمان",
-          "الرقم القومي",
-          "جواز سفر",
-          "بطاقة هوية",
-          "رخصة قيادة",
-          "رمز التحقق",
-          "رمز الدخول",
-        ],
-      },
-      adult: {
-        en: [
-          "porn",
-          "sex",
-          "nude",
-          "xxx",
-          "adult",
-          "explicit",
-          "sexual",
-          "naked",
-        ],
-        vi: [
-          "khiêu dâm",
-          "sex",
-          "khỏa thân",
-          "xxx",
-          "người lớn",
-          "tục tĩu",
-          "dâm ô",
-          "trần truồng",
-        ],
-        zh: ["色情", "性", "裸体", "成人", "露骨", "性行为", "裸露"],
-        es: [
-          "pornografía",
-          "sexo",
-          "desnudo",
-          "xxx",
-          "adulto",
-          "explícito",
-          "sexual",
-          "desnuda",
-        ],
-        hi: [
-          "अश्लील",
-          "सेक्स",
-          "नग्न",
-          "xxx",
-          "वयस्क",
-          "स्पष्ट",
-          "यौन",
-          "नग्न",
-        ],
-        ar: ["إباحية", "جنس", "عارية", "للبالغين", "صريح", "جنسي", "عاري"],
-      },
-      scam: {
-        en: [
-          "lottery",
-          "winner",
-          "bitcoin",
-          "crypto",
-          "urgent transfer",
-          "inheritance",
-          "prince",
-          "nigerian",
-          "phishing",
-        ],
-        vi: [
-          "trúng thưởng",
-          "lừa đảo",
-          "bitcoin",
-          "tiền ảo",
-          "chuyển tiền gấp",
-          "thừa kế",
-          "hoàng tử",
-          "lừa đảo nigeria",
-          "lừa đảo trực tuyến",
-        ],
-        zh: [
-          "彩票",
-          "中奖",
-          "比特币",
-          "加密货币",
-          "紧急转账",
-          "遗产",
-          "王子",
-          "网络钓鱼",
-          "诈骗",
-        ],
-        es: [
-          "lotería",
-          "ganador",
-          "bitcoin",
-          "cripto",
-          "transferencia urgente",
-          "herencia",
-          "príncipe",
-          "estafa",
-          "phishing",
-        ],
-        hi: [
-          "लॉटरी",
-          "विजेता",
-          "बिटकॉइन",
-          "क्रिप्टो",
-          "तत्काल स्थानांतरण",
-          "विरासत",
-          "राजकुमार",
-          "फ़िशिंग",
-          "घोटाला",
-        ],
-        ar: [
-          "يانصيب",
-          "فائز",
-          "بيتكوين",
-          "عملات رقمية",
-          "تحويل عاجل",
-          "ميراث",
-          "أمير",
-          "تصيد",
-          "احتيال",
-        ],
-      },
-    };
-
-    // ============================================
-    // VIOLATION MESSAGES (Self-contained)
-    // ============================================
-
-    const reportViolationMessages = {
-      en: {
-        cannotSubmit:
-          "❌ Cannot submit: This content contains prohibited language",
-        found: "Prohibited keywords found",
-        accountBlocked: "Your account has been blocked due to violation.",
-      },
-      vi: {
-        cannotSubmit: "❌ Không thể gửi: Nội dung này chứa ngôn ngữ bị cấm",
-        found: "Từ khóa bị cấm được tìm thấy",
-        accountBlocked: "Tài khoản của bạn đã bị khóa do vi phạm.",
-      },
-      zh: {
-        cannotSubmit: "❌ 无法提交：此内容包含禁止使用的语言",
-        found: "发现禁用关键词",
-        accountBlocked: "您的帐户已被封锁。",
-      },
-      es: {
-        cannotSubmit:
-          "❌ No se puede enviar: Este contenido contiene lenguaje prohibido",
-        found: "Palabras clave prohibidas encontradas",
-        accountBlocked: "Tu cuenta ha sido bloqueada.",
-      },
-      hi: {
-        cannotSubmit:
-          "❌ सबमिट नहीं कर सकते: इस सामग्री में प्रतिबंधित भाषा है",
-        found: "प्रतिबंधित कीवर्ड मिले",
-        accountBlocked: "आपका खाता ब्लॉक कर दिया गया है।",
-      },
-      ar: {
-        cannotSubmit: "❌ لا يمكن الإرسال: هذا المحتوى يحتوي على لغة محظورة",
-        found: "الكلمات الرئيسية المحظورة موجودة",
-        accountBlocked: "تم حظر حسابك.",
-      },
-    };
-
-    function getViolationMessage(key) {
-      const lang = localStorage.getItem("userLanguage") || "en";
-      return (
-        reportViolationMessages[lang]?.[key] ||
-        reportViolationMessages.en[key] ||
-        key
-      );
-    }
-
-    // Helper function to check violations across all languages
-    function checkContentViolation(title, description) {
-      const textToCheck = (title + " " + description).toLowerCase();
-      const violations = [];
-
-      for (const [category, langKeywords] of Object.entries(
-        VIOLATING_KEYWORDS,
-      )) {
-        for (const [lang, keywords] of Object.entries(langKeywords)) {
-          for (const keyword of keywords) {
-            if (textToCheck.includes(keyword.toLowerCase())) {
-              violations.push({ category, keyword, language: lang });
+                                                 {
+                                                     headers: {
+                                                         Accept: "application/json",
+                                                         "User-Agent": "ConnectionsFinder/1.0", // Required by Nominatim
+                                                     },
+                                                 },
+                                                 );
+                    
+                    if (response.ok) {
+                        data = await response.json();
+                    } else {
+                        console.log(`Attempt ${attempts} failed, retrying...`);
+                        // Wait a bit before retrying
+                        await new Promise((resolve) => setTimeout(resolve, 500));
+                    }
+                } catch (fetchError) {
+                    console.log(
+                                `Fetch error on attempt ${attempts}:`,
+                                fetchError.message,
+                                );
+                    // Wait before retry
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+                }
             }
-          }
+            
+            if (!data || !data.length) {
+                showAddressError();
+                return;
+            }
+            
+            // Use the first result
+            const { lat, lon, display_name } = data[0];
+            
+            // Update coordinates WITHOUT affecting location text
+            document.getElementById("selected-coordinates").value = `${lat}, ${lon}`;
+            
+            // Update map only if coordinates changed
+            // Ensure the map is initialized, then fly to coordinates
+            let theMap = window.map;
+            if (!theMap || typeof theMap.flyTo !== "function") {
+              theMap = initMap();
+            }
+            if (theMap && typeof theMap.flyTo === "function") {
+              theMap.flyTo([lat, lon], 15);
+              L.marker([lat, lon])
+                .addTo(theMap)
+                .bindPopup(display_name)
+                .openPopup();
+            } else {
+              console.warn("Map not ready, but address was found:", display_name);
+            }
+        } catch (error) {
+            console.error("Address error:", error);
+            showAddressError();
+        } finally {
+            // Reset button
+            findBtn.textContent = originalText;
+            findBtn.disabled = false;
         }
-      }
-
-      // Remove duplicates
-      const uniqueViolations = [];
-      const seen = new Set();
-      for (const v of violations) {
-        const key = `${v.category}_${v.keyword}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          uniqueViolations.push(v);
-        }
-      }
-
-      return uniqueViolations;
     }
-
-    // ============================================
-    // CHECK IMAGE FILENAMES FOR VIOLATIONS
-    // ============================================
-    function checkImageFilenames(imageUrls) {
-      const prohibitedWords = {
-        en: ["bomb", "kill", "weapon", "gun", "bank account", "porn", "sex"],
-        vi: [
-          "bom",
-          "giết",
-          "vũ khí",
-          "súng",
-          "tài khoản ngân hàng",
-          "khiêu dâm",
-          "sex",
-        ],
-        zh: ["炸弹", "杀", "武器", "枪", "银行账户", "色情", "性"],
-        es: [
-          "bomba",
-          "matar",
-          "arma",
-          "pistola",
-          "cuenta bancaria",
-          "pornografía",
-          "sexo",
-        ],
-        hi: ["बम", "मारना", "हथियार", "बंदूक", "बैंक खाता", "अश्लील", "सेक्स"],
-        ar: ["قنبلة", "قتل", "سلاح", "مسدس", "حساب بنكي", "إباحية", "جنس"],
-      };
-
-      for (const url of imageUrls) {
-        // Extract filename from URL
+    
+    function updateMap(lat, lng, title) {
+        if (!mapReady) {
+            const initializedMap = initMap();
+            if (!initializedMap) {
+                setTimeout(() => updateMap(lat, lng, title), 100);
+                return;
+            }
+        }
+        
         try {
-          const filename = decodeURIComponent(
-            url.split("/").pop().split("?")[0],
-          ).toLowerCase();
-          for (const word of prohibitedWords) {
-            if (filename.includes(word)) {
-              return { isViolating: true, word: word, filename: filename };
+            if (marker && map.hasLayer(marker)) {
+                map.removeLayer(marker);
             }
-          }
-        } catch (e) {
-          console.warn("Could not parse filename from URL:", url);
-        }
-      }
-      return { isViolating: false };
-    }
-
-    // Image violation messages with translations
-    function getImageViolationMessage(word, lang) {
-      const messages = {
-        en: `❌ Cannot submit: Image filename contains prohibited word "${word}"`,
-        vi: `❌ Không thể gửi: Tên file ảnh chứa từ bị cấm "${word}"`,
-        zh: `❌ 无法提交：图片文件名包含禁止的词语 "${word}"`,
-        es: `❌ No se puede enviar: El nombre del archivo de imagen contiene la palabra prohibida "${word}"`,
-        hi: `❌ सबमिट नहीं कर सकते: छवि फ़ाइल नाम में प्रतिबंधित शब्द "${word}" है`,
-        ar: `❌ لا يمكن الإرسال: اسم ملف الصورة يحتوي على كلمة محظورة "${word}"`,
-      };
-      return messages[lang] || messages.en;
-    }
-
-    async function blockViolatingUser(userId, reason, violations) {
-      try {
-        // ✅ FIX: Use userId parameter, not user.uid
-        const userRef = window.fb.firestore.collection("users").doc(userId);
-        await userRef.update({
-          status: "blocked",
-          blockedReason: reason,
-          blockedAt: new Date(),
-          blockedBy: "auto_moderation",
-        });
-        await window.fb.firestore.collection("security_logs").add({
-          eventType: "REPORT_VIOLATION_ATTEMPT",
-          userId: userId,
-          severity: "high",
-          details: { reason, violations },
-          timestamp: new Date(),
-        });
-        return true;
-      } catch (error) {
-        console.error("Failed to block user:", error);
-        return false;
-      }
-    }
-    // ============================================
-    // END OF VIOLATION CHECKER
-    // ============================================
-
-    // Remove ALL initialization checks - keep only the form handler
-    // In reports.js form submit handler, ensure the order is correct:
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      // ============================================
-      // ✅ ADD VIOLATION CHECK HERE (RIGHT AFTER e.preventDefault())
-      // ============================================
-      // In form submit handler, after e.preventDefault()
-      // ============================================
-      // CHECK TEXT CONTENT FOR VIOLATIONS
-      // ============================================
-      const title = document.getElementById("report-title")?.value || "";
-      const description =
-        document.getElementById("report-description")?.value || "";
-
-      // Prohibited words in all languages
-      const prohibitedWords = {
-        en: ["bomb", "kill", "weapon", "gun", "bank account", "porn", "sex"],
-        vi: [
-          "bom",
-          "giết",
-          "vũ khí",
-          "súng",
-          "tài khoản ngân hàng",
-          "khiêu dâm",
-          "sex",
-        ],
-        zh: ["炸弹", "杀", "武器", "枪", "银行账户", "色情", "性"],
-        es: [
-          "bomba",
-          "matar",
-          "arma",
-          "pistola",
-          "cuenta bancaria",
-          "pornografía",
-          "sexo",
-        ],
-        hi: ["बम", "मारना", "हथियार", "बंदूक", "बैंक खाता", "अश्लील", "सेक्स"],
-        ar: ["قنبلة", "قتل", "سلاح", "مسدس", "حساب بنكي", "إباحية", "جنس"],
-      };
-
-      const lang = localStorage.getItem("userLanguage") || "en";
-      const wordsToCheck = prohibitedWords[lang] || prohibitedWords.en;
-      const textToCheck = (title + " " + description).toLowerCase();
-
-      let hasViolation = false;
-      let foundWord = "";
-      for (const word of wordsToCheck) {
-        if (textToCheck.includes(word.toLowerCase())) {
-          hasViolation = true;
-          foundWord = word;
-          break;
-        }
-      }
-
-      if (hasViolation) {
-        const violationMessages = {
-          en: {
-            title: "❌ Cannot submit: Content contains prohibited language",
-            found: "Prohibited word found",
-            blocked: "Your account has been blocked due to violation.",
-            appeal: "If you believe this is an error, please contact support.",
-          },
-          vi: {
-            title: "❌ Không thể gửi: Nội dung chứa ngôn ngữ bị cấm",
-            found: "Thấy từ bị cấm",
-            blocked: "Tài khoản của bạn đã bị khóa do vi phạm.",
-            appeal: "Nếu bạn cho rằng đây là lỗi, vui lòng liên hệ hỗ trợ.",
-          },
-          zh: {
-            title: "❌ 无法提交：内容包含禁止使用的语言",
-            found: "发现禁用词",
-            blocked: "您的帐户已被封锁。",
-            appeal: "如果您认为这是错误，请联系支持人员。",
-          },
-          es: {
-            title:
-              "❌ No se puede enviar: El contenido contiene lenguaje prohibido",
-            found: "Palabra prohibida encontrada",
-            blocked: "Tu cuenta ha sido bloqueada.",
-            appeal: "Si crees que es un error, contacta a soporte.",
-          },
-          hi: {
-            title: "❌ सबमिट नहीं कर सकते: सामग्री में प्रतिबंधित भाषा है",
-            found: "प्रतिबंधित शब्द मिला",
-            blocked: "आपका खाता ब्लॉक कर दिया गया है।",
-            appeal:
-              "यदि आपको लगता है कि यह त्रुटि है, तो कृपया सहायता से संपर्क करें।",
-          },
-          ar: {
-            title: "❌ لا يمكن الإرسال: المحتوى يحتوي على لغة محظورة",
-            found: "الكلمة المحظورة موجودة",
-            blocked: "تم حظر حسابك.",
-            appeal: "إذا كنت تعتقد أن هذا خطأ، يرجى الاتصال بالدعم.",
-          },
-        };
-
-        const t = violationMessages[lang];
-        alert(
-          `${t.title}\n\n${t.found}: ${foundWord}\n\n${t.blocked}\n\n${t.appeal}`,
-        );
-
-        // Block the user
-        const currentUser = window.fb.auth?.currentUser;
-        if (currentUser) {
-          try {
-            const userRef = window.fb.firestore
-              .collection("users")
-              .doc(currentUser.uid);
-            await userRef.update({
-              status: "blocked",
-              blockedReason: `Attempted to submit prohibited content: ${foundWord}`,
-              blockedAt: new Date(),
-              blockedBy: "auto_moderation",
+            
+            marker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: "map-marker-icon",
+                    iconSize: [20, 20],
+                }),
+            })
+            .addTo(map)
+            .bindPopup(title || translate("labels.selectedLocation"))
+            .openPopup();
+            
+            map.flyTo([lat, lng], 15, {
+                duration: 1,
+                easeLinearity: 0.25,
             });
-            await window.fb.auth.signOut();
-          } catch (err) {
-            console.error("Failed to block user:", err);
-          }
+        } catch (error) {
+            console.error("Map update failed:", error);
+            map.setView([lat, lng], 15);
         }
-        window.location.href = "/dashboard";
-        return;
-      }
-      // ============================================
-      // END OF VIOLATION CHECK
-      // ============================================
-
-      console.log("🚀 FORM SUBMIT TRIGGERED!"); // This should show
-
-      // ===== ADD THIS LINE =====
-      showLoadingPopup();
-      disableSubmitButton(true);
-      // ===== END ADDITION =====
-
-      // ▼▼▼ ADD THIS EXACT CODE HERE ▼▼▼
-      // ▼▼▼ REPLACE YOUR EXISTING SIGN-IN CHECK WITH THIS ▼▼▼
-      console.log("=== FORM SUBMIT SIGN-IN CHECK ===");
-
-      // SIMPLE, DIRECT CHECK
-      const auth = window.fb?.auth;
-      console.log("Auth available?", !!auth);
-
-      if (!auth) {
-        // ===== ADD THESE 2 LINES =====
-        hideLoadingPopup();
-        disableSubmitButton(false);
-        // ===== END ADDITION =====
-        console.error("Auth not available");
-        alert("Authentication error. Please refresh.");
-        return;
-      }
-
-      const user = auth.currentUser;
-      console.log("Current user:", user ? user.email : "NO USER");
-
-      if (!user) {
-        // ===== ADD THESE 2 LINES =====
-        hideLoadingPopup();
-        disableSubmitButton(false);
-        // ===== END ADDITION =====
-        console.log("❌ NO USER - Showing sign-in popup");
-        const lang = localStorage.getItem("userLanguage") || "en";
-        const messages = {
-          en: "Please sign in to submit reports.",
-          vi: "Vui lòng đăng nhập để gửi báo cáo.",
-          zh: "请登录以提交报告。",
-          es: "Por favor inicie sesión para enviar informes.",
-          hi: "रिपोर्ट सबमिट करने के लिए कृपया साइन इन करें।",
-          ar: "يرجى تسجيل الدخول لإرسال التقارير。",
-        };
-        alert(messages[lang] || messages.en);
-        return;
-      }
-
-      console.log("✅ User signed in as:", user.email);
-      // ▲▲▲ END SIGN-IN CHECK ▲▲▲
-
-      // ▼▼▼ REPLACE YOUR VALIDATION CODE WITH THIS ▼▼▼
-      console.log("Translation Debug:", {
-        title: TRANSLATION_PATCH?.fieldLabels?.title,
-        type: TRANSLATION_PATCH?.fieldLabels?.type,
-      });
-      console.log("Report Type Translations:", {
-        translations: TRANSLATION_PATCH.fieldLabels.type,
-        current: getTranslation(TRANSLATION_PATCH?.fieldLabels?.type),
-        element: document.getElementById("report-type"),
-      });
-
-      const requiredFields = [
-        {
-          id: "report-title",
-          // ▼▼▼ PRESERVE EXISTING TITLE TRANSLATION ▼▼▼
-          name: getTranslation(TRANSLATION_PATCH?.fieldLabels?.title, "Title"),
-          validate: () =>
-            !document.getElementById("report-title")?.value?.trim(),
-        },
-        {
-          id: "report-type",
-          name:
-            getTranslation(
-              TRANSLATION_PATCH?.popups?.fieldLabels?.type,
-              "Report Type",
-            ) + ":", // Colon added
-          validate: () =>
-            !document.getElementById("report-type")?.value?.trim(),
-        },
-        {
-          id: "report-description",
-          name: getTranslation(
-            TRANSLATION_PATCH?.fieldLabels?.description,
-            "Description",
-          ),
-          validate: () =>
-            !(
-              document.getElementById("report-description")?.value?.trim() || ""
-            ),
-        },
-
-        {
-          id: "location-text-input",
-          name: getTranslation(
-            TRANSLATION_PATCH?.fieldLabels?.location,
-            "Location",
-          ),
-          validate: () =>
-            !(
-              document.getElementById("location-text-input")?.value?.trim() ||
-              ""
-            ),
-        },
-      ].filter(Boolean);
-
-      const missingFields = requiredFields.filter((field) => field.validate());
-
-      requiredFields.forEach((field) => {
-        document.getElementById(field.id)?.classList.toggle(
-          "invalid-field",
-          missingFields.some((f) => f.id === field.id),
-        );
-      });
-
-      if (missingFields.length > 0) {
-        showAlert(
-          `${getTranslation(TRANSLATION_PATCH.popups.dataWarning)}\n\n` +
-            `${getTranslation(TRANSLATION_PATCH.popups.missingFields)}: ` +
-            `${missingFields.map((f) => f.name).join(", ")}`,
-        );
-        return;
-      }
-      // ▲▲▲ END OF ADDED CODE ▲▲▲
-
-      // ▼▼▼ BLOCK FREE USERS COMPLETELY ▼▼▼
-      // DEBUG: Check premium status
-      console.log("Premium check debug:", {
-        userId: window.fb.auth.currentUser?.uid,
-        premiumKey: `premium_${window.fb.auth.currentUser?.uid}`,
-        premiumValue: localStorage.getItem(
-          `premium_${window.fb.auth.currentUser?.uid}`,
-        ),
-        isPremium:
-          localStorage.getItem(`premium_${window.fb.auth.currentUser?.uid}`) ===
-          "true",
-        currentUser: window.fb.auth.currentUser,
-      });
-
-      const currentUser = window.fb.auth.currentUser;
-      const userId = currentUser?.uid;
-      const isPremium = userId
-        ? localStorage.getItem(`premium_${userId}`) === "true"
-        : false;
-
-      // BLOCK ALL submissions for free users
-      if (!isPremium) {
-        // ===== ADD THESE 2 LINES =====
-        hideLoadingPopup();
-        disableSubmitButton(false);
-        // ===== END ADDITION =====
-        const lang = localStorage.getItem("userLanguage") || "en";
-        const blockMessages = {
-          en: "Please subscribe to submit reports. Free trial allows viewing features only.",
-          vi: "Vui lòng đăng ký để gửi báo cáo. Bản dùng thử chỉ cho phép xem tính năng.",
-          zh: "请订阅以提交报告。免费试用仅允许查看功能。",
-          es: "Por favor suscríbete para enviar informes. La prueba gratuita solo permite ver funciones.",
-          hi: "रिपोर्ट सबमिट करने के लिए कृपया सदस्यता लें। निःशुल्क परीक्षण केवल सुविधाएँ देखने की अनुमति देता है।",
-          ar: "يرجى الاشتراك لإرسال التقارير. تتيح النسخة التجريبية المجانية عرض الميزات فقط.",
-        };
-        alert(blockMessages[lang] || blockMessages.en);
-        window.open("./premium-iap.html", "_blank");
-        return; // STOP submission completely
-      }
-      // ▲▲▲ END BLOCK ▲▲▲
-
-      try {
-        await window.fbReady;
-
-        // 1. Collect form data
-        const formData = {
-          title: document.getElementById("report-title").value,
-          type: document.getElementById("report-type").value,
-          description: document.getElementById("report-description").value,
-          contact: document.getElementById("reporter-contact").value,
-          locationText: document.getElementById("location-text-input").value,
-          coordinates:
-            document.getElementById("selected-coordinates").value || "", // Ensure string
-          userId: window.fb.auth.currentUser?.uid || "anonymous",
-          timestamp: new Date().toISOString(),
-        };
-
-        // 2. Handle file upload (if any)
-        // 2. Handle file upload (if any) - TRUE MULTIPLE IMAGE UPLOAD
-        const fileInput = document.getElementById("report-image");
-
-        // Check premium status
-        const userId = window.fb.auth.currentUser?.uid || "anonymous";
-
-        // Check localStorage first, then Firestore
-        let isPremium = localStorage.getItem(`premium_${userId}`) === "true";
-
-        if (!isPremium && userId !== "anonymous") {
-          try {
-            const userDoc = await window.fb.firestore
-              .collection("users")
-              .doc(userId)
-              .get();
-            isPremium = userDoc.exists && userDoc.data().isPremium === true;
-            if (isPremium) {
-              localStorage.setItem(`premium_${userId}`, "true");
+    }
+    
+    // Before submitting report, check content
+    async function checkReportContent(title, description) {
+        try {
+            const checkContent = firebase
+            .functions()
+            .httpsCallable("checkReportContent");
+            const result = await checkContent({ title, description });
+            
+            if (!result.data.allowed) {
+                alert(result.data.message);
+                return false;
             }
-          } catch (e) {
-            console.error("Failed to check premium from Firestore:", e);
-          }
+            return true;
+        } catch (error) {
+            console.error("Content check failed:", error);
+            return true; // Allow submission if check fails (fail open)
         }
+    }
+    
+    // ===== 5. FORM HANDLING ===== //
+    async function initializeFormHandler() {
+        if (formHandlerInitialized) return;
+        const form = document.getElementById("report-form");
 
-        const MAX_IMAGES = isPremium ? 5 : 0;
+        // Cancel button — clears the form without submitting
+        const cancelBtn = document.getElementById("cancel-report-btn");
+        if (cancelBtn && !cancelBtn._wired) {
+          cancelBtn._wired = true;
+          cancelBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              const lang = localStorage.getItem("userLanguage") || "en";
+              const confirms = {
+                en: "Cancel this report? Your input will be cleared.",
+                vi: "Hủy báo cáo này? Nội dung bạn nhập sẽ bị xóa.",
+                zh: "取消此报告？您输入的内容将被清除。",
+                es: "¿Cancelar este informe? Se borrará lo que haya escrito.",
+                hi: "यह रिपोर्ट रद्द करें? आपका इनपुट मिटा दिया जाएगा।",
+                ar: "هل تريد إلغاء هذا التقرير؟ سيتم مسح ما أدخلته.",
+              };
+              if (!confirm(confirms[lang] || confirms.en)) return;
 
-        console.log("🖼️ Image upload:", {
-          filesSelected: fileInput.files.length,
-          userPremium: isPremium,
-          maxAllowed: MAX_IMAGES,
+              // Clear form fields
+              form.reset();
+              ["report-title", "report-description", "location-text-input",
+               "selected-coordinates", "reporter-contact", "report-type"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.value = "";
+              });
+
+              // Clear file input + previews
+              const fileInput = document.getElementById("report-image");
+              if (fileInput) fileInput.value = "";
+              const previews = document.getElementById("image-previews");
+              if (previews) previews.innerHTML = "";
+              const countEl = document.getElementById("image-count");
+              if (countEl) { countEl.textContent = ""; countEl.style.display = "none"; }
+
+              // Clear stored images
+              window.lastUploadedImages = [];
+              try { localStorage.removeItem("lastUploadedImages"); } catch (err) {}
+
+              // Hide share section if visible
+              const shareSection = document.getElementById("share-section");
+              if (shareSection) shareSection.style.display = "none";
+
+              console.log("🧹 Report cancelled — form cleared");
+            } catch (err) {
+              console.warn("Cancel failed:", err);
+            }
+          });
+        }
+        if (!form) return;
+        formHandlerInitialized = true;
+        
+        document.getElementById("report-image")?.addEventListener("change", () => {
+            const lang = localStorage.getItem("userLanguage") || "en";
+            showAlert(TRANSLATION_PATCH.popups.dataWarning[lang]);
         });
-
-        const imageUrls = []; // Array for multiple image URLs
-
-        if (fileInput.files.length > 0) {
-          // Check premium restriction
-          if (!isPremium) {
-            const currentLang = localStorage.getItem("userLanguage") || "en";
-            const errorMessages = {
-              en: "Please subscribe to premium to upload images with reports.",
-              vi: "Vui lòng đăng ký gói premium để tải hình ảnh lên với báo cáo.",
-              zh: "请订阅高级版以在报告中上传图片。",
-              es: "Por favor suscríbete a premium para subir imágenes con reportes.",
-              hi: "रिपोर्ट के साथ छवियां अपलोड करने के लिए कृपया प्रीमियम की सदस्यता लें।",
-              ar: "يرجى الاشتراك في النسخة المميزة لتحميل الصور مع التقارير.",
+        
+        // ============================================
+        // VIOLATION CHECKER FUNCTIONS
+        // ============================================
+        const VIOLATING_KEYWORDS = {
+            violence: {
+                en: [
+                    "bomb",
+                    "kill",
+                    "murder",
+                    "terror",
+                    "weapon",
+                    "gun",
+                    "pistol",
+                    "rifle",
+                    "shoot",
+                    "attack",
+                    "threat",
+                    "explosive",
+                ],
+                vi: [
+                    "bom",
+                    "giết",
+                    "sát hại",
+                    "khủng bố",
+                    "vũ khí",
+                    "súng",
+                    "súng lục",
+                    "súng trường",
+                    "bắn",
+                    "tấn công",
+                    "đe dọa",
+                    "chất nổ",
+                ],
+                zh: [
+                    "炸弹",
+                    "杀",
+                    "谋杀",
+                    "恐怖",
+                    "武器",
+                    "枪",
+                    "手枪",
+                    "步枪",
+                    "射击",
+                    "攻击",
+                    "威胁",
+                    "爆炸物",
+                ],
+                es: [
+                    "bomba",
+                    "matar",
+                    "asesinato",
+                    "terror",
+                    "arma",
+                    "pistola",
+                    "rifle",
+                    "disparar",
+                    "ataque",
+                    "amenaza",
+                    "explosivo",
+                ],
+                hi: [
+                    "बम",
+                    "मारना",
+                    "हत्या",
+                    "आतंक",
+                    "हथियार",
+                    "बंदूक",
+                    "पिस्तौल",
+                    "राइफल",
+                    "गोली",
+                    "हमला",
+                    "धमकी",
+                    "विस्फोटक",
+                ],
+                ar: [
+                    "قنبلة",
+                    "قتل",
+                    "اغتيال",
+                    "إرهاب",
+                    "سلاح",
+                    "مسدس",
+                    "بندقية",
+                    "إطلاق نار",
+                    "هجوم",
+                    "تهديد",
+                    "متفجرات",
+                ],
+            },
+            personal: {
+                en: [
+                    "bank account",
+                    "credit card",
+                    "ssn",
+                    "passport",
+                    "id card",
+                    "driver license",
+                    "cvv",
+                    "pin code",
+                ],
+                vi: [
+                    "tài khoản ngân hàng",
+                    "thẻ tín dụng",
+                    "cmnd",
+                    "cccd",
+                    "hộ chiếu",
+                    "thẻ căn cước",
+                    "bằng lái xe",
+                    "cvv",
+                    "mã pin",
+                ],
+                zh: [
+                    "银行账户",
+                    "信用卡",
+                    "社保号",
+                    "护照",
+                    "身份证",
+                    "驾照",
+                    "安全码",
+                    "密码",
+                ],
+                es: [
+                    "cuenta bancaria",
+                    "tarjeta de crédito",
+                    "número de seguro social",
+                    "pasaporte",
+                    "identificación",
+                    "licencia de conducir",
+                    "cvv",
+                    "código pin",
+                ],
+                hi: [
+                    "बैंक खाता",
+                    "क्रेडिट कार्ड",
+                    "सामाजिक सुरक्षा",
+                    "पासपोर्ट",
+                    "आधार कार्ड",
+                    "ड्राइविंग लाइसेंस",
+                    "सीवीवी",
+                    "पिन कोड",
+                ],
+                ar: [
+                    "حساب بنكي",
+                    "بطاقة ائتمان",
+                    "الرقم القومي",
+                    "جواز سفر",
+                    "بطاقة هوية",
+                    "رخصة قيادة",
+                    "رمز التحقق",
+                    "رمز الدخول",
+                ],
+            },
+            adult: {
+                en: [
+                    "porn",
+                    "sex",
+                    "nude",
+                    "xxx",
+                    "adult",
+                    "explicit",
+                    "sexual",
+                    "naked",
+                ],
+                vi: [
+                    "khiêu dâm",
+                    "sex",
+                    "khỏa thân",
+                    "xxx",
+                    "người lớn",
+                    "tục tĩu",
+                    "dâm ô",
+                    "trần truồng",
+                ],
+                zh: ["色情", "性", "裸体", "成人", "露骨", "性行为", "裸露"],
+                es: [
+                    "pornografía",
+                    "sexo",
+                    "desnudo",
+                    "xxx",
+                    "adulto",
+                    "explícito",
+                    "sexual",
+                    "desnuda",
+                ],
+                hi: [
+                    "अश्लील",
+                    "सेक्स",
+                    "नग्न",
+                    "xxx",
+                    "वयस्क",
+                    "स्पष्ट",
+                    "यौन",
+                    "नग्न",
+                ],
+                ar: ["إباحية", "جنس", "عارية", "للبالغين", "صريح", "جنسي", "عاري"],
+            },
+            scam: {
+                en: [
+                    "lottery",
+                    "winner",
+                    "bitcoin",
+                    "crypto",
+                    "urgent transfer",
+                    "inheritance",
+                    "prince",
+                    "nigerian",
+                    "phishing",
+                ],
+                vi: [
+                    "trúng thưởng",
+                    "lừa đảo",
+                    "bitcoin",
+                    "tiền ảo",
+                    "chuyển tiền gấp",
+                    "thừa kế",
+                    "hoàng tử",
+                    "lừa đảo nigeria",
+                    "lừa đảo trực tuyến",
+                ],
+                zh: [
+                    "彩票",
+                    "中奖",
+                    "比特币",
+                    "加密货币",
+                    "紧急转账",
+                    "遗产",
+                    "王子",
+                    "网络钓鱼",
+                    "诈骗",
+                ],
+                es: [
+                    "lotería",
+                    "ganador",
+                    "bitcoin",
+                    "cripto",
+                    "transferencia urgente",
+                    "herencia",
+                    "príncipe",
+                    "estafa",
+                    "phishing",
+                ],
+                hi: [
+                    "लॉटरी",
+                    "विजेता",
+                    "बिटकॉइन",
+                    "क्रिप्टो",
+                    "तत्काल स्थानांतरण",
+                    "विरासत",
+                    "राजकुमार",
+                    "फ़िशिंग",
+                    "घोटाला",
+                ],
+                ar: [
+                    "يانصيب",
+                    "فائز",
+                    "بيتكوين",
+                    "عملات رقمية",
+                    "تحويل عاجل",
+                    "ميراث",
+                    "أمير",
+                    "تصيد",
+                    "احتيال",
+                ],
+            },
+        };
+        
+        // ============================================
+        // VIOLATION MESSAGES (Self-contained)
+        // ============================================
+        
+        const reportViolationMessages = {
+            en: {
+            cannotSubmit:
+                "❌ Cannot submit: This content contains prohibited language",
+                found: "Prohibited keywords found",
+                accountBlocked: "Your account has been blocked due to violation.",
+            },
+            vi: {
+                cannotSubmit: "❌ Không thể gửi: Nội dung này chứa ngôn ngữ bị cấm",
+                found: "Từ khóa bị cấm được tìm thấy",
+                accountBlocked: "Tài khoản của bạn đã bị khóa do vi phạm.",
+            },
+            zh: {
+                cannotSubmit: "❌ 无法提交：此内容包含禁止使用的语言",
+                found: "发现禁用关键词",
+                accountBlocked: "您的帐户已被封锁。",
+            },
+            es: {
+            cannotSubmit:
+                "❌ No se puede enviar: Este contenido contiene lenguaje prohibido",
+                found: "Palabras clave prohibidas encontradas",
+                accountBlocked: "Tu cuenta ha sido bloqueada.",
+            },
+            hi: {
+            cannotSubmit:
+                "❌ सबमिट नहीं कर सकते: इस सामग्री में प्रतिबंधित भाषा है",
+                found: "प्रतिबंधित कीवर्ड मिले",
+                accountBlocked: "आपका खाता ब्लॉक कर दिया गया है।",
+            },
+            ar: {
+                cannotSubmit: "❌ لا يمكن الإرسال: هذا المحتوى يحتوي على لغة محظورة",
+                found: "الكلمات الرئيسية المحظورة موجودة",
+                accountBlocked: "تم حظر حسابك.",
+            },
+        };
+        
+        function getViolationMessage(key) {
+            const lang = localStorage.getItem("userLanguage") || "en";
+            return (
+                    reportViolationMessages[lang]?.[key] ||
+                    reportViolationMessages.en[key] ||
+                    key
+                    );
+        }
+        
+        // Helper function to check violations across all languages
+        function checkContentViolation(title, description) {
+            const textToCheck = (title + " " + description).toLowerCase();
+            const violations = [];
+            
+            for (const [category, langKeywords] of Object.entries(
+                                                                  VIOLATING_KEYWORDS,
+                                                                  )) {
+                                                                      for (const [lang, keywords] of Object.entries(langKeywords)) {
+                                                                          for (const keyword of keywords) {
+                                                                              if (textToCheck.includes(keyword.toLowerCase())) {
+                                                                                  violations.push({ category, keyword, language: lang });
+                                                                              }
+                                                                          }
+                                                                      }
+                                                                  }
+            
+            // Remove duplicates
+            const uniqueViolations = [];
+            const seen = new Set();
+            for (const v of violations) {
+                const key = `${v.category}_${v.keyword}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueViolations.push(v);
+                }
+            }
+            
+            return uniqueViolations;
+        }
+        
+        // ============================================
+        // CHECK IMAGE FILENAMES FOR VIOLATIONS
+        // ============================================
+        function checkImageFilenames(imageUrls) {
+            const prohibitedWords = {
+                en: ["bomb", "kill", "weapon", "gun", "bank account", "porn", "sex"],
+                vi: [
+                    "bom",
+                    "giết",
+                    "vũ khí",
+                    "súng",
+                    "tài khoản ngân hàng",
+                    "khiêu dâm",
+                    "sex",
+                ],
+                zh: ["炸弹", "杀", "武器", "枪", "银行账户", "色情", "性"],
+                es: [
+                    "bomba",
+                    "matar",
+                    "arma",
+                    "pistola",
+                    "cuenta bancaria",
+                    "pornografía",
+                    "sexo",
+                ],
+                hi: ["बम", "मारना", "हथियार", "बंदूक", "बैंक खाता", "अश्लील", "सेक्स"],
+                ar: ["قنبلة", "قتل", "سلاح", "مسدس", "حساب بنكي", "إباحية", "جنس"],
             };
-            alert(errorMessages[currentLang] || errorMessages.en);
-            return;
-          }
+            
+            for (const url of imageUrls) {
+                // Extract filename from URL
+                try {
+                    const filename = decodeURIComponent(
+                                                        url.split("/").pop().split("?")[0],
+                                                        ).toLowerCase();
+                    for (const word of prohibitedWords) {
+                        if (filename.includes(word)) {
+                            return { isViolating: true, word: word, filename: filename };
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not parse filename from URL:", url);
+                }
+            }
+            return { isViolating: false };
+        }
+        
+        // Image violation messages with translations
+        function getImageViolationMessage(word, lang) {
+            const messages = {
+                en: `❌ Cannot submit: Image filename contains prohibited word "${word}"`,
+                vi: `❌ Không thể gửi: Tên file ảnh chứa từ bị cấm "${word}"`,
+                zh: `❌ 无法提交：图片文件名包含禁止的词语 "${word}"`,
+                es: `❌ No se puede enviar: El nombre del archivo de imagen contiene la palabra prohibida "${word}"`,
+                hi: `❌ सबमिट नहीं कर सकते: छवि फ़ाइल नाम में प्रतिबंधित शब्द "${word}" है`,
+                ar: `❌ لا يمكن الإرسال: اسم ملف الصورة يحتوي على كلمة محظورة "${word}"`,
+            };
+            return messages[lang] || messages.en;
+        }
+        
+        async function blockViolatingUser(userId, reason, violations) {
+            try {
+                // ✅ FIX: Use userId parameter, not user.uid
+                const userRef = window.fb.firestore.collection("users").doc(userId);
+                await userRef.update({
+                    status: "blocked",
+                    blockedReason: reason,
+                    blockedAt: new Date(),
+                    blockedBy: "auto_moderation",
+                });
+                await window.fb.firestore.collection("security_logs").add({
+                    eventType: "REPORT_VIOLATION_ATTEMPT",
+                    userId: userId,
+                    severity: "high",
+                    details: { reason, violations },
+                    timestamp: new Date(),
+                });
+                return true;
+            } catch (error) {
+                console.error("Failed to block user:", error);
+                return false;
+            }
+        }
+        // ============================================
+        // END OF VIOLATION CHECKER
+        // ============================================
+        
+        // Remove ALL initialization checks - keep only the form handler
+        // In reports.js form submit handler, ensure the order is correct:
+        
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            // ============================================
+            // ✅ ADD VIOLATION CHECK HERE (RIGHT AFTER e.preventDefault())
+            // ============================================
+            // In form submit handler, after e.preventDefault()
+            // ============================================
+            // CHECK TEXT CONTENT FOR VIOLATIONS
+            // ============================================
+            const title = document.getElementById("report-title")?.value || "";
+            const description =
+            document.getElementById("report-description")?.value || "";
+            
+            // Prohibited words in all languages
+            const prohibitedWords = {
+                en: ["bomb", "kill", "weapon", "gun", "bank account", "porn", "sex"],
+                vi: [
+                    "bom",
+                    "giết",
+                    "vũ khí",
+                    "súng",
+                    "tài khoản ngân hàng",
+                    "khiêu dâm",
+                    "sex",
+                ],
+                zh: ["炸弹", "杀", "武器", "枪", "银行账户", "色情", "性"],
+                es: [
+                    "bomba",
+                    "matar",
+                    "arma",
+                    "pistola",
+                    "cuenta bancaria",
+                    "pornografía",
+                    "sexo",
+                ],
+                hi: ["बम", "मारना", "हथियार", "बंदूक", "बैंक खाता", "अश्लील", "सेक्स"],
+                ar: ["قنبلة", "قتل", "سلاح", "مسدس", "حساب بنكي", "إباحية", "جنس"],
+            };
+            
+            const lang = localStorage.getItem("userLanguage") || "en";
+            const wordsToCheck = prohibitedWords[lang] || prohibitedWords.en;
+            const textToCheck = (title + " " + description).toLowerCase();
+            
+            let hasViolation = false;
+            let foundWord = "";
+            for (const word of wordsToCheck) {
+                if (textToCheck.includes(word.toLowerCase())) {
+                    hasViolation = true;
+                    foundWord = word;
+                    break;
+                }
+            }
+            
+            if (hasViolation) {
+                const violationMessages = {
+                    en: {
+                        title: "❌ Cannot submit: Content contains prohibited language",
+                        found: "Prohibited word found",
+                        blocked: "Your account has been blocked due to violation.",
+                        appeal: "If you believe this is an error, please contact support.",
+                    },
+                    vi: {
+                        title: "❌ Không thể gửi: Nội dung chứa ngôn ngữ bị cấm",
+                        found: "Thấy từ bị cấm",
+                        blocked: "Tài khoản của bạn đã bị khóa do vi phạm.",
+                        appeal: "Nếu bạn cho rằng đây là lỗi, vui lòng liên hệ hỗ trợ.",
+                    },
+                    zh: {
+                        title: "❌ 无法提交：内容包含禁止使用的语言",
+                        found: "发现禁用词",
+                        blocked: "您的帐户已被封锁。",
+                        appeal: "如果您认为这是错误，请联系支持人员。",
+                    },
+                    es: {
+                    title:
+                        "❌ No se puede enviar: El contenido contiene lenguaje prohibido",
+                        found: "Palabra prohibida encontrada",
+                        blocked: "Tu cuenta ha sido bloqueada.",
+                        appeal: "Si crees que es un error, contacta a soporte.",
+                    },
+                    hi: {
+                        title: "❌ सबमिट नहीं कर सकते: सामग्री में प्रतिबंधित भाषा है",
+                        found: "प्रतिबंधित शब्द मिला",
+                        blocked: "आपका खाता ब्लॉक कर दिया गया है।",
+                    appeal:
+                        "यदि आपको लगता है कि यह त्रुटि है, तो कृपया सहायता से संपर्क करें।",
+                    },
+                    ar: {
+                        title: "❌ لا يمكن الإرسال: المحتوى يحتوي على لغة محظورة",
+                        found: "الكلمة المحظورة موجودة",
+                        blocked: "تم حظر حسابك.",
+                        appeal: "إذا كنت تعتقد أن هذا خطأ، يرجى الاتصال بالدعم.",
+                    },
+                };
+                
+                const t = violationMessages[lang];
+                alert(
+                      `${t.title}\n\n${t.found}: ${foundWord}\n\n${t.blocked}\n\n${t.appeal}`,
+                      );
+                
+                // Block the user
+                const currentUser = getCurrentUser();
+                if (currentUser) {
+                    try {
+                        const userRef = window.fb.firestore
+                        .collection("users")
+                        .doc(currentUser.uid);
+                        await userRef.update({
+                            status: "blocked",
+                            blockedReason: `Attempted to submit prohibited content: ${foundWord}`,
+                            blockedAt: new Date(),
+                            blockedBy: "auto_moderation",
+                        });
+                        await window.fb.auth.signOut();
+                    } catch (err) {
+                        console.error("Failed to block user:", err);
+                    }
+                }
+                window.location.href = "/dashboard";
+                return;
+            }
+            // ============================================
+            // END OF VIOLATION CHECK
+            // ============================================
+            
+            console.log("🚀 FORM SUBMIT TRIGGERED!"); // This should show
 
-          // Check image limit
-          if (fileInput.files.length > MAX_IMAGES) {
-            // ===== ADD THESE 2 LINES =====
-            hideLoadingPopup();
-            disableSubmitButton(false);
+            // Reset cancel state for new submission
+            window._submitCancelled = false;
+            window._submitAbortController = new AbortController();
+
+            // ===== ADD THIS LINE =====
+            showLoadingPopup();
+            disableSubmitButton(true);
             // ===== END ADDITION =====
-            const currentLang = localStorage.getItem("userLanguage") || "en";
-            const errorMessages = {
-              en: `Maximum ${MAX_IMAGES} images allowed per report.`,
-              vi: `Tối đa ${MAX_IMAGES} hình ảnh được cho phép cho mỗi báo cáo.`,
-              zh: `每个报告最多允许 ${MAX_IMAGES} 张图片。`,
-              es: `Máximo ${MAX_IMAGES} imágenes permitidas por reporte.`,
-              hi: `प्रति रिपोर्ट अधिकतम ${MAX_IMAGES} छवियों की अनुमति है।`,
-              ar: `الحد الأقصى ${MAX_IMAGES} صورة مسموح بها لكل تقرير.`,
-            };
-            alert(errorMessages[currentLang] || errorMessages.en);
-            return;
-          }
 
-          try {
-            // ============================================
-            // STEP 1: CHECK ALL IMAGES BEFORE UPLOAD
-            // ============================================
-            // Use the existing fileInput (do NOT redeclare it)
-            const lang =
-              localStorage.getItem("userLanguage") ||
-              localStorage.getItem("appLanguage") ||
-              "en";
-
-            if (fileInput && fileInput.files && fileInput.files.length > 0) {
-              // First, check each image filename
-              const badWords = [
-                "sex",
-                "porn",
-                "nude",
-                "gun",
-                "violence",
-                "khiêu dâm",
-                "súng",
-                "weapon",
-                "kill",
-                "blood",
-              ];
-
-              for (let i = 0; i < fileInput.files.length; i++) {
-                const file = fileInput.files[i];
-                const fileName = file.name.toLowerCase();
-
-                for (const word of badWords) {
-                  if (fileName.includes(word)) {
+            // Early exit if cancelled
+            const checkCancelled = () => {
+                if (window._submitCancelled) {
+                    console.log("🛑 Submission cancelled — aborting");
                     hideLoadingPopup();
                     disableSubmitButton(false);
-
-                    const msg =
-                      lang === "vi"
-                        ? `❌ Không thể gửi: Tên file ảnh chứa từ bị cấm "${word}"`
-                        : `❌ Cannot submit: Image filename contains prohibited word "${word}"`;
-                    alert(msg);
-                    return;
-                  }
+                    throw new Error("SUBMISSION_CANCELLED");
                 }
-              }
-
-              // Second, check each image content with SightEngine
-              for (let i = 0; i < fileInput.files.length; i++) {
-                const imageFile = fileInput.files[i];
-                console.log("🔍 Running SightEngine on:", imageFile.name);
-
-                const analysis =
-                  await window.moderateImageWithSightEngine(imageFile);
-
-                if (!analysis.safe) {
-                  hideLoadingPopup();
-                  disableSubmitButton(false);
-
-                  const msg = window.getViolationMessage(analysis.reason, lang);
-                  alert(msg);
-
-                  // Block the user
-                  const currentUser = window.fb.auth?.currentUser;
-                  if (currentUser) {
+            };
+            
+            // ▼▼▼ ADD THIS EXACT CODE HERE ▼▼▼
+            // ▼▼▼ REPLACE YOUR EXISTING SIGN-IN CHECK WITH THIS ▼▼▼
+            console.log("=== FORM SUBMIT SIGN-IN CHECK ===");
+            
+            // SIMPLE, DIRECT CHECK - Use localStorage
+            const user = getCurrentUser();
+            console.log("User available?", !!user);
+            
+            if (!user) {
+                // ===== ADD THESE 2 LINES =====
+                hideLoadingPopup();
+                disableSubmitButton(false);
+                // ===== END ADDITION =====
+                console.error("User not signed in");
+                alert("Please sign in to submit a report.");
+                return;
+            }
+            
+            console.log("Current user:", user ? user.email : "NO USER");
+            console.log("✅ User signed in as:", user.email);
+            // ▲▲▲ END SIGN-IN CHECK ▲▲▲
+            
+            // ▼▼▼ REPLACE YOUR VALIDATION CODE WITH THIS ▼▼▼
+            console.log("Translation Debug:", {
+                title: TRANSLATION_PATCH?.fieldLabels?.title,
+                type: TRANSLATION_PATCH?.fieldLabels?.type,
+            });
+            console.log("Report Type Translations:", {
+                translations: TRANSLATION_PATCH.fieldLabels.type,
+                current: getTranslation(TRANSLATION_PATCH?.fieldLabels?.type),
+                element: document.getElementById("report-type"),
+            });
+            
+            const requiredFields = [
+                {
+                    id: "report-title",
+                    // ▼▼▼ PRESERVE EXISTING TITLE TRANSLATION ▼▼▼
+                    name: getTranslation(TRANSLATION_PATCH?.fieldLabels?.title, "Title"),
+                    validate: () =>
+                    !document.getElementById("report-title")?.value?.trim(),
+                },
+                {
+                    id: "report-type",
+                name:
+                    getTranslation(
+                                   TRANSLATION_PATCH?.popups?.fieldLabels?.type,
+                                   "Report Type",
+                                   ) + ":", // Colon added
+                    validate: () =>
+                    !document.getElementById("report-type")?.value?.trim(),
+                },
+                {
+                    id: "report-description",
+                    name: getTranslation(
+                                         TRANSLATION_PATCH?.fieldLabels?.description,
+                                         "Description",
+                                         ),
+                    validate: () =>
+                    !(
+                      document.getElementById("report-description")?.value?.trim() || ""
+                      ),
+                },
+                
+                {
+                    id: "location-text-input",
+                    name: getTranslation(
+                                         TRANSLATION_PATCH?.fieldLabels?.location,
+                                         "Location",
+                                         ),
+                    validate: () =>
+                    !(
+                      document.getElementById("location-text-input")?.value?.trim() ||
+                      ""
+                      ),
+                },
+            ].filter(Boolean);
+            
+            const missingFields = requiredFields.filter((field) => field.validate());
+            
+            requiredFields.forEach((field) => {
+                document.getElementById(field.id)?.classList.toggle(
+                                                                    "invalid-field",
+                                                                    missingFields.some((f) => f.id === field.id),
+                                                                    );
+            });
+            
+            if (missingFields.length > 0) {
+                showAlert(
+                          `${getTranslation(TRANSLATION_PATCH.popups.dataWarning)}\n\n` +
+                          `${getTranslation(TRANSLATION_PATCH.popups.missingFields)}: ` +
+                          `${missingFields.map((f) => f.name).join(", ")}`,
+                          );
+                return;
+            }
+            // ▲▲▲ END OF ADDED CODE ▲▲▲
+            
+            // ▼▼▼ BLOCK FREE USERS COMPLETELY ▼▼▼
+            // DEBUG: Check premium status
+            console.log("Premium check debug:", {
+                userId: getCurrentUser()?.uid,
+                premiumKey: `premium_${getCurrentUser()?.uid}`,
+                premiumValue: localStorage.getItem(
+                                                   `premium_${getCurrentUser()?.uid}`,
+                                                   ),
+            isPremium:
+                localStorage.getItem(`premium_${getCurrentUser()?.uid}`) ===
+                "true",
+                currentUser: getCurrentUser(),
+            });
+            
+            const currentUser = getCurrentUser();
+            const userId = currentUser?.uid;
+            const isPremium = userId
+            ? localStorage.getItem(`premium_${userId}`) === "true"
+            : false;
+            
+            // BLOCK ALL submissions for free users
+            if (!isPremium) {
+                // ===== ADD THESE 2 LINES =====
+                hideLoadingPopup();
+                disableSubmitButton(false);
+                // ===== END ADDITION =====
+                const lang = localStorage.getItem("userLanguage") || "en";
+                const blockMessages = {
+                    en: "Please subscribe to submit reports. Free trial allows viewing features only.",
+                    vi: "Vui lòng đăng ký để gửi báo cáo. Bản dùng thử chỉ cho phép xem tính năng.",
+                    zh: "请订阅以提交报告。免费试用仅允许查看功能。",
+                    es: "Por favor suscríbete para enviar informes. La prueba gratuita solo permite ver funciones.",
+                    hi: "रिपोर्ट सबमिट करने के लिए कृपया सदस्यता लें। निःशुल्क परीक्षण केवल सुविधाएँ देखने की अनुमति देता है।",
+                    ar: "يرجى الاشتراك لإرسال التقارير. تتيح النسخة التجريبية المجانية عرض الميزات فقط.",
+                };
+                alert(blockMessages[lang] || blockMessages.en);
+                window.open("./premium-iap.html", "_blank");
+                return; // STOP submission completely
+            }
+            // ▲▲▲ END BLOCK ▲▲▲
+            
+            try {
+                await window.fbReady;
+                
+                // 1. Collect form data
+                const formData = {
+                    title: document.getElementById("report-title").value,
+                    type: document.getElementById("report-type").value,
+                    description: document.getElementById("report-description").value,
+                    contact: document.getElementById("reporter-contact").value,
+                    locationText: document.getElementById("location-text-input").value,
+                coordinates:
+                    document.getElementById("selected-coordinates").value || "", // Ensure string
+                    userId: getCurrentUser()?.uid || "anonymous",
+                    timestamp: new Date().toISOString(),
+                };
+                
+                // 2. Handle file upload (if any)
+                // 2. Handle file upload (if any) - TRUE MULTIPLE IMAGE UPLOAD
+                const fileInput = document.getElementById("report-image");
+                
+                // Check premium status
+                const userId = getCurrentUser()?.uid || "anonymous";
+                
+                // Check localStorage first, then Firestore
+                let isPremium = localStorage.getItem(`premium_${userId}`) === "true";
+                
+                if (!isPremium && userId !== "anonymous") {
                     try {
-                      await window.fb.firestore
+                        const userDoc = await window.fb.firestore
                         .collection("users")
-                        .doc(currentUser.uid)
-                        .update({
-                          status: "blocked",
-                          blockedReason: `Attempted to upload prohibited image: ${analysis.reason}`,
-                          blockedAt: new Date(),
-                          blockedBy: "auto_moderation",
-                        });
-                      await window.fb.auth.signOut();
-                    } catch (err) {
-                      console.error("Block failed:", err);
+                        .doc(userId)
+                        .get();
+                        isPremium = userDoc.exists && userDoc.data().isPremium === true;
+                        if (isPremium) {
+                            localStorage.setItem(`premium_${userId}`, "true");
+                        }
+                    } catch (e) {
+                        console.error("Failed to check premium from Firestore:", e);
                     }
-                  }
-                  window.location.href = "/dashboard";
-                  return;
                 }
-              }
-
-              // ============================================
-              // STEP 2: UPLOAD IMAGES (only if all checks passed)
-              // ============================================
-              console.log(`🔄 Uploading ${fileInput.files.length} images...`);
-              const imageUrls = [];
-
-              for (let i = 0; i < fileInput.files.length; i++) {
-                const file = fileInput.files[i];
-                const storagePath = `reports/${userId}/${Date.now()}_${i}_${file.name}`;
-
-                console.log(
-                  `📤 Uploading image ${i + 1}/${fileInput.files.length}:`,
-                  file.name,
-                );
-                console.log("Original image size:", file.size, "bytes");
-
-                const compressedFile = await compressImageForUpload(file);
-                console.log(
-                  "Compressed image size:",
-                  compressedFile.size,
-                  "bytes",
-                );
+                
+                const MAX_IMAGES = isPremium ? 5 : 0;
+                
+                console.log("🖼️ Image upload:", {
+                    filesSelected: fileInput.files.length,
+                    userPremium: isPremium,
+                    maxAllowed: MAX_IMAGES,
+                });
+                
+                const imageUrls = []; // Array for multiple image URLs
+                
+                if (fileInput.files.length > 0) {
+                    // Check premium restriction
+                    if (!isPremium) {
+                        const currentLang = localStorage.getItem("userLanguage") || "en";
+                        const errorMessages = {
+                            en: "Please subscribe to premium to upload images with reports.",
+                            vi: "Vui lòng đăng ký gói premium để tải hình ảnh lên với báo cáo.",
+                            zh: "请订阅高级版以在报告中上传图片。",
+                            es: "Por favor suscríbete a premium para subir imágenes con reportes.",
+                            hi: "रिपोर्ट के साथ छवियां अपलोड करने के लिए कृपया प्रीमियम की सदस्यता लें।",
+                            ar: "يرجى الاشتراك في النسخة المميزة لتحميل الصور مع التقارير.",
+                        };
+                        alert(errorMessages[currentLang] || errorMessages.en);
+                        return;
+                    }
+                    
+                    // Check image limit
+                    if (fileInput.files.length > MAX_IMAGES) {
+                        // ===== ADD THESE 2 LINES =====
+                        hideLoadingPopup();
+                        disableSubmitButton(false);
+                        // ===== END ADDITION =====
+                        const currentLang = localStorage.getItem("userLanguage") || "en";
+                        const errorMessages = {
+                            en: `Maximum ${MAX_IMAGES} images allowed per report.`,
+                            vi: `Tối đa ${MAX_IMAGES} hình ảnh được cho phép cho mỗi báo cáo.`,
+                            zh: `每个报告最多允许 ${MAX_IMAGES} 张图片。`,
+                            es: `Máximo ${MAX_IMAGES} imágenes permitidas por reporte.`,
+                            hi: `प्रति रिपोर्ट अधिकतम ${MAX_IMAGES} छवियों की अनुमति है।`,
+                            ar: `الحد الأقصى ${MAX_IMAGES} صورة مسموح بها لكل تقرير.`,
+                        };
+                        alert(errorMessages[currentLang] || errorMessages.en);
+                        return;
+                    }
+                    
+                    try {
+                        // ============================================
+                        // STEP 1: CHECK ALL IMAGES BEFORE UPLOAD
+                        // ============================================
+                        // Use the existing fileInput (do NOT redeclare it)
+                        const lang =
+                        localStorage.getItem("userLanguage") ||
+                        localStorage.getItem("appLanguage") ||
+                        "en";
+                        
+                        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                            // First, check each image filename
+                            const badWords = [
+                                "sex",
+                                "porn",
+                                "nude",
+                                "gun",
+                                "violence",
+                                "khiêu dâm",
+                                "súng",
+                                "weapon",
+                                "kill",
+                                "blood",
+                            ];
+                            
+                            for (let i = 0; i < fileInput.files.length; i++) {
+                                const file = fileInput.files[i];
+                                const fileName = file.name.toLowerCase();
+                                
+                                for (const word of badWords) {
+                                    if (fileName.includes(word)) {
+                                        hideLoadingPopup();
+                                        disableSubmitButton(false);
+                                        
+                                        const msg =
+                                        lang === "vi"
+                                        ? `❌ Không thể gửi: Tên file ảnh chứa từ bị cấm "${word}"`
+                                        : `❌ Cannot submit: Image filename contains prohibited word "${word}"`;
+                                        alert(msg);
+                                        return;
+                                    }
+                                }
+                            }
+                            
+                            // Second, check each image content with SightEngine
+                            for (let i = 0; i < fileInput.files.length; i++) {
+                                const imageFile = fileInput.files[i];
+                                console.log("🔍 Running SightEngine on:", imageFile.name);
+                                
+                                const analysis =
+                                await window.moderateImageWithSightEngine(imageFile);
+                                
+                                if (!analysis.safe) {
+                                    hideLoadingPopup();
+                                    disableSubmitButton(false);
+                                    
+                                    const msg = window.getViolationMessage(analysis.reason, lang);
+                                    alert(msg);
+                                    
+                                    // Block the user
+                                    const currentUser = getCurrentUser();
+                                    if (currentUser) {
+                                        try {
+                                            await window.fb.firestore
+                                            .collection("users")
+                                            .doc(currentUser.uid)
+                                            .update({
+                                                status: "blocked",
+                                                blockedReason: `Attempted to upload prohibited image: ${analysis.reason}`,
+                                                blockedAt: new Date(),
+                                                blockedBy: "auto_moderation",
+                                            });
+                                            await window.fb.auth.signOut();
+                                        } catch (err) {
+                                            console.error("Block failed:", err);
+                                        }
+                                    }
+                                    window.location.href = "/dashboard";
+                                    return;
+                                }
+                            }
+                            
+                            // ============================================
+                            // STEP 2: UPLOAD IMAGES (only if all checks passed)
+                            // ============================================
+                            console.log(`🔄 Uploading ${fileInput.files.length} images...`);
+                            const imageUrls = [];
+                            
+                            for (let i = 0; i < fileInput.files.length; i++) {
+                                const file = fileInput.files[i];
+                                const storagePath = `reports/${userId}/${Date.now()}_${i}_${file.name}`;
+                                
+                                console.log(
+                                            `📤 Uploading image ${i + 1}/${fileInput.files.length}:`,
+                                            file.name,
+                                            );
+                                console.log("Original image size:", file.size, "bytes");
+                                
+                                const compressedFile = await compressImageForUpload(file);
+                                console.log(
+                                            "Compressed image size:",
+                                            compressedFile.size,
+                                            "bytes",
+                                            );
+                                
+                                // Check if user cancelled during upload
+                if (window._submitCancelled) {
+                    console.log("🛑 Cancel detected in upload loop");
+                    hideLoadingPopup();
+                    disableSubmitButton(false);
+                    throw new Error("SUBMISSION_CANCELLED");
+                }
 
                 let imageUrl = await uploadImage(compressedFile, storagePath);
-
-                if (imageUrl) {
-                  imageUrls.push(imageUrl);
-                  console.log(`✅ Image ${i + 1} uploaded:`, imageUrl);
+                                
+                                if (imageUrl) {
+                                    imageUrls.push(imageUrl);
+                                    console.log(`✅ Image ${i + 1} uploaded:`, imageUrl);
+                                } else {
+                                    console.warn(`⚠️ Image ${i + 1} upload returned no URL.`);
+                                }
+                            }
+                            
+                            console.log(
+                                        `🎉 All ${imageUrls.length} images uploaded successfully`,
+                                        );
+                            
+                            // Store images for sharing
+                            window.lastUploadedImages = imageUrls;
+                            localStorage.setItem(
+                                                 "lastUploadedImages",
+                                                 JSON.stringify(imageUrls),
+                                                 );
+                            console.log(
+                                        "💾 Stored images for sharing:",
+                                        window.lastUploadedImages,
+                                        );
+                            
+                            // Store first image for backward compatibility
+                            formData.imageUrl = imageUrls.length > 0 ? imageUrls[0] : "";
+                        } else {
+                            formData.imageUrl = "";
+                        }
+                    } catch (uploadError) {
+                        console.error("❌ Image upload failed:", uploadError);
+                        hideLoadingPopup();
+                        disableSubmitButton(false);
+                        formData.imageUrl = "";
+                    }
                 } else {
-                  console.warn(`⚠️ Image ${i + 1} upload returned no URL.`);
+                    formData.imageUrl = "";
                 }
-              }
+                
+                // 3. Prepare Firestore data (UPDATED FOR MULTIPLE IMAGES)
+                const firestoreData = {
+                    title: formData.title || "",
+                    type: formData.type || "",
+                    description: formData.description || "",
+                    contact: formData.contact || "",
+                    locationText: formData.locationText || "",
+                    coordinates: formData.coordinates || "",
+                    userId: formData.userId,
+                    timestamp: formData.timestamp,
+                    imageUrl: formData.imageUrl || "", // First image for backward compatibility
+                    imageUrls: imageUrls, // NEW: Array of all image URLs
+                    imageCount: imageUrls.length, // NEW: Number of images
+                };
+                
+                // DEBUG: Log data before submission
+                if (window._submitCancelled) {
+                  console.log("🛑 Cancel check before Firestore write — aborting submission");
+                  hideLoadingPopup();
+                  disableSubmitButton(false);
+                  throw new Error("SUBMISSION_CANCELLED");
+                }
+                console.log("Submitting to Firestore (REST API):", firestoreData);
+                
+                // ✅ Use Firestore REST API instead of SDK
+                const submitUser = getCurrentUser();
+                if (!submitUser || !submitUser.idToken) {
+                    throw new Error("No user or token available. Please sign out and sign in again.");
+                }
+                
+                // 🔄 FORCE-REFRESH the ID token before submitting
+                //    (tokens expire after 1 hour — this prevents permission errors)
+                try {
+                    const _API_KEY = "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0";
+                    const _refreshUrl = `https://securetoken.googleapis.com/v1/token?key=${_API_KEY}`;
+                    const _body = new URLSearchParams({
+                        grant_type: "refresh_token",
+                        refresh_token: submitUser.refreshToken || ""
+                    });
+                    const _refreshResp = await fetch(_refreshUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: _body.toString()
+                    });
+                    if (_refreshResp.ok) {
+                        const _refreshData = await _refreshResp.json();
+                        submitUser.idToken = _refreshData.id_token;
+                        // Persist the fresh token so subsequent calls use it
+                        try {
+                            localStorage.setItem("user", JSON.stringify({
+                                ...submitUser,
+                                idToken: _refreshData.id_token,
+                                refreshToken: _refreshData.refresh_token || submitUser.refreshToken
+                            }));
+                            console.log("🔑 Token refreshed before submit");
+                        } catch (e) {}
+                    } else {
+                        console.warn("⚠️ Token refresh failed, using stored token");
+                    }
+                } catch (e) {
+                    console.warn("⚠️ Token refresh error, using stored token:", e.message);
+                }
+                
+                const projectId = "connectionsfinder-app";
+                const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/reports`;
+                
+                // Convert to Firestore REST format
+                function toFirestoreValue(value) {
+                    if (value === null || value === undefined) return { nullValue: null };
+                    if (typeof value === "string") return { stringValue: value };
+                    if (typeof value === "number") return { integerValue: String(value) };
+                    if (typeof value === "boolean") return { booleanValue: value };
+                    if (Array.isArray(value)) {
+                        return { arrayValue: { values: value.map(toFirestoreValue) } };
+                    }
+                    if (typeof value === "object") {
+                        const fields = {};
+                        for (const key in value) {
+                            fields[key] = toFirestoreValue(value[key]);
+                        }
+                        return { mapValue: { fields } };
+                    }
+                    return { stringValue: String(value) };
+                }
+                
+                const firestoreFields = {};
+                for (const key in firestoreData) {
+                    firestoreFields[key] = toFirestoreValue(firestoreData[key]);
+                }
+                
+                console.log("📤 Submitting to Firestore REST API...");
+                
+                const submitResponse = await fetch(firestoreUrl, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${submitUser.idToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ fields: firestoreFields })
+                });
+                
+                console.log("📤 Firestore response status:", submitResponse.status);
+                
+                if (!submitResponse.ok) {
+                    const errText = await submitResponse.text();
+                    console.error("❌ Firestore error:", errText);
+                    throw new Error(`Firestore submit failed: ${submitResponse.status}`);
+                }
+                
+                const firestoreResult = await submitResponse.json();
+                console.log("✅ Report submitted with ID:", firestoreResult.name);
+                
+                // Extract doc ID from the full name path
+                const docId = firestoreResult.name.split("/").pop();
+                console.log("✅ Document ID:", docId);
+                
+                // ✅ ADD THIS LINE RIGHT HERE
+                window.lastSubmittedReportId = docId;
+                
+                // 🔍 ADD THIS DEBUG LINE
+                console.log(
+                            "🔍 DEBUG - imageUrls before auto-save:",
+                            imageUrls,
+                            "length:",
+                            imageUrls.length,
+                            );
+                
+                // ===== ADD THESE 2 LINES =====
+                hideLoadingPopup();
+                disableSubmitButton(false);
+                // ===== END ADDITION =====
+                
+                const lang = localStorage.getItem("userLanguage") || "en";
+                alert(TRANSLATION_PATCH["successSubmit"][lang]);
+            } catch (error) {
+                // ===== ADD THESE 2 LINES =====
+                hideLoadingPopup();
+                disableSubmitButton(false);
+                // ===== END ADDITION =====
 
-              console.log(
-                `🎉 All ${imageUrls.length} images uploaded successfully`,
-              );
+                // Silent handling of user-initiated cancellation
+                if (error && error.message === "SUBMISSION_CANCELLED") {
+                    console.log("🛑 Submission cancelled — showing friendly message");
+                    const _lang = localStorage.getItem("userLanguage") || "en";
+                    const _cancelMsgs = {
+                        en: "Submission cancelled",
+                        vi: "Đã hủy gửi báo cáo",
+                        zh: "已取消提交",
+                        es: "Envío cancelado",
+                        hi: "सबमिशन रद्द किया गया",
+                        ar: "تم إلغاء الإرسال",
+                    };
+                    alert(_cancelMsgs[_lang] || _cancelMsgs.en);
+                    return;
+                }
 
-              // Store images for sharing
-              window.lastUploadedImages = imageUrls;
-              localStorage.setItem(
-                "lastUploadedImages",
-                JSON.stringify(imageUrls),
-              );
-              console.log(
-                "💾 Stored images for sharing:",
-                window.lastUploadedImages,
-              );
-
-              // Store first image for backward compatibility
-              formData.imageUrl = imageUrls.length > 0 ? imageUrls[0] : "";
-            } else {
-              formData.imageUrl = "";
+                console.error(
+                              "SUBMISSION FAILED:",
+                              error.message,
+                              "\nFull error:",
+                              error,
+                              );
+                showAlert("errors.submit");
             }
-          } catch (uploadError) {
-            console.error("❌ Image upload failed:", uploadError);
-            hideLoadingPopup();
-            disableSubmitButton(false);
-            formData.imageUrl = "";
-          }
-        } else {
-          formData.imageUrl = "";
-        }
-
-        // 3. Prepare Firestore data (UPDATED FOR MULTIPLE IMAGES)
-        const firestoreData = {
-          title: formData.title || "",
-          type: formData.type || "",
-          description: formData.description || "",
-          contact: formData.contact || "",
-          locationText: formData.locationText || "",
-          coordinates: formData.coordinates || "",
-          userId: formData.userId,
-          timestamp: formData.timestamp,
-          imageUrl: formData.imageUrl || "", // First image for backward compatibility
-          imageUrls: imageUrls, // NEW: Array of all image URLs
-          imageCount: imageUrls.length, // NEW: Number of images
-        };
-
-        // DEBUG: Log data before submission
-        console.log("Submitting to Firestore:", firestoreData);
-
-        // 4. Submit to Firestore (SAFE METHOD)
-        const docRef = await window.fb.firestore.addDoc(
-          window.fb.firestore.collection("reports"),
-          firestoreData,
-        );
-
-        console.log("Report submitted with ID:", docRef.id);
-
-        // ✅ ADD THIS LINE RIGHT HERE
-        window.lastSubmittedReportId = docRef.id;
-
-        // 🔍 ADD THIS DEBUG LINE
-        console.log(
-          "🔍 DEBUG - imageUrls before auto-save:",
-          imageUrls,
-          "length:",
-          imageUrls.length,
-        );
-
-        // ===== ADD THESE 2 LINES =====
-        hideLoadingPopup();
-        disableSubmitButton(false);
-        // ===== END ADDITION =====
-
+        });
+    }
+    // Place near other utility functions
+    function generateShareContent(reportData) {
         const lang = localStorage.getItem("userLanguage") || "en";
-        alert(TRANSLATION_PATCH["successSubmit"][lang]);
-      } catch (error) {
-        // ===== ADD THESE 2 LINES =====
-        hideLoadingPopup();
-        disableSubmitButton(false);
-        // ===== END ADDITION =====
-        console.error(
-          "SUBMISSION FAILED:",
-          error.message,
-          "\nFull error:",
-          error,
-        );
-        showAlert("errors.submit");
-      }
-    });
-  }
-  // Place near other utility functions
-  function generateShareContent(reportData) {
-    const lang = localStorage.getItem("userLanguage") || "en";
-    return `
+        return `
     ${TRANSLATION_PATCH.reportContent?.greetings?.[lang] || "Shared:"}
     ${reportData.title}
     ${reportData.description}
   `;
-  }
-
-  function initializeSharing() {
-    document.querySelectorAll("[data-platform]").forEach((btn) => {
-      btn.onclick = async (e) => {
-        e.preventDefault();
-        const platform = btn.dataset.platform;
-        const message = `${lastReport.title}\n\n${lastReport.description}`;
-
-        switch (platform) {
-          case "whatsapp":
-            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-            break;
-          case "twitter":
-            window.open(
+    }
+    
+    function initializeSharing() {
+        document.querySelectorAll("[data-platform]").forEach((btn) => {
+            btn.onclick = async (e) => {
+                e.preventDefault();
+                const platform = btn.dataset.platform;
+                const message = `${lastReport.title}\n\n${lastReport.description}`;
+                
+                switch (platform) {
+                    case "whatsapp":
+                        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                        break;
+                    case "twitter":
+                        window.open(
               `https://twitter.com/intent/tweet?text=${encodeURIComponent(
                 message,
               )}`,
-            );
-            break;
-          case "telegram":
-            window.open(
-              `https://t.me/share/url?url=&text=${encodeURIComponent(message)}`,
-            );
-            break;
+                                    );
+                        break;
+                    case "telegram":
+                        window.open(
+                                    `https://t.me/share/url?url=&text=${encodeURIComponent(message)}`,
+                                    );
+                        break;
+                }
+            };
+        });
+    }
+    
+    // ===== 6. SAVED REPORTS ===== //
+    // Make loadSavedReports globally accessible
+    window.loadSavedReports = async function loadSavedReports() {
+        // ✅ Redirect to localStorage-based function to avoid Firestore errors
+        if (typeof window.renderSavedReports === "function") {
+            console.log("🔄 Redirecting to localStorage-based renderSavedReports");
+            window.renderSavedReports();
+            return;
         }
-      };
-    });
-  }
-
-  // ===== 6. SAVED REPORTS ===== //
-  // Make loadSavedReports globally accessible
-  window.loadSavedReports = async function loadSavedReports() {
-    // ✅ Redirect to localStorage-based function to avoid Firestore errors
-    if (typeof window.renderSavedReports === "function") {
-      console.log("🔄 Redirecting to localStorage-based renderSavedReports");
-      window.renderSavedReports();
-      return;
-    }
-
-    console.log("🔍 DEBUG: loadSavedReports called");
-
-    const container = document.getElementById("saved-reports-container");
-    if (!container) {
-      console.error("Container not found");
-      return;
-    }
-
-    const lang = window.currentLanguage || "en";
-
-    try {
-      // Check user
-      const user = window.fb.auth.currentUser;
-      if (!user) {
-        container.innerHTML = `<div class="auth-error">Please sign in to view your saved reports</div>`;
-        return;
-      }
-
-      // Check Firestore
-      if (!window.fb.firestore || !window.fb.firestore.collection) {
-        container.innerHTML = `<div class="loading">Initializing Firestore...</div>`;
-        setTimeout(window.loadSavedReports, 500);
-        return;
-      }
-
-      console.log("Loading reports for user:", user.uid);
-      container.innerHTML = `<div class="loading">Loading your reports...</div>`;
-
-      // 🔑 Get the Firestore instance
-      const firestore = window.fb.firestore;
-      const db = firestore.db; // This is the Firestore instance
-
-      // Method 1: Try using the native Firestore instance
-      let querySnapshot;
-
-      if (db && typeof db.collection === "function") {
-        // Use native Firestore methods
-        const reportsRef = db.collection("reports");
-        const query = reportsRef.where("userId", "==", user.uid);
-        querySnapshot = await query.get();
-      } else if (
-        firestore.collection &&
-        typeof firestore.collection === "function"
-      ) {
-        // Fallback to the wrapper methods
-        const reportsRef = firestore.collection("reports");
-        // Since we don't have where, we'll filter manually
-        const allReports = await firestore.getDocs(reportsRef);
-        querySnapshot = allReports;
-
-        // Manual filtering will be done below
-        const reports = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.userId === user.uid) {
-            reports.push({ id: doc.id, ...data });
-          }
-        });
-
-        // Create a fake querySnapshot
-        querySnapshot = {
-          empty: reports.length === 0,
-          forEach: (callback) => reports.forEach(callback),
-          docs: reports,
-        };
-      } else {
-        throw new Error("No working Firestore method found");
-      }
-
-      // Process reports
-      const userReports = [];
-
-      if (querySnapshot.forEach) {
-        querySnapshot.forEach((doc) => {
-          const data = doc.data ? doc.data() : doc;
-          userReports.push({
-            id: doc.id,
-            title: data.title || "",
-            description: data.description || "",
-            imageUrl:
-              data.imageUrl || (data.imageUrls && data.imageUrls[0]) || "",
-            timestamp: data.timestamp || new Date().toISOString(),
-          });
-        });
-      }
-
-      if (userReports.length === 0) {
-        container.innerHTML = `<p class="no-reports">${
+        
+        console.log("🔍 DEBUG: loadSavedReports called");
+        
+        const container = document.getElementById("saved-reports-container");
+        if (!container) {
+            console.error("Container not found");
+            return;
+        }
+        
+        const lang = window.currentLanguage || "en";
+        
+        try {
+            // Check user
+            const user = getCurrentUser();
+            if (!user) {
+                container.innerHTML = `<div class="auth-error">Please sign in to view your saved reports</div>`;
+                return;
+            }
+            
+            // Check Firestore
+            if (!window.fb.firestore || !window.fb.firestore.collection) {
+                container.innerHTML = `<div class="loading">Initializing Firestore...</div>`;
+                setTimeout(window.loadSavedReports, 500);
+                return;
+            }
+            
+            console.log("Loading reports for user:", user.uid);
+            container.innerHTML = `<div class="loading">Loading your reports...</div>`;
+            
+            // 🔑 Get the Firestore instance
+            const firestore = window.fb.firestore;
+            const db = firestore.db; // This is the Firestore instance
+            
+            // Method 1: Try using the native Firestore instance
+            let querySnapshot;
+            
+            if (db && typeof db.collection === "function") {
+                // Use native Firestore methods
+                const reportsRef = db.collection("reports");
+                const query = reportsRef.where("userId", "==", user.uid);
+                querySnapshot = await query.get();
+            } else if (
+                       firestore.collection &&
+                       typeof firestore.collection === "function"
+                       ) {
+                           // Fallback to the wrapper methods
+                           const reportsRef = firestore.collection("reports");
+                           // Since we don't have where, we'll filter manually
+                           const allReports = await firestore.getDocs(reportsRef);
+                           querySnapshot = allReports;
+                           
+                           // Manual filtering will be done below
+                           const reports = [];
+                           querySnapshot.forEach((doc) => {
+                               const data = doc.data();
+                               if (data.userId === user.uid) {
+                                   reports.push({ id: doc.id, ...data });
+                               }
+                           });
+                           
+                           // Create a fake querySnapshot
+                           querySnapshot = {
+                               empty: reports.length === 0,
+                               forEach: (callback) => reports.forEach(callback),
+                               docs: reports,
+                           };
+                       } else {
+                           throw new Error("No working Firestore method found");
+                       }
+            
+            // Process reports
+            const userReports = [];
+            
+            if (querySnapshot.forEach) {
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data ? doc.data() : doc;
+                    userReports.push({
+                        id: doc.id,
+                        title: data.title || "",
+                        description: data.description || "",
+                    imageUrl:
+                        data.imageUrl || (data.imageUrls && data.imageUrls[0]) || "",
+                        timestamp: data.timestamp || new Date().toISOString(),
+                    });
+                });
+            }
+            
+            if (userReports.length === 0) {
+                container.innerHTML = `<p class="no-reports">${
           TRANSLATION_PATCH.messages?.noSavedReports?.[lang] ||
           "No saved reports yet"
         }</p>`;
-        return;
-      }
-
-      // Sort by timestamp (newest first)
-      userReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-      const noDescText =
-        TRANSLATION_PATCH.emptyDescription?.[lang] || "No description";
-      const reshareText =
-        TRANSLATION_PATCH.buttons?.reshare?.[lang] || "Reshare";
-      const deleteText = TRANSLATION_PATCH.buttons?.delete?.[lang] || "Delete";
-
-      container.innerHTML = userReports
-        .map(
-          (report) => `
-            <div class="saved-report" data-id="${report.id}">
+                return;
+            }
+            
+            // Sort by timestamp (newest first)
+            userReports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            const noDescText =
+            TRANSLATION_PATCH.emptyDescription?.[lang] || "No description";
+            const reshareText =
+            TRANSLATION_PATCH.buttons?.reshare?.[lang] || "Reshare";
+            const deleteText = TRANSLATION_PATCH.buttons?.delete?.[lang] || "Delete";
+            
+            container.innerHTML = userReports
+            .map(
+                 (report) => `
+                <div class="saved-report" data-id="${report.id}">
                 ${report.title ? `<h4>${escapeHtml(report.title)}</h4>` : ""}
                 <p>${escapeHtml(report.description || noDescText)}</p>
                 ${report.imageUrl ? `<img src="${escapeHtml(report.imageUrl)}" class="report-image" onclick="window.open('${escapeHtml(report.imageUrl)}', '_blank')">` : ""}
@@ -2689,141 +3108,141 @@ if (typeof window.reportsInitialized === "undefined") {
                 </div>
             </div>
         `,
-        )
-        .join("");
-
-      console.log(
-        "✅ Loaded",
-        userReports.length,
-        "reports for user:",
-        user.uid,
-      );
-    } catch (error) {
-      console.error("Error loading reports:", error);
-      container.innerHTML = `<div class="error">Failed to load: ${error.message}. <button onclick="window.loadSavedReports()">Retry</button></div>`;
-    }
-  };
-
-  // Helper function to escape HTML
-  function escapeHtml(text) {
-    if (!text) return "";
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Reshare function
-  window.handleReshare = async function (reportId) {
-    console.log("Resharing report:", reportId);
-    try {
-      const firestore = window.fb.firestore;
-      const db = firestore.db;
-
-      if (db && typeof db.collection === "function") {
-        const docRef = db.collection("reports").doc(reportId);
-        const docSnap = await docRef.get();
-        if (docSnap.exists) {
-          const reportData = docSnap.data();
-          console.log("Report data for sharing:", reportData);
-          if (typeof window.openShareDialog === "function") {
-            window.openShareDialog(reportData);
-          } else {
-            alert("Share function ready. Report data logged to console.");
-          }
+                 )
+            .join("");
+            
+            console.log(
+                        "✅ Loaded",
+                        userReports.length,
+                        "reports for user:",
+                        user.uid,
+                        );
+        } catch (error) {
+            console.error("Error loading reports:", error);
+            container.innerHTML = `<div class="error">Failed to load: ${error.message}. <button onclick="window.loadSavedReports()">Retry</button></div>`;
         }
-      } else {
-        const docRef = firestore.doc("reports", reportId);
-        const docSnap = await firestore.getDoc(docRef);
-        if (docSnap.exists) {
-          const reportData = docSnap.data();
-          console.log("Report data for sharing:", reportData);
+    };
+    
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return "";
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Reshare function
+    window.handleReshare = async function (reportId) {
+        console.log("Resharing report:", reportId);
+        try {
+            const firestore = window.fb.firestore;
+            const db = firestore.db;
+            
+            if (db && typeof db.collection === "function") {
+                const docRef = db.collection("reports").doc(reportId);
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    const reportData = docSnap.data();
+                    console.log("Report data for sharing:", reportData);
+                    if (typeof window.openShareDialog === "function") {
+                        window.openShareDialog(reportData);
+                    } else {
+                        alert("Share function ready. Report data logged to console.");
+                    }
+                }
+            } else {
+                const docRef = firestore.doc("reports", reportId);
+                const docSnap = await firestore.getDoc(docRef);
+                if (docSnap.exists) {
+                    const reportData = docSnap.data();
+                    console.log("Report data for sharing:", reportData);
+                }
+            }
+        } catch (error) {
+            console.error("Reshare failed:", error);
+            alert("Failed to load report for sharing");
         }
-      }
-    } catch (error) {
-      console.error("Reshare failed:", error);
-      alert("Failed to load report for sharing");
+    };
+    
+    // Delete function
+    window.handleDelete = async function (reportId) {
+        if (!confirm("Are you sure you want to delete this report?")) return;
+        try {
+            const firestore = window.fb.firestore;
+            const db = firestore.db;
+            
+            if (db && typeof db.collection === "function") {
+                await db.collection("reports").doc(reportId).delete();
+            } else {
+                await firestore.deleteDoc(firestore.doc("reports", reportId));
+            }
+            console.log("Report deleted:", reportId);
+            window.loadSavedReports();
+        } catch (error) {
+            console.error("Delete failed:", error);
+            alert("Failed to delete report");
+        }
+    };
+    
+    // ===== NEW FUNCTION =====
+    // ▼ REPLACE THE ENTIRE FUNCTION WITH THIS ▼
+    function refreshButtonTranslations() {
+        const lang = window.currentLanguage || "en";
+        
+        // Handle ALL buttons (reshare/delete) in one place
+        document.querySelectorAll(".reshare-btn .btn-text").forEach((el) => {
+            el.textContent = TRANSLATION_PATCH.buttons.reshare[lang] || "Reshare";
+        });
+        
+        document.querySelectorAll(".delete-btn .btn-text").forEach((el) => {
+            el.textContent = TRANSLATION_PATCH.buttons.delete[lang] || "Delete";
+        });
+        
+        // Optional: Keep disabled state handling if needed
+        document
+        .querySelectorAll(".delete-btn[disabled] .btn-text")
+        .forEach((el) => {
+            el.textContent = TRANSLATION_PATCH.deleting?.[lang] || "Deleting...";
+        });
     }
-  };
-
-  // Delete function
-  window.handleDelete = async function (reportId) {
-    if (!confirm("Are you sure you want to delete this report?")) return;
-    try {
-      const firestore = window.fb.firestore;
-      const db = firestore.db;
-
-      if (db && typeof db.collection === "function") {
-        await db.collection("reports").doc(reportId).delete();
-      } else {
-        await firestore.deleteDoc(firestore.doc("reports", reportId));
-      }
-      console.log("Report deleted:", reportId);
-      window.loadSavedReports();
-    } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Failed to delete report");
+    
+    // ▼ Add this NEW FUNCTION ▼ (around line 765)
+    function refreshSavedReportButtons() {
+        const lang = window.currentLanguage || "en";
+        
+        document.querySelectorAll("#reports-list .btn-text").forEach((el) => {
+            if (el.closest(".reshare-btn")) {
+                el.textContent = TRANSLATION_PATCH.buttons.reshare[lang] || "Reshare";
+            } else if (el.closest(".delete-btn")) {
+                el.textContent = TRANSLATION_PATCH.buttons.delete[lang] || "Delete";
+            }
+        });
     }
-  };
-
-  // ===== NEW FUNCTION =====
-  // ▼ REPLACE THE ENTIRE FUNCTION WITH THIS ▼
-  function refreshButtonTranslations() {
-    const lang = window.currentLanguage || "en";
-
-    // Handle ALL buttons (reshare/delete) in one place
-    document.querySelectorAll(".reshare-btn .btn-text").forEach((el) => {
-      el.textContent = TRANSLATION_PATCH.buttons.reshare[lang] || "Reshare";
-    });
-
-    document.querySelectorAll(".delete-btn .btn-text").forEach((el) => {
-      el.textContent = TRANSLATION_PATCH.buttons.delete[lang] || "Delete";
-    });
-
-    // Optional: Keep disabled state handling if needed
-    document
-      .querySelectorAll(".delete-btn[disabled] .btn-text")
-      .forEach((el) => {
-        el.textContent = TRANSLATION_PATCH.deleting?.[lang] || "Deleting...";
-      });
-  }
-
-  // ▼ Add this NEW FUNCTION ▼ (around line 765)
-  function refreshSavedReportButtons() {
-    const lang = window.currentLanguage || "en";
-
-    document.querySelectorAll("#reports-list .btn-text").forEach((el) => {
-      if (el.closest(".reshare-btn")) {
-        el.textContent = TRANSLATION_PATCH.buttons.reshare[lang] || "Reshare";
-      } else if (el.closest(".delete-btn")) {
-        el.textContent = TRANSLATION_PATCH.buttons.delete[lang] || "Delete";
-      }
-    });
-  }
-
-  function renderSavedReport(report) {
-    const reportElement = document.createElement("div");
-    reportElement.className = "saved-report";
-
-    const lang = window.currentLanguage || "en";
-    const reshareText = TRANSLATION_PATCH.buttons.reshare[lang];
-    const deleteText = TRANSLATION_PATCH.buttons.delete[lang];
-
-    // Format date if timestamp exists
-    let dateStr = "";
-    if (report.timestamp) {
-      const date = new Date(report.timestamp);
-      dateStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
-    }
-
-    // Get location (handle both location and locationText fields)
-    const location = report.locationText || report.location || "";
-
-    // Get first image for thumbnail
-    const thumbnailUrl = report.imageUrls?.[0] || report.imageUrl || "";
-
-    reportElement.innerHTML = `
-        <!-- REPORT CONTENT (ADDED) -->
-        <div class="report-content">
+    
+    function renderSavedReport(report) {
+        const reportElement = document.createElement("div");
+        reportElement.className = "saved-report";
+        
+        const lang = window.currentLanguage || "en";
+        const reshareText = TRANSLATION_PATCH.buttons.reshare[lang];
+        const deleteText = TRANSLATION_PATCH.buttons.delete[lang];
+        
+        // Format date if timestamp exists
+        let dateStr = "";
+        if (report.timestamp) {
+            const date = new Date(report.timestamp);
+            dateStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+        }
+        
+        // Get location (handle both location and locationText fields)
+        const location = report.locationText || report.location || "";
+        
+        // Get first image for thumbnail
+        const thumbnailUrl = report.imageUrls?.[0] || report.imageUrl || "";
+        
+        reportElement.innerHTML = `
+            <!-- REPORT CONTENT (ADDED) -->
+            <div class="report-content">
             <h4>${report.title || "Untitled Report"}</h4>
             ${dateStr ? `<span class="report-date">${dateStr}</span>` : ""}
             ${report.description ? `<p>${report.description}</p>` : ""}
@@ -2846,682 +3265,695 @@ if (typeof window.reportsInitialized === "undefined") {
             </button>
         </div>
     `;
-
-    // Attach event listeners (EXACTLY AS BEFORE)
-    reportElement
-      .querySelector(".reshare-btn")
-      .addEventListener("click", () => {
-        console.log("🔍 RENDER - report being passed to handleReportReshare:", {
-          id: report.id,
-          title: report.title,
-          imageUrls: report.imageUrls,
-          imageUrlsLength: report.imageUrls?.length,
-          imageCount: report.imageCount,
+        
+        // Attach event listeners (EXACTLY AS BEFORE)
+        reportElement
+        .querySelector(".reshare-btn")
+        .addEventListener("click", () => {
+            console.log("🔍 RENDER - report being passed to handleReportReshare:", {
+                id: report.id,
+                title: report.title,
+                imageUrls: report.imageUrls,
+                imageUrlsLength: report.imageUrls?.length,
+                imageCount: report.imageCount,
+            });
+            handleReportReshare(report);
         });
-        handleReportReshare(report);
-      });
-    reportElement
-      .querySelector(".delete-btn")
-      .addEventListener("click", () => handleReportDeletion(report.id));
-
-    // Button translation lock (EXACTLY AS BEFORE)
-    lockButtonText(reportElement.querySelector(".reshare-btn"));
-    lockButtonText(reportElement.querySelector(".delete-btn"));
-
-    return reportElement;
-  }
-
-  // Original deleteReport (kept as is)
-  async function deleteReport(reportId) {
-    if (!showConfirm("warnings.deleteConfirm")) return;
-
-    const btn = document.querySelector(
-      `[onclick*="deleteReport('${reportId}')"]`,
-    );
-    const currentLang = window.currentLanguage || "en";
-
-    if (btn) {
-      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${TRANSLATION_PATCH.deleting?.[currentLang] || "Deleting..."}`;
-      btn.disabled = true;
+        reportElement
+        .querySelector(".delete-btn")
+        .addEventListener("click", () => handleReportDeletion(report.id));
+        
+        // Button translation lock (EXACTLY AS BEFORE)
+        lockButtonText(reportElement.querySelector(".reshare-btn"));
+        lockButtonText(reportElement.querySelector(".delete-btn"));
+        
+        return reportElement;
     }
-
-    try {
-      await window.fb.firestore.deleteDoc(
-        window.fb.firestore.doc(window.fb.db, "reports", reportId),
-      );
-
-      await loadSavedReports();
-      showAlert("success.delete");
-    } catch (error) {
-      console.error("Delete failed:", { error: error, fb: window.fb });
-      showAlert("errors.delete");
-    } finally {
-      if (btn) {
-        btn.innerHTML = `<i class="fas fa-trash"></i> ${TRANSLATION_PATCH.deleteBtn?.[currentLang] || "Delete"}`;
-        btn.disabled = false;
-      }
-    }
-  }
-
-  // Original clearAllReports
-  async function clearAllReports() {
-    const lang = localStorage.getItem("appLanguage") || "en";
-
-    if (!confirm(TRANSLATION_PATCH.confirmations?.clearAll?.[lang])) return;
-
-    try {
-      localStorage.removeItem("savedReports");
-
-      if (typeof db !== "undefined" && db && userId) {
-        const reportsRef = db
-          .collection("users")
-          .doc(userId)
-          .collection("savedReports");
-        const snapshot = await reportsRef.get();
-        const batch = db.batch();
-        snapshot.forEach((doc) => batch.delete(doc.ref));
-        await batch.commit();
-      }
-
-      if (typeof renderSavedReports === "function") {
-        renderSavedReports();
-      }
-
-      const successText = TRANSLATION_PATCH.successMessages?.clearedAll?.[lang];
-      alert(successText);
-    } catch (error) {
-      console.error("Clear failed:", error);
-      showAlert(
-        "error",
-        TRANSLATION_PATCH.errorMessages?.clearAllFailed?.[lang] ||
-          "Failed to clear reports",
-      );
-    }
-  }
-
-  window.clearAllReports = clearAllReports; // Global access
-
-  async function reshareReport(reportId) {
-    const report = savedReports.find((r) => r.id === reportId);
-    if (!report) return;
-
-    document.getElementById("report-title").value = report.title;
-    document.getElementById("report-type").value = report.type;
-    document.getElementById("report-description").value = report.description;
-    document.getElementById("location-text-input").value = report.locationText;
-    document.getElementById("selected-coordinates").value = report.coordinates;
-    document.getElementById("reporter-contact").value = report.contact;
-
-    switchTab("new-report");
-    document.getElementById("share-section").style.display = "block";
-
-    if (report.coordinates) {
-      const [lat, lng] = report.coordinates.split(",").map(Number);
-      updateMap(lat, lng, report.locationText || report.title);
-    }
-  }
-
-  // ===== 7. INITIALIZATION ===== //
-  async function initializeApp() {
-    try {
-      // Wait for Firebase to be fully ready
-      await new Promise((resolve) => {
-        if (window.firebaseInitialized) return resolve();
-
-        const checkInterval = setInterval(() => {
-          if (window.firebaseInitialized) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-
-        // Timeout after 3 seconds
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          resolve();
-        }, 3000);
-      });
-
-      // Verify auth is available
-      if (!window.fb?.auth) {
-        throw new Error("Firebase Auth not available");
-      }
-
-      console.log("Firebase auth confirmed:", window.fb.auth);
-
-      // Rest of your initialization code...
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.addEventListener("click", () => switchTab(tab.dataset.tab));
-      });
-
-      window.fb.auth.onAuthStateChanged((user) => {
-        // Initialize form handler for ALL users (signed in or not)
-        initializeFormHandler();
-
-        // Only run these for signed-in users
-        if (user) {
-          document
-            .getElementById("clear-all")
-            ?.addEventListener("click", clearAllReports);
-          if (currentTab === "saved-reports") loadSavedReports();
+    
+    // Original deleteReport (kept as is)
+    async function deleteReport(reportId) {
+        if (!showConfirm("warnings.deleteConfirm")) return;
+        
+        const btn = document.querySelector(
+                                           `[onclick*="deleteReport('${reportId}')"]`,
+                                           );
+        const currentLang = window.currentLanguage || "en";
+        
+        if (btn) {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${TRANSLATION_PATCH.deleting?.[currentLang] || "Deleting..."}`;
+            btn.disabled = true;
         }
-      });
-    } catch (error) {
-      console.error("Initialization failed:", error);
-      showAlert("errors.initialization");
-      // Optional: Retry after delay
-      setTimeout(initializeApp, 2000);
-    }
-  }
-  // Start the app
-  initializeApp();
-
-  // ===== TRANSLATION SYSTEM ===== //
-  // ===== IMPROVED TRANSLATION SYSTEM ===== //
-  const TRANSLATIONS = {
-    en: {
-      reportType: { select: "Select Type" },
-      imageLabel: "Upload Image",
-      buttons: {
-        submit: "Submit Report",
-        save: "Save Report",
-      },
-      // Add other English keys as needed
-    },
-    vi: {
-      reportType: { select: "Chọn loại" },
-      imageLabel: "Tải lên hình ảnh",
-      buttons: {
-        submit: "Gửi báo cáo",
-        save: "Lưu báo cáo",
-      },
-    },
-    // Add other languages similarly
-  };
-
-  function translate(key) {
-    // Skip dropdown option translation
-    if (
-      key &&
-      (key.startsWith("reportTypes.") || key === "reportType.select")
-    ) {
-      return key; // Return the key so it gets skipped
-    }
-
-    const lang = localStorage.getItem("userLanguage") || "en";
-    const translation = TRANSLATIONS[lang] || TRANSLATIONS.en;
-
-    // Special case for report type selector
-    if (key === "reportType.select") {
-      return translation.reportType?.select || "Select Type";
-    }
-
-    return key.split(".").reduce((o, k) => (o || {})[k], translation) || key;
-  }
-
-  function applyTranslations() {
-    // Translate labels and buttons, BUT SKIP dropdown options
-    document.querySelectorAll("[data-translate]").forEach((el) => {
-      // SKIP dropdown options - they are handled by translateDropdown()
-      if (el.parentElement?.id === "report-type" || el.tagName === "OPTION") {
-        return;
-      }
-      el.textContent = translate(el.getAttribute("data-translate"));
-    });
-
-    // Special handling for select placeholder
-    const select = document.querySelector('#report-type option[value=""]');
-    if (select) select.textContent; // Add this at the end
-
-    if (typeof translateButtons === "function") translateButtons();
-  }
-  // ===== LANGUAGE PERSISTENCE ===== //
-  // ============================================
-  // 3. setLanguage() - MODIFIED with retry
-  // ============================================
-  function setLanguage(lang) {
-    // 🔒 GUARD: Prevent infinite loop
-    if (window._languageLock) {
-      console.log("⚠️ Language change already in progress, skipping...");
-      return;
-    }
-    window._languageLock = true;
-
-    try {
-      // Safety: Check if critical DOM elements exist
-      if (!document.body || !document.getElementById("report-type")) {
-        console.log(
-          "⚠️ DOM not ready (missing critical elements), delaying setLanguage",
-        );
-        setTimeout(() => {
-          window._languageLock = false;
-          setLanguage(lang);
-        }, 100);
-        return;
-      }
-
-      // FORCE save the language
-      localStorage.setItem("userLanguage", lang);
-      localStorage.setItem("appLanguage", lang);
-      window.currentLanguage = lang;
-      console.log("🔧 setLanguage() called with:", lang);
-
-      const isSignedIn = window.fb?.auth?.currentUser ? true : false;
-
-      if (!isSignedIn) {
-        console.log("📢 Signed out - using signed-out translation system");
-        const selector = document.getElementById("language-switcher");
-        if (selector) selector.value = lang;
-        const userSelector = document.getElementById("usersLanguageSwitcher");
-        if (userSelector) userSelector.value = lang;
-        if (typeof window.applySignedOutTranslations === "function") {
-          window.applySignedOutTranslations();
-        } else {
-          setTimeout(() => location.reload(), 100);
-        }
-        return;
-      }
-
-      // ============================================
-      // SIGNED-IN USER TRANSLATIONS
-      // ============================================
-
-      // Guide button
-      const guideText = document.getElementById("guide-text");
-      if (guideText) {
-        guideText.innerText =
-          {
-            en: "Guide",
-            vi: "Hướng dẫn",
-            zh: "指南",
-            es: "Guía",
-            hi: "गाइड",
-            ar: "دليل",
-          }[lang] || "Guide";
-      }
-
-      // Subscribe button
-      const subscribeSpan = document.querySelector("#subscribeBtn span");
-      if (subscribeSpan) {
-        subscribeSpan.innerText =
-          {
-            en: "Subscribe",
-            vi: "Đăng ký",
-            zh: "订阅",
-            es: "Suscribirse",
-            hi: "सदस्यता लें",
-            ar: "اشتراك",
-          }[lang] || "Subscribe";
-      }
-
-      // Copyright text
-      const copyrightSpan = document.getElementById("footerCopyright");
-      if (copyrightSpan) {
-        const copyrightText = {
-          en: "All rights reserved.",
-          vi: "Đã đăng ký bản quyền.",
-          zh: "保留所有权利。",
-          es: "Todos los derechos reservados.",
-          hi: "सर्वाधिकार सुरक्षित।",
-          ar: "جميع الحقوق محفوظة.",
-        };
-        copyrightSpan.textContent = copyrightText[lang] || copyrightText.en;
-      }
-
-      // Support label
-      const supportLabel = document.getElementById("supportLabel");
-      if (supportLabel) {
-        const supportText = {
-          en: "Support:",
-          vi: "Hỗ trợ:",
-          zh: "支持:",
-          es: "Soporte:",
-          hi: "समर्थन:",
-          ar: "الدعم:",
-        };
-        supportLabel.textContent = supportText[lang] || supportText.en;
-      }
-
-      // Logout button
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn) {
-        logoutBtn.innerText =
-          {
-            en: "Logout",
-            vi: "Đăng xuất",
-            zh: "退出",
-            es: "Cerrar sesión",
-            hi: "लॉगआउट",
-            ar: "تسجيل الخروج",
-          }[lang] || "Logout";
-      }
-
-      // Run existing UI updates
-      if (typeof applyTranslations === "function") applyTranslations();
-      if (typeof updatePatchedTranslations === "function")
-        updatePatchedTranslations();
-      if (typeof updateShareHeading === "function") updateShareHeading();
-      if (typeof updateFileInputDisplay === "function")
-        updateFileInputDisplay();
-      if (typeof translateSavedReportsLabel === "function")
-        translateSavedReportsLabel();
-      if (typeof updateAllWarnings === "function") updateAllWarnings();
-      if (typeof updateLocationButtonText === "function")
-        updateLocationButtonText();
-      if (typeof updateDashboardIntro === "function") updateDashboardIntro();
-      if (typeof updateFormPlaceholders === "function")
-        updateFormPlaceholders(lang);
-      if (typeof translateButtons === "function") translateButtons();
-
-      // ✅ ONLY CALL translateDropdown() ONCE
-      if (typeof translateDropdown === "function") translateDropdown();
-
-      // ============================================
-      // FORCE UPDATE LABELS AFTER ALL OTHER FUNCTIONS
-      // ============================================
-      const labelTranslations = {
-        reportTypeLabel: {
-          en: "Report Type:",
-          vi: "Loại báo cáo:",
-          zh: "报告类型：",
-          es: "Tipo de informe:",
-          hi: "रिपोर्ट प्रकार:",
-          ar: "نوع التقرير:",
-        },
-        titleLabel: {
-          en: "Title:",
-          vi: "Tiêu đề:",
-          zh: "标题：",
-          es: "Título:",
-          hi: "शीर्षक:",
-          ar: "العنوان:",
-        },
-        descriptionLabel: {
-          en: "Description:",
-          vi: "Mô tả:",
-          zh: "描述：",
-          es: "Descripción:",
-          hi: "विवरण:",
-          ar: "الوصف:",
-        },
-        locationLabel: {
-          en: "Location Details:",
-          vi: "Chi tiết địa điểm:",
-          zh: "位置详情：",
-          es: "Detalles de ubicación:",
-          hi: "स्थान विवरण:",
-          ar: "تفاصيل الموقع:",
-        },
-        contactLabel: {
-          en: "Your Contact:",
-          vi: "Liên hệ của bạn:",
-          zh: "您的联系方式：",
-          es: "Su contacto:",
-          hi: "आपका संपर्क:",
-          ar: "جهة اتصالك:",
-        },
-        "reportTypes.select": {
-          en: "-- Select Type --",
-          vi: "-- Chọn loại --",
-          zh: "-- 选择类型 --",
-          es: "-- Seleccione tipo --",
-          hi: "-- प्रकार चुनें --",
-          ar: "-- اختر النوع --",
-        },
-        "buttons.showOnMap": {
-          en: "Show on Map",
-          vi: "Hiện trên bản đồ",
-          zh: "在地图上显示",
-          es: "Mostrar en mapa",
-          hi: "मानचित्र पर दिखाएं",
-          ar: "عرض على الخريطة",
-        },
-      };
-
-      // Update ALL data-translate elements
-      document.querySelectorAll("[data-translate]").forEach((el) => {
-        const key = el.getAttribute("data-translate");
-        if (labelTranslations[key] && labelTranslations[key][lang]) {
-          if (el.tagName === "OPTION") {
-            el.textContent = labelTranslations[key][lang];
-          } else if (el.tagName === "LABEL") {
-            el.textContent = labelTranslations[key][lang];
-          } else {
-            el.textContent = labelTranslations[key][lang];
-          }
-        }
-      });
-
-      // Update the map button specifically
-      const mapBtn = document.querySelector('button[onclick="findAddress()"]');
-      if (mapBtn) {
-        mapBtn.textContent =
-          labelTranslations["buttons.showOnMap"][lang] || "Show on Map";
-      }
-
-      const selector = document.getElementById("language-switcher");
-      if (selector) selector.value = lang;
-      const userSelector = document.getElementById("usersLanguageSwitcher");
-      if (userSelector) userSelector.value = lang;
-
-      // ============================================
-      // UPDATE DROPDOWN OPTIONS (SIGNED IN)
-      // ============================================
-      const reportTypeTranslations = {
-        missing_person: {
-          en: "Missing Person",
-          vi: "Người mất tích",
-          zh: "失踪人员",
-          es: "Persona desaparecida",
-          hi: "लापता व्यक्ति",
-          ar: "شخص مفقود",
-        },
-        lost_item: {
-          en: "Lost Item",
-          vi: "Tài sản bị mất",
-          zh: "丢失物品",
-          es: "Objeto perdido",
-          hi: "खोई हुई वस्तु",
-          ar: "عنصر مفقود",
-        },
-        found_person: {
-          en: "Found Person",
-          vi: "Tìm thấy người",
-          zh: "找到人员",
-          es: "Persona encontrada",
-          hi: "मिला व्यक्ति",
-          ar: "شخص تم العثور عليه",
-        },
-        found_item: {
-          en: "Found Item",
-          vi: "Tìm thấy tài sản",
-          zh: "找到物品",
-          es: "Objeto encontrado",
-          hi: "मिली वस्तु",
-          ar: "عنصر تم العثور عليه",
-        },
-        event: {
-          en: "Event",
-          vi: "Sự kiện",
-          zh: "活动",
-          es: "Evento",
-          hi: "कार्यक्रम",
-          ar: "حدث",
-        },
-      };
-
-      const selectElement = document.getElementById("report-type");
-      if (selectElement && selectElement.options) {
-        const options = selectElement.options;
-        for (let i = 0; i < options.length; i++) {
-          const opt = options[i];
-          const value = opt.value;
-          if (value && reportTypeTranslations[value]) {
-            const translation = reportTypeTranslations[value][lang];
-            if (translation) {
-              let emoji = "";
-              if (value === "missing_person") emoji = "🚨 ";
-              else if (value === "lost_item") emoji = "🔍 ";
-              else if (value === "found_person") emoji = "🙏 ";
-              else if (value === "found_item") emoji = "🔄 ";
-              else if (value === "event") emoji = "🎉 ";
-              opt.textContent = emoji + translation;
+        
+        try {
+            await window.fb.firestore.deleteDoc(
+                                                window.fb.firestore.doc(window.fb.db, "reports", reportId),
+                                                );
+            
+            await loadSavedReports();
+            showAlert("success.delete");
+        } catch (error) {
+            console.error("Delete failed:", { error: error, fb: window.fb });
+            showAlert("errors.delete");
+        } finally {
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-trash"></i> ${TRANSLATION_PATCH.deleteBtn?.[currentLang] || "Delete"}`;
+                btn.disabled = false;
             }
-          }
         }
-        // Translate the first option (-- Select Type --)
-        const firstOption = selectElement.options[0];
-        if (firstOption) {
-          const selectTypeText = {
-            en: "-- Select Type --",
-            vi: "-- Chọn loại --",
-            zh: "-- 选择类型 --",
-            es: "-- Seleccione tipo --",
-            hi: "-- प्रकार चुनें --",
-            ar: "-- اختر النوع --",
-          };
-          firstOption.textContent = selectTypeText[lang] || "-- Select Type --";
-        }
-      }
-
-      console.log("🔧 setLanguage() completed for signed-in user");
-    } finally {
-      // Release the lock
-      window._languageLock = false;
     }
-  }
-
-  function updateSupportLabel() {
-    const supportSpan = document.getElementById("supportLabel");
-    if (!supportSpan) return;
-
-    const lang =
-      localStorage.getItem("userLanguage") ||
-      localStorage.getItem("appLanguage") ||
-      "en";
-    const labels = {
-      en: "📧 Support:",
-      vi: "📧 Hỗ trợ:",
-      zh: "📧 支持：",
-      es: "📧 Soporte:",
-      hi: "📧 सहायता:",
-      ar: "📧 الدعم:",
+    
+    // Original clearAllReports
+    async function clearAllReports() {
+        const lang = localStorage.getItem("appLanguage") || "en";
+        
+        if (!confirm(TRANSLATION_PATCH.confirmations?.clearAll?.[lang])) return;
+        
+        try {
+            localStorage.removeItem("savedReports");
+            
+            if (typeof db !== "undefined" && db && userId) {
+                const reportsRef = db
+                .collection("users")
+                .doc(userId)
+                .collection("savedReports");
+                const snapshot = await reportsRef.get();
+                const batch = db.batch();
+                snapshot.forEach((doc) => batch.delete(doc.ref));
+                await batch.commit();
+            }
+            
+            if (typeof renderSavedReports === "function") {
+                renderSavedReports();
+            }
+            
+            const successText = TRANSLATION_PATCH.successMessages?.clearedAll?.[lang];
+            alert(successText);
+        } catch (error) {
+            console.error("Clear failed:", error);
+            showAlert(
+                      "error",
+                      TRANSLATION_PATCH.errorMessages?.clearAllFailed?.[lang] ||
+                      "Failed to clear reports",
+                      );
+        }
+    }
+    
+    window.clearAllReports = clearAllReports; // Global access
+    
+    async function reshareReport(reportId) {
+        const report = savedReports.find((r) => r.id === reportId);
+        if (!report) return;
+        
+        document.getElementById("report-title").value = report.title;
+        document.getElementById("report-type").value = report.type;
+        document.getElementById("report-description").value = report.description;
+        document.getElementById("location-text-input").value = report.locationText;
+        document.getElementById("selected-coordinates").value = report.coordinates;
+        document.getElementById("reporter-contact").value = report.contact;
+        
+        switchTab("new-report");
+        document.getElementById("share-section").style.display = "block";
+        
+        if (report.coordinates) {
+            const [lat, lng] = report.coordinates.split(",").map(Number);
+            updateMap(lat, lng, report.locationText || report.title);
+        }
+    }
+    
+    // ===== 7. INITIALIZATION ===== //
+    function initializeApp() {
+        try {
+            console.log("🚀 Initializing app with REST API...");
+            
+            // ✅ Check localStorage for user
+            const user = getCurrentUser();
+            
+            console.log("User status:", user ? "Signed in" : "Signed out");
+            
+            // Set up tabs
+            document.querySelectorAll(".tab").forEach((tab) => {
+                tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+            });
+            
+            // Initialize form handler for ALL users
+            initializeFormHandler();
+            
+            // Only run these for signed-in users
+            if (user) {
+                console.log("👤 User found:", user.email);
+                document
+                .getElementById("clear-all")
+                ?.addEventListener("click", clearAllReports);
+                if (currentTab === "saved-reports") loadSavedReports();
+            } else {
+                console.log("👤 No user - showing signed out UI");
+            }
+            
+            console.log("✅ App initialized successfully");
+            
+        } catch (error) {
+            console.error("Initialization failed:", error);
+            // Don't show alert, just retry after delay
+            setTimeout(initializeApp, 2000);
+        }
+    }
+    
+    // Start the app
+    initializeApp();
+    
+    // ===== TRANSLATION SYSTEM ===== //
+    // ===== IMPROVED TRANSLATION SYSTEM ===== //
+    const TRANSLATIONS = {
+        en: {
+            reportType: { select: "Select Type" },
+            imageLabel: "Upload Image",
+            buttons: {
+                submit: "Submit Report",
+                save: "Save Report",
+            },
+            // Add other English keys as needed
+        },
+        vi: {
+            reportType: { select: "Chọn loại" },
+            imageLabel: "Tải lên hình ảnh",
+            buttons: {
+                submit: "Gửi báo cáo",
+                save: "Lưu báo cáo",
+            },
+        },
+        // Add other languages similarly
     };
-    supportSpan.textContent = labels[lang] || labels.en;
-  }
-
-  // Call this function on page load and language change
-  document.addEventListener("DOMContentLoaded", updateSupportLabel);
-
-  // ▼▼▼ ADD THIS NEW FUNCTION RIGHT HERE ▼▼▼
-  function updateFormPlaceholders(lang) {
-    if (!lang) {
-      lang =
+    
+    function translate(key) {
+        // Skip dropdown option translation
+        if (
+            key &&
+            (key.startsWith("reportTypes.") || key === "reportType.select")
+            ) {
+                return key; // Return the key so it gets skipped
+            }
+        
+        const lang = localStorage.getItem("userLanguage") || "en";
+        const translation = TRANSLATIONS[lang] || TRANSLATIONS.en;
+        
+        // Special case for report type selector
+        if (key === "reportType.select") {
+            return translation.reportType?.select || "Select Type";
+        }
+        
+        return key.split(".").reduce((o, k) => (o || {})[k], translation) || key;
+    }
+    
+    function applyTranslations() {
+        // Translate labels and buttons, BUT SKIP dropdown options
+        document.querySelectorAll("[data-translate]").forEach((el) => {
+            // SKIP dropdown options - they are handled by translateDropdown()
+            if (el.parentElement?.id === "report-type" || el.tagName === "OPTION") {
+                return;
+            }
+            el.textContent = translate(el.getAttribute("data-translate"));
+        });
+        
+        // Special handling for select placeholder
+        const select = document.querySelector('#report-type option[value=""]');
+        if (select) select.textContent; // Add this at the end
+        
+        if (typeof translateButtons === "function") translateButtons();
+    }
+    // ===== LANGUAGE PERSISTENCE ===== //
+    // ============================================
+    // 3. setLanguage() - MODIFIED with retry
+    // ============================================
+    function setLanguage(lang) {
+        // 🔒 GUARD: Prevent infinite loop
+        if (window._languageLock) {
+            console.log("⚠️ Language change already in progress, skipping...");
+            return;
+        }
+        window._languageLock = true;
+        
+        try {
+            // Safety: Check if critical DOM elements exist
+            if (!document.body || !document.getElementById("report-type")) {
+                console.log(
+                            "⚠️ DOM not ready (missing critical elements), delaying setLanguage",
+                            );
+                setTimeout(() => {
+                    window._languageLock = false;
+                    setLanguage(lang);
+                }, 100);
+                return;
+            }
+            
+            // FORCE save the language
+            localStorage.setItem("userLanguage", lang);
+            localStorage.setItem("appLanguage", lang);
+            window.currentLanguage = lang;
+            console.log("🔧 setLanguage() called with:", lang);
+            
+            const isSignedIn = getCurrentUser() ? true : false;
+            
+            if (!isSignedIn) {
+                console.log("📢 Signed out - using signed-out translation system");
+                const selector = document.getElementById("language-switcher");
+                if (selector) selector.value = lang;
+                const userSelector = document.getElementById("usersLanguageSwitcher");
+                if (userSelector) userSelector.value = lang;
+                if (typeof window.applySignedOutTranslations === "function") {
+                    window.applySignedOutTranslations();
+                } else {
+                    setTimeout(() => location.reload(), 100);
+                }
+                return;
+            }
+            
+            // ============================================
+            // SIGNED-IN USER TRANSLATIONS
+            // ============================================
+            
+            // Guide button
+            const guideText = document.getElementById("guide-text");
+            if (guideText) {
+                guideText.innerText =
+                {
+                    en: "Guide",
+                    vi: "Hướng dẫn",
+                    zh: "指南",
+                    es: "Guía",
+                    hi: "गाइड",
+                    ar: "دليل",
+                }[lang] || "Guide";
+            }
+            
+            // Subscribe button
+            const subscribeSpan = document.querySelector("#subscribeBtn span");
+            if (subscribeSpan) {
+                subscribeSpan.innerText =
+                {
+                    en: "Subscribe",
+                    vi: "Đăng ký",
+                    zh: "订阅",
+                    es: "Suscribirse",
+                    hi: "सदस्यता लें",
+                    ar: "اشتراك",
+                }[lang] || "Subscribe";
+            }
+            
+            // Copyright text
+            const copyrightSpan = document.getElementById("footerCopyright");
+            if (copyrightSpan) {
+                const copyrightText = {
+                    en: "All rights reserved.",
+                    vi: "Đã đăng ký bản quyền.",
+                    zh: "保留所有权利。",
+                    es: "Todos los derechos reservados.",
+                    hi: "सर्वाधिकार सुरक्षित।",
+                    ar: "جميع الحقوق محفوظة.",
+                };
+                copyrightSpan.textContent = copyrightText[lang] || copyrightText.en;
+            }
+            
+            // Support label (emoji prefix kept consistent with updateSupportLabel)
+            const supportLabel = document.getElementById("supportLabel");
+            if (supportLabel) {
+                const supportText = {
+                    en: "📧 Support:",
+                    vi: "📧 Hỗ trợ:",
+                    zh: "📧 支持：",
+                    es: "📧 Soporte:",
+                    hi: "📧 सहायता:",
+                    ar: "📧 الدعم:",
+                };
+                supportLabel.textContent = supportText[lang] || supportText.en;
+            }
+            
+            // Logout button
+            const logoutBtn = document.getElementById("logoutBtn");
+            if (logoutBtn) {
+                logoutBtn.innerText =
+                {
+                    en: "Logout",
+                    vi: "Đăng xuất",
+                    zh: "退出",
+                    es: "Cerrar sesión",
+                    hi: "लॉगआउट",
+                    ar: "تسجيل الخروج",
+                }[lang] || "Logout";
+            }
+            
+            // Run existing UI updates
+            if (typeof applyTranslations === "function") applyTranslations();
+            if (typeof updatePatchedTranslations === "function")
+                updatePatchedTranslations();
+            if (typeof updateShareHeading === "function") updateShareHeading(localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en");
+            if (typeof updateFileInputDisplay === "function")
+                updateFileInputDisplay();
+            if (typeof translateSavedReportsLabel === "function")
+                translateSavedReportsLabel();
+            if (typeof updateAllWarnings === "function") updateAllWarnings();
+            if (typeof updateLocationButtonText === "function")
+                updateLocationButtonText();
+            if (typeof updateDashboardIntro === "function") updateDashboardIntro();
+            if (typeof updateFormPlaceholders === "function")
+                updateFormPlaceholders(lang);
+            if (typeof translateButtons === "function") translateButtons();
+            
+            // ✅ ONLY CALL translateDropdown() ONCE
+            if (typeof translateDropdown === "function") translateDropdown();
+            
+            // ============================================
+            // FORCE UPDATE LABELS AFTER ALL OTHER FUNCTIONS
+            // ============================================
+            const labelTranslations = {
+                reportTypeLabel: {
+                    en: "Report Type:",
+                    vi: "Loại báo cáo:",
+                    zh: "报告类型：",
+                    es: "Tipo de informe:",
+                    hi: "रिपोर्ट प्रकार:",
+                    ar: "نوع التقرير:",
+                },
+                titleLabel: {
+                    en: "Title:",
+                    vi: "Tiêu đề:",
+                    zh: "标题：",
+                    es: "Título:",
+                    hi: "शीर्षक:",
+                    ar: "العنوان:",
+                },
+                descriptionLabel: {
+                    en: "Description:",
+                    vi: "Mô tả:",
+                    zh: "描述：",
+                    es: "Descripción:",
+                    hi: "विवरण:",
+                    ar: "الوصف:",
+                },
+                locationLabel: {
+                    en: "Location Details:",
+                    vi: "Chi tiết địa điểm:",
+                    zh: "位置详情：",
+                    es: "Detalles de ubicación:",
+                    hi: "स्थान विवरण:",
+                    ar: "تفاصيل الموقع:",
+                },
+                contactLabel: {
+                    en: "Your Contact:",
+                    vi: "Liên hệ của bạn:",
+                    zh: "您的联系方式：",
+                    es: "Su contacto:",
+                    hi: "आपका संपर्क:",
+                    ar: "جهة اتصالك:",
+                },
+                "reportTypes.select": {
+                    en: "-- Select Type --",
+                    vi: "-- Chọn loại --",
+                    zh: "-- 选择类型 --",
+                    es: "-- Seleccione tipo --",
+                    hi: "-- प्रकार चुनें --",
+                    ar: "-- اختر النوع --",
+                },
+                "buttons.showOnMap": {
+                    en: "Show on Map",
+                    vi: "Hiện trên bản đồ",
+                    zh: "在地图上显示",
+                    es: "Mostrar en mapa",
+                    hi: "मानचित्र पर दिखाएं",
+                    ar: "عرض على الخريطة",
+                },
+            };
+            
+            // Update ALL data-translate elements
+            document.querySelectorAll("[data-translate]").forEach((el) => {
+                const key = el.getAttribute("data-translate");
+                if (labelTranslations[key] && labelTranslations[key][lang]) {
+                    if (el.tagName === "OPTION") {
+                        el.textContent = labelTranslations[key][lang];
+                    } else if (el.tagName === "LABEL") {
+                        el.textContent = labelTranslations[key][lang];
+                    } else {
+                        el.textContent = labelTranslations[key][lang];
+                    }
+                }
+            });
+            
+            // Update the map button specifically
+            const mapBtn = document.querySelector('button[onclick="findAddress()"]');
+            if (mapBtn) {
+                mapBtn.textContent =
+                labelTranslations["buttons.showOnMap"][lang] || "Show on Map";
+            }
+            
+            const selector = document.getElementById("language-switcher");
+            if (selector) selector.value = lang;
+            const userSelector = document.getElementById("usersLanguageSwitcher");
+            if (userSelector) userSelector.value = lang;
+            
+            // ============================================
+            // UPDATE DROPDOWN OPTIONS (SIGNED IN)
+            // ============================================
+            const reportTypeTranslations = {
+                missing_person: {
+                    en: "Missing Person",
+                    vi: "Người mất tích",
+                    zh: "失踪人员",
+                    es: "Persona desaparecida",
+                    hi: "लापता व्यक्ति",
+                    ar: "شخص مفقود",
+                },
+                lost_item: {
+                    en: "Lost Item",
+                    vi: "Tài sản bị mất",
+                    zh: "丢失物品",
+                    es: "Objeto perdido",
+                    hi: "खोई हुई वस्तु",
+                    ar: "عنصر مفقود",
+                },
+                found_person: {
+                    en: "Found Person",
+                    vi: "Tìm thấy người",
+                    zh: "找到人员",
+                    es: "Persona encontrada",
+                    hi: "मिला व्यक्ति",
+                    ar: "شخص تم العثور عليه",
+                },
+                found_item: {
+                    en: "Found Item",
+                    vi: "Tìm thấy tài sản",
+                    zh: "找到物品",
+                    es: "Objeto encontrado",
+                    hi: "मिली वस्तु",
+                    ar: "عنصر تم العثور عليه",
+                },
+                event: {
+                    en: "Event",
+                    vi: "Sự kiện",
+                    zh: "活动",
+                    es: "Evento",
+                    hi: "कार्यक्रम",
+                    ar: "حدث",
+                },
+            };
+            
+            const selectElement = document.getElementById("report-type");
+            if (selectElement && selectElement.options) {
+                const options = selectElement.options;
+                for (let i = 0; i < options.length; i++) {
+                    const opt = options[i];
+                    const value = opt.value;
+                    if (value && reportTypeTranslations[value]) {
+                        const translation = reportTypeTranslations[value][lang];
+                        if (translation) {
+                            let emoji = "";
+                            if (value === "missing_person") emoji = "🚨 ";
+                            else if (value === "lost_item") emoji = "🔍 ";
+                            else if (value === "found_person") emoji = "🙏 ";
+                            else if (value === "found_item") emoji = "🔄 ";
+                            else if (value === "event") emoji = "🎉 ";
+                            opt.textContent = emoji + translation;
+                        }
+                    }
+                }
+                // Translate the first option (-- Select Type --)
+                const firstOption = selectElement.options[0];
+                if (firstOption) {
+                    const selectTypeText = {
+                        en: "-- Select Type --",
+                        vi: "-- Chọn loại --",
+                        zh: "-- 选择类型 --",
+                        es: "-- Seleccione tipo --",
+                        hi: "-- प्रकार चुनें --",
+                        ar: "-- اختر النوع --",
+                    };
+                    firstOption.textContent = selectTypeText[lang] || "-- Select Type --";
+                }
+            }
+            
+            console.log("🔧 setLanguage() completed for signed-in user");
+        } finally {
+            // Release the lock
+            window._languageLock = false;
+        }
+    }
+    
+    function updateSupportLabel() {
+        const supportSpan = document.getElementById("supportLabel");
+        if (!supportSpan) return;
+        
+        const lang =
+        localStorage.getItem("userLanguage") ||
+        localStorage.getItem("appLanguage") ||
+        "en";
+        const labels = {
+            en: "📧 Support:",
+            vi: "📧 Hỗ trợ:",
+            zh: "📧 支持：",
+            es: "📧 Soporte:",
+            hi: "📧 सहायता:",
+            ar: "📧 الدعم:",
+        };
+        supportSpan.textContent = labels[lang] || labels.en;
+    }
+    
+    // Call this function on page load and language change
+    document.addEventListener("DOMContentLoaded", updateSupportLabel);
+    
+    // ▼▼▼ ADD THIS NEW FUNCTION RIGHT HERE ▼▼▼
+    function updateFormPlaceholders(lang) {
+        if (!lang) {
+            lang =
+            localStorage.getItem("appLanguage") ||
+            localStorage.getItem("userLanguage") ||
+            "en";
+        }
+        console.log("🔄 updateFormPlaceholders using language:", lang);
+        
+        // Title field
+        const titleField = document.getElementById("report-title");
+        if (titleField) {
+            const placeholders = {
+                en: "e.g. Missing boy, Lost wallet",
+                vi: "vd. Bé trai mất tích, Ví bị mất",
+                zh: "例如：失踪男孩，丢失钱包",
+                es: "ej. Niño perdido, Billetera perdida",
+                hi: "जैसे: लापता लड़का, खोया हुआ बटुआ",
+                ar: "مثال: فتى مفقود، محفظة ضائعة",
+            };
+            titleField.placeholder = placeholders[lang] || placeholders.en;
+        }
+        
+        // Location field
+        const locationField = document.getElementById("location-text-input");
+        if (locationField) {
+            const placeholders = {
+                en: "Specific place",
+                vi: "Địa điểm cụ thể",
+                zh: "具体地点",
+                es: "Lugar específico",
+                hi: "विशिष्ट स्थान",
+                ar: "مكان محدد",
+            };
+            locationField.placeholder = placeholders[lang] || placeholders.en;
+        }
+        
+        // Address field
+        const addressField = document.getElementById("address-input");
+        if (addressField) {
+            const placeholders = {
+                en: "Search address",
+                vi: "Tìm kiếm địa chỉ",
+                zh: "搜索地址",
+                es: "Buscar dirección",
+                hi: "पता खोजें",
+                ar: "ابحث عن العنوان",
+            };
+            addressField.placeholder = placeholders[lang] || placeholders.en;
+        }
+    }
+    // ▲▲▲ END NEW FUNCTION ▲▲▲
+    
+    // ============================================
+    // FILE INPUT LABEL - ADD THIS FUNCTION HERE
+    // ============================================
+    
+    function updateFileInputLabel() {
+        const fileLabel = document.querySelector(".file-input-text");
+        if (!fileLabel) return;
+        
+        const lang =
         localStorage.getItem("appLanguage") ||
         localStorage.getItem("userLanguage") ||
         "en";
-    }
-    console.log("🔄 updateFormPlaceholders using language:", lang);
-
-    // Title field
-    const titleField = document.getElementById("report-title");
-    if (titleField) {
-      const placeholders = {
-        en: "e.g. Missing boy, Lost wallet",
-        vi: "vd. Bé trai mất tích, Ví bị mất",
-        zh: "例如：失踪男孩，丢失钱包",
-        es: "ej. Niño perdido, Billetera perdida",
-        hi: "जैसे: लापता लड़का, खोया हुआ बटुआ",
-        ar: "مثال: فتى مفقود، محفظة ضائعة",
-      };
-      titleField.placeholder = placeholders[lang] || placeholders.en;
-    }
-
-    // Location field
-    const locationField = document.getElementById("location-text-input");
-    if (locationField) {
-      const placeholders = {
-        en: "Specific place",
-        vi: "Địa điểm cụ thể",
-        zh: "具体地点",
-        es: "Lugar específico",
-        hi: "विशिष्ट स्थान",
-        ar: "مكان محدد",
-      };
-      locationField.placeholder = placeholders[lang] || placeholders.en;
-    }
-
-    // Address field
-    const addressField = document.getElementById("address-input");
-    if (addressField) {
-      const placeholders = {
-        en: "Search address",
-        vi: "Tìm kiếm địa chỉ",
-        zh: "搜索地址",
-        es: "Buscar dirección",
-        hi: "पता खोजें",
-        ar: "ابحث عن العنوان",
-      };
-      addressField.placeholder = placeholders[lang] || placeholders.en;
-    }
-  }
-  // ▲▲▲ END NEW FUNCTION ▲▲▲
-
-  // ============================================
-  // FILE INPUT LABEL - ADD THIS FUNCTION HERE
-  // ============================================
-
-  function updateFileInputLabel() {
-    const fileLabel = document.querySelector(".file-input-text");
-    if (!fileLabel) return;
-
-    const lang =
-      localStorage.getItem("appLanguage") ||
-      localStorage.getItem("userLanguage") ||
-      "en";
-    console.log("🔄 Updating file label for language:", lang);
-
-    const labels = {
-      en: "Choose files (max 5)",
-      vi: "Chọn tệp (tối đa 5)",
-      zh: "选择文件（最多5个）",
-      es: "Elegir archivos (máx. 5)",
-      hi: "फ़ाइलें चुनें (अधिकतम 5)",
-      ar: "اختر الملفات (5 كحد أقصى)",
-    };
-
-    const fileInput = document.getElementById("report-image");
-    if (fileInput && fileInput.files.length > 0) {
-      if (fileInput.files.length === 1) {
-        fileLabel.textContent = fileInput.files[0].name;
-      } else {
-        const fileText = {
-          en: "files selected",
-          vi: "tệp đã chọn",
-          zh: "个文件已选择",
-          es: "archivos seleccionados",
-          hi: "फ़ाइलें चुनी गईं",
-          ar: "ملفات مختارة",
+        console.log("🔄 Updating file label for language:", lang);
+        
+        const labels = {
+            en: "Choose files (max 5)",
+            vi: "Chọn tệp (tối đa 5)",
+            zh: "选择文件（最多5个）",
+            es: "Elegir archivos (máx. 5)",
+            hi: "फ़ाइलें चुनें (अधिकतम 5)",
+            ar: "اختر الملفات (5 كحد أقصى)",
         };
-        fileLabel.textContent = `${fileInput.files.length} ${fileText[lang] || fileText.en}`;
-      }
-    } else {
-      fileLabel.textContent = labels[lang] || labels.en;
+        
+        const fileInput = document.getElementById("report-image");
+        if (fileInput && fileInput.files.length > 0) {
+            if (fileInput.files.length === 1) {
+                fileLabel.textContent = fileInput.files[0].name;
+            } else {
+                const fileText = {
+                    en: "files selected",
+                    vi: "tệp đã chọn",
+                    zh: "个文件已选择",
+                    es: "archivos seleccionados",
+                    hi: "फ़ाइलें चुनी गईं",
+                    ar: "ملفات مختارة",
+                };
+                fileLabel.textContent = `${fileInput.files.length} ${fileText[lang] || fileText.en}`;
+            }
+        } else {
+            fileLabel.textContent = labels[lang] || labels.en;
+        }
     }
-  }
-  // Initialize on load
+    // Initialize on load
+    
+    // ===== 8. GLOBAL EXPORTS ===== //
+      window.initMap = initMap;
+      window.findAddress = findAddress;
+      window.useCurrentLocation = useCurrentLocation;
+      window.updateMap = updateMap;
+      window.switchTab = switchTab;
+      window.deleteReport = deleteReport;
+      window.reshareReport = reshareReport;
+      window.clearAllReports = clearAllReports;
 
-  // ===== 8. GLOBAL EXPORTS ===== //
-  window.initMap = initMap;
-  window.findAddress = findAddress;
-  window.useCurrentLocation = useCurrentLocation;
-  window.updateMap = updateMap;
-  window.switchTab = switchTab;
-  window.deleteReport = deleteReport;
-  window.reshareReport = reshareReport;
-  window.clearAllReports = clearAllReports;
+      // ===== Report Type Selection (called by report-type buttons) =====
+      window.selectReportType = function(type) {
+        console.log("📌 selectReportType called with:", type);
 
-  console.log("Reports.js setup complete");
+        // 1. Set the hidden input value
+        const hiddenInput = document.getElementById("report-type");
+        if (hiddenInput) {
+          hiddenInput.value = type;
+          console.log("✅ Set #report-type.value =", type);
+
+          // Fire a change event so any listeners update
+          hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+        } else {
+          console.warn("⚠️ #report-type hidden input not found");
+        }
+
+        // 2. Update visual selection state
+        document.querySelectorAll(".report-type-buttons .type-btn").forEach((btn) => {
+          if (btn.dataset.type === type) {
+            btn.classList.add("selected", "active");
+            btn.setAttribute("aria-pressed", "true");
+          } else {
+            btn.classList.remove("selected", "active");
+            btn.setAttribute("aria-pressed", "false");
+          }
+        });
+      };
+      console.log("Reports.js setup complete");
 }
 // ===== SAFE TRANSLATION PATCH ===== //
 // ===== RELIABLE TRANSLATION PATCH ===== //
@@ -3566,17 +3998,17 @@ const TRANSLATION_PATCH = {
   // COMPACT WARNING - ALL 6 LANGUAGES
   // ============================================
   compact_warning: {
-    en: '⚠️ By using this app, you agree to our <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Terms</a> &amp; <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>. No sensitive info. Reports auto-delete after 180 days.',
+    en: '⚠️ By using this app, you agree to our <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Terms</a> &amp; <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>. No sensitive info. Reports auto-delete after 180 days.',
 
-    vi: '⚠️ Khi sử dụng ứng dụng này, bạn đồng ý với <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Điều khoản</a> &amp; <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Chính sách bảo mật</a> của chúng tôi. Không chia sẻ thông tin nhạy cảm. Báo cáo tự động xóa sau 180 ngày.',
+    vi: '⚠️ Khi sử dụng ứng dụng này, bạn đồng ý với <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Điều khoản</a> &amp; <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Chính sách bảo mật</a> của chúng tôi. Không chia sẻ thông tin nhạy cảm. Báo cáo tự động xóa sau 180 ngày.',
 
-    zh: '⚠️ 使用本应用即表示您同意我们的<a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">服务条款</a>和<a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">隐私政策</a>。请勿分享敏感信息。报告将在180天后自动删除。',
+    zh: '⚠️ 使用本应用即表示您同意我们的<a href="./terms.html" style="color: #4CAF50; text-decoration: none;">服务条款</a>和<a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">隐私政策</a>。请勿分享敏感信息。报告将在180天后自动删除。',
 
-    es: '⚠️ Al usar esta aplicación, aceptas nuestros <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Términos</a> y <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">Política de Privacidad</a>. No compartas información sensible. Los informes se eliminan automáticamente después de 180 días.',
+    es: '⚠️ Al usar esta aplicación, aceptas nuestros <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Términos</a> y <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Política de Privacidad</a>. No compartas información sensible. Los informes se eliminan automáticamente después de 180 días.',
 
-    hi: '⚠️ इस ऐप का उपयोग करके, आप हमारी <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">सेवा शर्तों</a> और <a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">गोपनीयता नीति</a> से सहमत होते हैं। कोई संवेदनशील जानकारी नहीं। रिपोर्ट 180 दिनों के बाद स्वचालित रूप से हटा दी जाती हैं।',
+    hi: '⚠️ इस ऐप का उपयोग करके, आप हमारी <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">सेवा शर्तों</a> और <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">गोपनीयता नीति</a> से सहमत होते हैं। कोई संवेदनशील जानकारी नहीं। रिपोर्ट 180 दिनों के बाद स्वचालित रूप से हटा दी जाती हैं।',
 
-    ar: '⚠️ باستخدام هذا التطبيق، فإنك توافق على <a href="./terms.html" target="_blank" style="color: #4CAF50; text-decoration: none;">الشروط</a> و<a href="./privacy-policy.html" target="_blank" style="color: #4CAF50; text-decoration: none;">سياسة الخصوصية</a> الخاصة بنا. لا تشارك معلومات حساسة. يتم حذف التقارير تلقائيًا بعد 180 يومًا.',
+    ar: '⚠️ باستخدام هذا التطبيق، فإنك توافق على <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">الشروط</a> و<a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">سياسة الخصوصية</a> الخاصة بنا. لا تشارك معلومات حساسة. يتم حذف التقارير تلقائيًا بعد 180 يومًا.',
   },
 
   //warnings: {
@@ -4837,7 +5269,7 @@ console.log(
 // 4. handleLanguageChange() - MODIFIED with routing and retry
 // ============================================
 function handleLanguageChange(lang) {
-  const user = window.fb?.auth?.currentUser;
+  const user = getCurrentUser();
   if (!user) {
     console.log("⚠️ User not signed in - routing to signed-out handler");
     handleSignedOutLanguageChange(lang);
@@ -4875,15 +5307,23 @@ function handleLanguageChange(lang) {
 
   // Update UI
   applyTranslations();
+  // Guide first — users see instant feedback on language change
+  if (typeof window.updateGuideText === "function") window.updateGuideText(lang);
+
+  // Then the rest
   updateLogoutButton();
   updatePatchedTranslations();
-  updateShareHeading();
+  updateShareHeading(lang);
   updateFileInputDisplay();
   translateSavedReportsLabel();
   updateAllWarnings();
   updateLocationButtonText();
   updateDashboardIntro();
-  if (typeof translateDropdown === "function") translateDropdown(); // <-- ADD THIS
+  if (typeof translateDropdown === "function") translateDropdown();
+
+  // Support label + bulk panel — self-contained update
+  if (typeof updateSupportLabel === "function") updateSupportLabel();
+  if (typeof updateBulkPassPanel === "function") updateBulkPassPanel(lang);
 
   setTimeout(() => {
     if (typeof window.renderSavedReports === "function") {
@@ -5033,7 +5473,12 @@ function updateLocationButtonText() {
 // Initialize button texts on first load
 document.addEventListener("DOMContentLoaded", () => {
   if (document.querySelector(".saved-reports-container")) {
-    setTimeout(handleLanguageChange, 100);
+    // Call directly (no delay) so Guide translates instantly
+    try {
+      handleLanguageChange(localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en");
+    } catch (e) {
+      console.warn("handleLanguageChange auto-call failed:", e);
+    }
   }
 });
 
@@ -5196,17 +5641,33 @@ function updatePatchedTranslations() {
 // Initialize patch translations
 
 // Add this to your existing initialization (DOMContentLoaded)
-function updateShareHeading() {
+function updateShareHeading(passedLang) {
   const heading = document.getElementById("share-subheading");
   if (!heading) return;
 
   const lang =
-    localStorage.getItem("appLanguage") ||
+    passedLang ||
     localStorage.getItem("userLanguage") ||
+    localStorage.getItem("appLanguage") ||
     "en";
-  heading.textContent =
-    TRANSLATION_PATCH.uiTexts.shareSubheading[lang] ||
-    TRANSLATION_PATCH.uiTexts.shareSubheading.en;
+
+  const subs = TRANSLATION_PATCH?.uiTexts?.shareSubheading;
+  if (subs && subs[lang]) {
+    heading.textContent = subs[lang];
+  } else if (subs && subs.en) {
+    heading.textContent = subs.en;
+  } else {
+    const fallback = {
+      en: "Share This Report",
+      vi: "Chia sẻ báo cáo này",
+      zh: "分享此报告",
+      es: "Compartir este informe",
+      hi: "इस रिपोर्ट को साझा करें",
+      ar: "شارك هذا التقرير",
+    };
+    heading.textContent = fallback[lang] || fallback.en;
+  }
+  console.log("📢 Share heading updated to:", heading.textContent);
 }
 
 // Call it with other translations
@@ -5734,7 +6195,7 @@ function showUpgradePrompt() {
 // Safe debug function
 async function debugPremiumCheck() {
   try {
-    const user = window.fb.auth.currentUser;
+    const user = getCurrentUser();
     console.log("=== PREMIUM SYSTEM DEBUG ===");
 
     if (user) {
@@ -5944,3 +6405,158 @@ document.addEventListener("click", function (e) {
     }, 100);
   }
 });
+
+
+// 🔧 GLOBAL: Always update guide text based on current language
+window.updateGuideText = function(lang) {
+  const lang2 =
+    lang ||
+    localStorage.getItem("userLanguage") ||
+    localStorage.getItem("appLanguage") ||
+    "en";
+  const guideText = document.getElementById("guide-text");
+  if (guideText) {
+    const guides = {
+      en: "Guide",
+      vi: "Hướng dẫn",
+      zh: "指南",
+      es: "Guía",
+      hi: "गाइड",
+      ar: "دليل",
+    };
+    guideText.textContent = guides[lang2] || "Guide";
+    console.log("📘 Guide text updated to:", guideText.textContent);
+  }
+};
+
+// Force Guide to correct language after full page load (switchers may default to "en")
+window.addEventListener("load", function () {
+  setTimeout(function () {
+    const storedLang =
+      localStorage.getItem("userLanguage") ||
+      localStorage.getItem("appLanguage") ||
+      "en";
+    if (typeof window.updateGuideText === "function") {
+      window.updateGuideText(storedLang);
+    }
+    // Also correct any language switcher that defaulted to "en"
+    ["language-switcher", "usersLanguageSwitcher"].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el && el.value !== storedLang) {
+        el.value = storedLang;
+      }
+    });
+    console.log("🔧 Guide language forced to:", storedLang);
+  }, 500);
+});
+
+// ============================================
+// BULK PASS PANEL TRANSLATIONS (self-contained)
+// ============================================
+function updateBulkPassPanel(lang) {
+  try {
+    const currentLang =
+      lang ||
+      localStorage.getItem("userLanguage") ||
+      localStorage.getItem("appLanguage") ||
+      "en";
+
+    const t = {
+      en: {
+        heading: "👑 Generate Bulk Pass Codes (Organizations)",
+        emailPh: "Organization email",
+        countPh: "Number of codes",
+        month1: "1 Month",
+        month3: "3 Months",
+        month6: "6 Months",
+        year1: "1 Year",
+        button: "Generate Bulk Codes",
+      },
+      vi: {
+        heading: "👑 Tạo Mã Số Hàng Loạt (Tổ Chức)",
+        emailPh: "Email tổ chức",
+        countPh: "Số lượng mã",
+        month1: "1 Tháng",
+        month3: "3 Tháng",
+        month6: "6 Tháng",
+        year1: "1 Năm",
+        button: "Tạo Mã Hàng Loạt",
+      },
+      zh: {
+        heading: "👑 批量生成通行码（机构）",
+        emailPh: "机构邮箱",
+        countPh: "代码数量",
+        month1: "1 个月",
+        month3: "3 个月",
+        month6: "6 个月",
+        year1: "1 年",
+        button: "批量生成代码",
+      },
+      es: {
+        heading: "👑 Generar Códigos Masivos (Organizaciones)",
+        emailPh: "Correo de la organización",
+        countPh: "Número de códigos",
+        month1: "1 Mes",
+        month3: "3 Meses",
+        month6: "6 Meses",
+        year1: "1 Año",
+        button: "Generar Códigos Masivos",
+      },
+      hi: {
+        heading: "👑 बल्क पास कोड उत्पन्न करें (संगठन)",
+        emailPh: "संगठन ईमेल",
+        countPh: "कोड की संख्या",
+        month1: "1 महीना",
+        month3: "3 महीने",
+        month6: "6 महीने",
+        year1: "1 वर्ष",
+        button: "बल्क कोड उत्पन्न करें",
+      },
+      ar: {
+        heading: "👑 إنشاء رموز مرور مجمعة (المؤسسات)",
+        emailPh: "البريد الإلكتروني للمؤسسة",
+        countPh: "عدد الرموز",
+        month1: "شهر واحد",
+        month3: "3 أشهر",
+        month6: "6 أشهر",
+        year1: "سنة واحدة",
+        button: "إنشاء رموز مجمعة",
+      },
+    };
+
+    const tr = t[currentLang] || t.en;
+
+    // Heading
+    const heading = document.getElementById("bulk-pass-heading");
+    if (heading) heading.textContent = tr.heading;
+
+    // Email input placeholder
+    const emailIn = document.getElementById("bulkEmail");
+    if (emailIn) emailIn.placeholder = tr.emailPh;
+
+    // Count input placeholder
+    const countIn = document.getElementById("bulkCount");
+    if (countIn) countIn.placeholder = tr.countPh;
+
+    // Plan dropdown options
+    const plan = document.getElementById("bulkPlan");
+    if (plan) {
+      const opts = plan.options;
+      if (opts[0]) opts[0].textContent = tr.month1;
+      if (opts[1]) opts[1].textContent = tr.month3;
+      if (opts[2]) opts[2].textContent = tr.month6;
+      if (opts[3]) opts[3].textContent = tr.year1;
+    }
+
+    // Button
+    const btn = document.getElementById("generateBulkBtn");
+    if (btn) btn.textContent = tr.button;
+
+    console.log("📘 Bulk Pass Panel translated to:", currentLang);
+  } catch (e) {
+    console.warn("updateBulkPassPanel error:", e);
+  }
+}
+
+// Expose globally so dashboard.html or other scripts can call it
+window.updateBulkPassPanel = updateBulkPassPanel;

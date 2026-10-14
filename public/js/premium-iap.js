@@ -396,45 +396,102 @@ let currentT = premiumTranslations.en;
 
 let revenueCatInitialized = false;
 
+// cap-plugin-resolver: resolve the RevenueCat plugin regardless of bundler
+async function getRevenueCatPlugin() {
+    // 1. Try Capacitor's plugin registry directly (native runtime)
+    const cap = window.Capacitor;
+    if (cap && cap.Plugins) {
+        const candidates = [
+            "Purchases",
+            "RevenuecatPurchasesCapacitor",
+            "RevenueCatPlugin",
+            "RevenueCat",
+        ];
+        for (const name of candidates) {
+            if (cap.Plugins[name]) {
+                console.log("✅ RevenueCat plugin found as:", name);
+                return cap.Plugins[name];
+            }
+        }
+        console.warn("⚠️ RevenueCat not in Capacitor.Plugins. Available plugins:",
+            Object.keys(cap.Plugins));
+    }
+
+    // 2. Fallback: dynamic import (works when bundled)
+    try {
+        return await import("@revenuecat/purchases-capacitor");
+    } catch (e) {
+        console.warn("⚠️ dynamic import failed:", e.message);
+        return null;
+    }
+}
+
 async function initRevenueCat() {
   if (revenueCatInitialized) return;
 
   try {
-    // Check if running on Android device via Capacitor
-    if (window.Capacitor && window.Capacitor.getPlatform() === "android") {
-      const { Purchases } = await import("@revenuecat/purchases-capacitor");
+    // iap-patch-2026-09-28: configure RevenueCat on BOTH iOS and Android
+    if (window.Capacitor) {
+      const platform = window.Capacitor.getPlatform();
+      console.log("🔧 initRevenueCat on platform:", platform);
+
+      const _rc = await getRevenueCatPlugin();
+      if (!_rc) throw new Error("RevenueCat plugin not available");
+      const Purchases = _rc.Purchases || _rc;
 
       const userId = window.fb?.auth?.currentUser?.uid || null;
 
+      // Sandbox key — swap to live key (appl_...) before production release
+      const API_KEY = "appl_QfuxqVZjPTXaktyEblhjjvakycE";
+
       await Purchases.configure({
-        apiKey: "test_YwBBHjmFYqgnFPHUysizdkwFKbL",
+        apiKey: API_KEY,
         appUserID: userId,
       });
 
       revenueCatInitialized = true;
-      console.log("✅ RevenueCat configured with sandbox key");
+      console.log("✅ RevenueCat configured on", platform, "with sandbox key");
 
       await loadOfferings();
     } else {
-      console.log("Not on Android, RevenueCat not initialized");
+      console.log("⚠️ Not inside Capacitor — RevenueCat not initialized");
     }
   } catch (error) {
-    console.error("Failed to configure RevenueCat:", error);
+    // better-iap-error-log: surface the real error
+    console.error("❌ RevenueCat config FAILED");
+    console.error("   name:", error?.name);
+    console.error("   message:", error?.message);
+    console.error("   code:", error?.code);
+    console.error("   underlying:", error?.underlyingErrorMessage);
+    console.error("   raw:", JSON.stringify(error, Object.getOwnPropertyNames(error || {})));
+    try {
+      console.error("   stringified:", String(error));
+      console.error("   toString:", error?.toString?.());
+    } catch (e) {}
   }
 }
 
 async function loadOfferings() {
   try {
-    const { Purchases } = await import("@revenuecat/purchases-capacitor");
+    const _rc = await getRevenueCatPlugin();
+      if (!_rc) throw new Error("RevenueCat plugin not available");
+      const Purchases = _rc.Purchases || _rc;
     const offerings = await Purchases.getOfferings();
 
+    console.log("🔍 RAW offerings object:", JSON.stringify(offerings, null, 2));
     if (offerings.current) {
       console.log("✅ Offerings loaded:", offerings.current.availablePackages);
+      console.log("🔍 Package count:", offerings.current.availablePackages?.length);
+      offerings.current.availablePackages?.forEach((pkg, i) => {
+        console.log(`  [${i}] identifier: "${pkg.identifier}", productIdentifier: "${pkg.productIdentifier}"`);
+      });
       window.revenueCatOfferings = offerings.current.availablePackages;
+    } else {
+      console.warn("⚠️ offerings.current is missing — full object:", offerings);
+    }
 
       // Update prices on the page
       updatePricesFromOfferings(window.revenueCatOfferings);
-    }
   } catch (error) {
     console.error("Failed to load offerings:", error);
   }
@@ -461,11 +518,22 @@ function updatePricesFromOfferings(packages) {
 }
 
 async function purchaseWithRevenueCat(productId) {
+  // 🔄 Race-condition fix: wait for RevenueCat to finish initializing (up to 10s)
   if (!revenueCatInitialized) {
-    alert(
-      currentT.subscription_alert?.replace("{plan}", productId) ||
-        "Payment system not ready. Please try again.",
-    );
+    console.log("⏳ RevenueCat not ready — waiting up to 10s...");
+    for (let i = 0; i < 20; i++) {   // 20 × 500ms = 10s
+      if (revenueCatInitialized) break;
+      await new Promise((res) => setTimeout(res, 500));
+    }
+  }
+  if (!revenueCatInitialized) {
+    console.warn("⚠️ RevenueCat still not ready after 10s");
+    alert("Payment system is still loading. Please wait a moment and try again.");
+    return false;
+  }
+  if (!window.revenueCatOfferings || window.revenueCatOfferings.length === 0) {
+    console.warn("⚠️ Offerings not loaded yet");
+    alert("Products are still loading. Please wait a moment and try again.");
     return false;
   }
 
@@ -475,9 +543,21 @@ async function purchaseWithRevenueCat(productId) {
   }
 
   try {
+    // Map from app's product IDs to RevenueCat package identifiers
+    const RC_PACKAGE_MAP = {
+      monthly_subscription:      "$rc_monthly",
+      three_months_subscription: "$rc_three_month",
+      six_months_subscription:   "$rc_six_month",
+      yearly_subscription:       "$rc_annual",
+    };
+    const rcIdentifier = RC_PACKAGE_MAP[productId] || productId;
+    console.log("🛒 purchaseWithRevenueCat:", { productId, rcIdentifier, available: window.revenueCatOfferings.map(p => p.identifier) });
+
     const packageToPurchase = window.revenueCatOfferings.find(
       (pkg) =>
-        pkg.productIdentifier === productId || pkg.identifier === productId,
+        pkg.identifier === rcIdentifier
+        || pkg.productIdentifier === productId
+        || pkg.identifier === productId,
     );
 
     if (!packageToPurchase) {
@@ -485,18 +565,18 @@ async function purchaseWithRevenueCat(productId) {
       return false;
     }
 
-    const { Purchases } = await import("@revenuecat/purchases-capacitor");
+    const _rc = await getRevenueCatPlugin();
+      if (!_rc) throw new Error("RevenueCat plugin not available");
+      const Purchases = _rc.Purchases || _rc;
     const { customerInfo } = await Purchases.purchasePackage({
       aPackage: packageToPurchase,
     });
 
-    if (customerInfo.entitlements.active.premium) {
+    if (customerInfo.entitlements.active["Connections Pro"] || customerInfo.entitlements.active.premium) {
       console.log("✅ Purchase successful!");
       await savePremiumStatusToFirebase(true);
-      alert(
-        currentT.subscription_alert?.replace("{plan}", productId) ||
-          "Subscription successful!",
-      );
+      // ✅ Show a proper success message (NOT the old fallback alert)
+      alert("🎉 Subscription successful! Thank you for subscribing.");
       window.location.href = "/dashboard.html";
       return true;
     }
@@ -510,6 +590,61 @@ async function purchaseWithRevenueCat(productId) {
     return false;
   }
 }
+
+// ═══════════════════════════════════════════════════
+// RESTORE PURCHASES (Apple requirement)
+// ═══════════════════════════════════════════════════
+async function restorePurchases() {
+  console.log("🔄 Restore Purchases clicked");
+  try {
+    const _rc = await getRevenueCatPlugin();
+    if (!_rc) throw new Error("RevenueCat plugin not available");
+    const Purchases = _rc.Purchases || _rc;
+
+    const { customerInfo } = await Purchases.restorePurchases();
+    console.log("🔄 Restore response:", customerInfo);
+
+    const hasActive =
+      (customerInfo?.entitlements?.active?.["Connections Pro"]) ||
+      (customerInfo?.entitlements?.active?.premium);
+
+    if (hasActive) {
+      alert("✅ Subscription restored successfully!");
+      await savePremiumStatusToFirebase(true);
+      setTimeout(() => { window.location.href = "/dashboard.html"; }, 1000);
+    } else {
+      alert("No active subscription found for this account.");
+    }
+  } catch (err) {
+    console.error("❌ Restore failed:", err);
+    alert("Restore failed: " + (err.message || "Unknown error"));
+  }
+}
+
+// Wire up the restore button
+function setupRestoreButton() {
+  const btn = document.getElementById("restorePurchasesBtn");
+  if (!btn) {
+    console.warn("⚠️ restorePurchasesBtn not found");
+    return;
+  }
+  btn.addEventListener("click", restorePurchases);
+  console.log("✅ Restore Purchases button wired");
+}
+
+// Auto-setup on page load
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupRestoreButton);
+} else {
+  setupRestoreButton();
+}
+
+// ═══════════════════════════════════════════════════
+// EXPOSE FUNCTIONS GLOBALLY (so console + button both work)
+// ═══════════════════════════════════════════════════
+window.restorePurchases = restorePurchases;
+window.setupRestoreButton = setupRestoreButton;
+console.log("✅ Restore Purchases functions exposed on window");
 
 async function savePremiumStatusToFirebase(isPremium) {
   const user = window.fb?.auth?.currentUser;
@@ -588,13 +723,28 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.disabled = false;
     });
   });
-  // Initialize RevenueCat after Firebase auth is ready
+  // iap-patch-2026-09-28: init RevenueCat once user is known —
+  // supports both Firebase auth and the localStorage-based emulated user
   const checkAuth = setInterval(() => {
-    if (window.fb?.auth?.currentUser) {
+    let hasUser = false;
+    try {
+      hasUser = !!(window.fb?.auth?.currentUser)
+             || !!(JSON.parse(localStorage.getItem("user") || "null"));
+    } catch (e) {}
+    if (hasUser) {
       clearInterval(checkAuth);
+      console.log("🔧 User detected — initializing RevenueCat");
       initRevenueCat();
     }
   }, 500);
+
+  // Safety: also try after 3s regardless, so sandbox testing is never blocked
+  setTimeout(() => {
+    if (!revenueCatInitialized) {
+      console.log("⏱️ 3s fallback — forcing RevenueCat init");
+      initRevenueCat();
+    }
+  }, 3000);
 });
 
 function setLanguage(lang) {

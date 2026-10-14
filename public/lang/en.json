@@ -57,20 +57,24 @@
     "submit": "Error submitting report. Please try again.",
     "load": "Failed to load reports. Please refresh.",
     "delete": "Failed to delete report",
-    "clearAll": "Failed to clear all reports",  
+    "clearAll": "Failed to clear all reports",
     "location": "Error getting location",
-    "clearAllFailed": "Failed to clear reports. Please try again."
+    "clearAllFailed": "Failed to clear reports. Please try again.",
+    "locationDenied": "Location access denied. Please enable location in your device settings.",
+    "locationUnavailable": "Location unavailable. Please try again.",
+    "locationTimeout": "Location request timed out. Please try again.",
+    "generic": "Something went wrong. Please try again."
   },
   "labels": {
     "yourCurrentLocation": "Your Current Location",
     "selectedLocation": "Selected Location",
     "untitledReport": "Untitled Report"
   },
-    "messages": {
+  "messages": {
     "confirmClearAll": "Permanently delete ALL saved reports?",
     "allReportsCleared": "All reports cleared successfully"
   },
-   "greetings": {
+  "greetings": {
     "share": "Dear friends,\nI'm sharing this information:"
   },
   "closingLines": {
@@ -95,6 +99,4 @@
   },
   "deleting": "Deleting...",
   "clearing": "Clearing..."
-  
 }
-

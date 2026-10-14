@@ -1,6 +1,10 @@
 // firebase-config-users.js - USING CLEAN DOMAIN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app-check.js";
 
 // Use clean domain but same project credentials
 const firebaseConfigUsers = {
@@ -13,7 +17,24 @@ const firebaseConfigUsers = {
 };
 
 const appUsers = initializeApp(firebaseConfigUsers, "UsersApp");
+
 const authUsers = getAuth(appUsers);
+
+// Firebase App Check - FAIL-SAFE (non-blocking)
+// CORRECT KEY from Google Cloud Console - do not edit
+setTimeout(() => {
+  try {
+    initializeAppCheck(appUsers, {
+      provider: new ReCaptchaEnterpriseProvider(
+        "6LdU4t0tAAAAAFvkRlbrhGGlOCJ9LlSnY0h0hva9"
+      ),
+      isTokenAutoRefreshEnabled: true,
+    });
+    console.log("App Check initialized (firebase-config-users.js)");
+  } catch (e) {
+    console.warn("App Check failed (non-fatal):", e.message);
+  }
+}, 3000);
 
 window.usersAuth = {
   app: appUsers,
