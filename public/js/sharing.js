@@ -1,4 +1,4 @@
-// Clear any stale form-restore data on fresh load (auto-expire after 60s)
+﻿// Clear any stale form-restore data on fresh load (auto-expire after 60s)
 (function clearStaleFormData() {
   try {
     const raw = localStorage.getItem("savedFormDataBeforeShare");
@@ -1228,21 +1228,9 @@ function showEmailShareModal(params = {}) {
                       readonly>${enhancedBody}</textarea>  <!-- USE enhancedBody HERE -->
         </div>
 
-        <!-- ✅ YAHOO TIP - WITH TRANSLATIONS (this stays as is) -->
-<div style="margin-bottom: 15px; padding: 8px; background: #f8f9fa; border-left: 4px solid #720E9E; font-size: 12px;">
-    <strong>📧 Yahoo Users:</strong> 
-    <span>${TRANSLATION_PATCH?.yahooDuplicateTip?.[lang] || "After sending, look for the 'Show images' button in your Yahoo inbox to view photos. If you receive duplicate emails, it's a Yahoo feature - you can safely ignore the extra copy."}</span>
-</div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <button class="email-provider-btn" data-provider="gmail" style="flex: 1; padding: 10px; background: #D44638; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Gmail
-            </button>
-            <button class="email-provider-btn" data-provider="outlook" style="flex: 1; padding: 10px; background: #0072C6; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 0 10px;">
-                Outlook
-            </button>
-            <button class="email-provider-btn" data-provider="yahoo" style="flex: 1; padding: 10px; background: #720E9E; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Yahoo ⓘ
+        <div style="margin-top: 20px;">
+            <button class="email-provider-btn" data-provider="send" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">
+                ✉️ Send Email
             </button>
         </div>
     </div>
@@ -1291,6 +1279,7 @@ function showEmailShareModal(params = {}) {
     
   // 7. Email provider handlers
   // === REPLACE THE EMAIL BUTTON HANDLER CODE ===
+  // 7. Email button handler — single Send Email button (uses mailto:)
   function setupEmailButtonHandlers() {
     document.querySelectorAll(".email-provider-btn").forEach((btn) => {
       btn.addEventListener("click", function () {
@@ -1299,73 +1288,9 @@ function showEmailShareModal(params = {}) {
         const { value: body } = getElement("email-body");
         const { value: recipient } = getElement("recipient-email");
 
-        // 🚫 REMOVED: no longer persisting recipient on Send.
-        //    Prevents previous report's recipient from appearing in the next report.
-
-        if (this.dataset.provider === "gmail") {
-          openGmail(subject, body, recipient);
-        } else if (this.dataset.provider === "outlook") {
-          let finalBody = body;
-          const recipient =
-            document.getElementById("recipient-email")?.value || "";
-          const subject = document.getElementById("email-subject")?.value || "";
-          const lang = localStorage.getItem("userLanguage") || "en";
-
-          // ✅ FIXED MOBILE DETECTION
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(
-            navigator.userAgent,
-          );
-
-          if (isMobile) {
-            console.log("📱 Mobile Outlook - using Outlook deep link");
-
-            // Try Outlook deep link first
-            const outlookDeepLink = `ms-outlook://compose?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}`;
-
-            // Fallback to mailto if Outlook not installed
-            window.location.href = outlookDeepLink;
-
-            // If Outlook not installed, this will fail silently, so also open mailto
-            setTimeout(() => {
-              const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}`;
-              window.location.href = mailtoLink;
-            }, 500);
-          } else {
-            console.log("💻 Desktop Outlook - using web interface");
-            const outlookLink = `https://outlook.live.com/mail/0/deeplink/compose?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}${recipient ? "&to=" + encodeURIComponent(recipient) : ""}`;
-            window.open(outlookLink, "_blank", "width=800,height=600");
-          }
-        } else if (this.dataset.provider === "yahoo") {
-          // Get values
-          let subject = document.getElementById("email-subject")?.value || "";
-          let body = document.getElementById("email-body")?.value || "";
-          // Add right after getting the body
-          console.log("📝 Original body length:", body.length);
-          console.log("📝 Body preview:", body.substring(0, 100) + "...");
-
-          const recipient =
-            document.getElementById("recipient-email")?.value || "";
-          const lang = localStorage.getItem("userLanguage") || "en";
-
-          // Create Yahoo mail URL
-          const params = new URLSearchParams();
-          params.set("subject", subject);
-          params.set("body", body);
-          if (recipient) params.set("to", recipient);
-
-          // Open Yahoo mail
-          const yahooUrl = `https://compose.mail.yahoo.com/?${params.toString()}`;
-          console.log("Using Yahoo compose URL:", yahooUrl);
-
-          // 📱 On mobile (Capacitor WebView), window.open is blocked.
-          //    Use location.href instead — opens Yahoo app or browser.
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-          if (isMobile) {
-            window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          } else {
-            window.open(yahooUrl, "_blank", "width=800,height=600");
-          }
-        }
+        // Single mailto: — opens the OS email picker (Gmail, Outlook, Yahoo, etc.)
+        const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
       });
     });
   }
@@ -2273,16 +2198,8 @@ console.log("[1] sharing.js loaded");
             <textarea id="email-body" style="width: 100%; height: 200px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">${escapeHtml(enhancedBody)}</textarea>
         </div>
         
-        <!-- ✅ ADD THE YAHOO TIP HERE -->
-        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #720E9E; border-radius: 4px; font-size: 13px;">
-            <strong>📧 ${getYahooTipTitle(lang)}</strong>
-            <span>${getYahooTipMessage(lang)}</span>
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button id="email-send-gmail" style="flex:1; padding: 10px; background: #D44638; color: white; border: none; border-radius: 4px; cursor: pointer;">Gmail</button>
-            <button id="email-send-outlook" style="flex:1; padding: 10px; background: #0072C6; color: white; border: none; border-radius: 4px; cursor: pointer;">Outlook</button>
-            <button id="email-send-yahoo" style="flex:1; padding: 10px; background: #720E9E; color: white; border: none; border-radius: 4px; cursor: pointer;">Yahoo</button>
+        <div style="margin-top: 20px;">
+            <button id="email-send-btn" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">✉️ Send Email</button>
         </div>
         <button id="email-cancel" style="width: 100%; padding: 10px; margin-top: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">${TRANSLATION_PATCH?.buttons?.close?.[lang] || "Close"}</button>
     </div>
@@ -2310,67 +2227,13 @@ console.log("[1] sharing.js loaded");
         .getElementById("email-cancel")
         ?.addEventListener("click", closeModal);
       
-    // Gmail button - mobile friendly
+    // Send Email button — single mailto: (opens the OS email picker)
     document
-      .getElementById("email-send-gmail")
+      .getElementById("email-send-btn")
       ?.addEventListener("click", () => {
         const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        if (isMobile) {
-          window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        } else {
-          window.open(
-            `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
-      });
-
-    // Outlook button - with Outlook deep link for mobile
-    const outlookBtn = document.getElementById("email-send-outlook");
-    if (outlookBtn) {
-      outlookBtn.addEventListener("click", () => {
-        const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        if (isMobile) {
-          // Use Outlook deep link protocol
-          const outlookDeepLink = `ms-outlook://compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          console.log("Opening Outlook deep link:", outlookDeepLink);
-          window.location.href = outlookDeepLink;
-
-          // Fallback to mailto if Outlook not installed
-          setTimeout(() => {
-            if (document.hasFocus()) {
-              console.log("Outlook not installed, falling back to mailto");
-              window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            }
-          }, 500);
-        } else {
-          // Desktop: open Outlook web
-          window.open(
-            `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
-      });
-    }
-
-    // Yahoo button
-    document
-      .getElementById("email-send-yahoo")
-      ?.addEventListener("click", () => {
-        const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-          window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        } else {
-          window.open(
-            `https://compose.mail.yahoo.com/?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
+        const mailtoLink = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
       });
   }
 
