@@ -24,6 +24,74 @@ window.EMAIL_FROM_NOTICE = {
   ar: "سيتم إرسال بريدك الإلكتروني من تطبيق البريد الإلكتروني الافتراضي على هاتفك. يمكن للمستلمين الرد عليك مباشرة."
 };
 
+
+// ============================================
+// DESKTOP FALLBACK: shown if mailto: fails on laptop/desktop
+// (Mobile always handles mailto: natively — this is only for desktop)
+// ============================================
+window.showNoEmailAppFallback = function (recipient, subject, body) {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) return; // Mobile never needs this fallback
+
+  // Build webmail compose URLs
+  const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1" +
+    "&to=" + encodeURIComponent(recipient || "") +
+    "&su=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+  const outlookUrl = "https://outlook.live.com/mail/0/deeplink/compose" +
+    "?to=" + encodeURIComponent(recipient || "") +
+    "&subject=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+  const yahooUrl = "https://compose.mail.yahoo.com/" +
+    "?to=" + encodeURIComponent(recipient || "") +
+    "&subject=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+
+  const fallback = document.createElement("div");
+  fallback.id = "no-email-app-fallback";
+  fallback.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; justify-content: center; align-items: center;";
+
+  fallback.innerHTML = `
+    <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 480px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+      <button id="fallback-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 22px; cursor: pointer; color: #666;">&times;</button>
+      <h3 style="margin-top: 0; color: #333;">📧 No email app detected</h3>
+      <p style="color: #555; font-size: 14px; line-height: 1.5;">
+        Your device doesn't have a default email app installed. Choose one of the options below to send your message:
+      </p>
+      <div style="display: flex; gap: 10px; margin: 15px 0;">
+        <a href="${gmailUrl}" target="_blank" style="flex:1; padding: 12px; background: #D44638; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Gmail</a>
+        <a href="${outlookUrl}" target="_blank" style="flex:1; padding: 12px; background: #0072C6; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Outlook</a>
+        <a href="${yahooUrl}" target="_blank" style="flex:1; padding: 12px; background: #720E9E; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Yahoo</a>
+      </div>
+      <div style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+        <p style="color: #888; font-size: 12px; margin-bottom: 10px;">Or copy the message and paste it into any email app:</p>
+        <button id="fallback-copy" style="width: 100%; padding: 10px; background: #198754; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">📋 Copy Message</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(fallback);
+
+  document.getElementById("fallback-close").onclick = function () {
+    fallback.remove();
+  };
+
+  fallback.addEventListener("click", function (e) {
+    if (e.target === fallback) fallback.remove();
+  });
+
+  document.getElementById("fallback-copy").onclick = function () {
+    const textToCopy = "To: " + (recipient || "") + "\\nSubject: " + (subject || "") + "\\n\\n" + (body || "");
+    navigator.clipboard.writeText(textToCopy).then(function () {
+      const btn = document.getElementById("fallback-copy");
+      btn.textContent = "✅ Copied!";
+      btn.style.background = "#0d6efd";
+      setTimeout(function() { btn.textContent = "📋 Copy Message"; btn.style.background = "#198754"; }, 2000);
+    }).catch(function () {
+      alert("Copy failed. Please select the text manually.");
+    });
+  };
+};
 // ============================================
 // SHARE URL FIX — use HTTPS, not capacitor://
 // On iOS, window.location.href is capacitor://localhost/... which
@@ -1307,6 +1375,13 @@ function showEmailShareModal(params = {}) {
         // Single mailto: — opens the OS email picker (Gmail, Outlook, Yahoo, etc.)
         const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.location.href = mailtoLink;
+
+        // Desktop fallback: if no email app opened, show fallback modal
+        setTimeout(() => {
+          if (document.hasFocus() && !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            window.showNoEmailAppFallback(recipient, subject, body);
+          }
+        }, 800);
       });
     });
   }
@@ -2253,6 +2328,13 @@ console.log("[1] sharing.js loaded");
         const { to, subject, body } = getCurrentValues();
         const mailtoLink = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.location.href = mailtoLink;
+
+        // Desktop fallback: if no email app opened, show fallback modal
+        setTimeout(() => {
+          if (document.hasFocus() && !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            window.showNoEmailAppFallback(to, subject, body);
+          }
+        }, 800);
       });
   }
 
