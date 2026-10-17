@@ -12,6 +12,19 @@
 })();
 
 // ============================================
+// EMAIL FROM NOTICE — self-contained translations
+// (kept here to avoid touching TRANSLATION_PATCH in reports.js)
+// ============================================
+window.EMAIL_FROM_NOTICE = {
+  en: "Your email will be sent from your phone's default email app. Recipients can reply directly to you.",
+  vi: "Email của bạn sẽ được gửi từ ứng dụng email mặc định trên điện thoại. Người nhận có thể trả lời trực tiếp cho bạn.",
+  zh: "您的电子邮件将从手机上的默认电子邮件应用发送。收件人可以直接回复您。",
+  es: "Su correo se enviará desde la aplicación de correo predeterminada de su teléfono. Los destinatarios pueden responderle directamente.",
+  hi: "आपका ईमेल आपके फ़ोन के डिफ़ॉल्ट ईमेल ऐप से भेजा जाएगा। प्राप्तकर्ता सीधे आपको जवाब दे सकते हैं।",
+  ar: "سيتم إرسال بريدك الإلكتروني من تطبيق البريد الإلكتروني الافتراضي على هاتفك. يمكن للمستلمين الرد عليك مباشرة."
+};
+
+// ============================================
 // SHARE URL FIX — use HTTPS, not capacitor://
 // On iOS, window.location.href is capacitor://localhost/... which
 // recipients cannot open. This helper always returns the public URL.
@@ -1228,6 +1241,9 @@ function showEmailShareModal(params = {}) {
                       readonly>${enhancedBody}</textarea>  <!-- USE enhancedBody HERE -->
         </div>
 
+        <div style="margin-bottom: 10px; padding: 8px; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px; font-size: 12px; color: #333;">
+            📧 ${window.EMAIL_FROM_NOTICE?.[lang] || window.EMAIL_FROM_NOTICE?.en}
+        </div>
         <div style="margin-top: 20px;">
             <button class="email-provider-btn" data-provider="send" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">
                 ✉️ Send Email
@@ -2198,6 +2214,9 @@ console.log("[1] sharing.js loaded");
             <textarea id="email-body" style="width: 100%; height: 200px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">${escapeHtml(enhancedBody)}</textarea>
         </div>
         
+        <div style="margin-bottom: 10px; padding: 8px; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px; font-size: 12px; color: #333;">
+            📧 ${window.EMAIL_FROM_NOTICE?.[lang] || window.EMAIL_FROM_NOTICE?.en}
+        </div>
         <div style="margin-top: 20px;">
             <button id="email-send-btn" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">✉️ Send Email</button>
         </div>
