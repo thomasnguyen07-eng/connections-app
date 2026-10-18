@@ -1,6 +1,7 @@
 ﻿<!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Request a Bulk Quote - Connections</title>
@@ -96,6 +97,13 @@
     </style>
   </head>
   <body>
+
+<script>
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        document.body.classList.add('capacitor');
+    }
+</script>
+
     <div class="container">
         <a href="dashboard.html" class="back-btn" id="backBtn">? Back to Main Page</a>
         
@@ -219,5 +227,15 @@
             }, 800);
         });
     </script>
+
+<style>
+    /* Hide Restore Purchases on web browsers, show only in native app */
+    .web-hide-restore {
+        display: none !important;
+    }
+    body.capacitor .web-hide-restore {
+        display: block !important;
+    }
+</style>
 </body>
 </html>
