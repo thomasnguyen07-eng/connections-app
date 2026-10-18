@@ -94,3 +94,9 @@ Thumbs.db
 functions/node_modules/
 functions/service-account-key.json
 functions/.env
+
+# Backup files (never commit these)
+*.CORRUPT-*
+*.BEFORE-*
+*.OLD
+*.BACKUP-*
