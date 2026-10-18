@@ -137,10 +137,11 @@
         document.getElementById("send-email-request-btn").addEventListener("click", function() {
           const recipient = "support@connectionsfinder.com";
           const subject = "Bulk Subscription Quote Request";
-          const body = "Hello,\\n\\nI would like to request a bulk quote.\\n\\nNumber of users: \\nPlan type (Monthly/3 Months/6 Months/Yearly): \\nOrganization name: \\nContact email: \\n\\nThank you.";
+          const body = "Hello,<br><br>I would like to request a bulk quote.<br><br>Number of users: <br>Plan type (Monthly/3 Months/6 Months/Yearly): <br>Organization name: <br>Contact email: <br><br>Thank you.";
 
           // Try native mailto
-          const mailtoLink = "mailto:" + recipient + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+          const safeBody = body.replace(/<br>/g, "%0A");
+            const mailtoLink = "mailto:" + recipient + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(safeBody);
           window.location.href = mailtoLink;
 
           // Desktop fallback
