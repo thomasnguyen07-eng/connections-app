@@ -1489,13 +1489,7 @@ function attachBulkButtonListener() {
                              : "web";
             console.log("📦 Bulk Quote button clicked - platform:", platform);
 
-            if (platform === "ios" || platform === "android") {
-                console.log("🌐 Opening organization-quote.html in external browser");
-                window.open("https://connectionsfinder.com/organization-quote.html", "_system");
-            } else {
-                console.log("🌐 Web - opening modal");
-                openBulkQuoteModal(userCount, planText);
-            }
+            window.open("https://connectionsfinder.com/organization-quote.html", "_blank");
         });
         return true;
     }
@@ -1568,13 +1562,7 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
                              : "web";
             console.log("📦 Bulk Quote button clicked - platform:", platform);
 
-            if (platform === "ios" || platform === "android") {
-                console.log("🌐 Opening organization-quote.html in external browser");
-                window.open("https://connectionsfinder.com/organization-quote.html", "_system");
-            } else {
-                console.log("🌐 Web - opening modal");
-                openBulkQuoteModal(userCount, planText);
-            }
+            window.open("https://connectionsfinder.com/organization-quote.html", "_blank");
         });
         console.log("✅ Bulk quote modal ready (professional email provider style)");
         return true;
