@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -258,7 +258,7 @@
   <body>
     <div class="container">
       <button id="backToMainBtn" class="back-button">
-        â† Back to Main Page
+        ← Back to Main Page
       </button>
 
       <h1 id="pageTitle">Connections</h1>
@@ -267,19 +267,19 @@
       </p>
 
       <div class="expiry-notice" id="expiryNotice">
-        ðŸ“… Subscriptions expire after selected period
+        📅 Subscriptions expire after selected period
       </div>
       <div class="image-limits" id="imageLimits">
-        ðŸ“¸ 5 images per report limit
+        📸 5 images per report limit
       </div>
 
       <div class="language-selector" id="languageSelector">
         <button class="lang-btn" data-lang="en">English</button>
-        <button class="lang-btn" data-lang="vi">Tiáº¿ng Viá»‡t</button>
-        <button class="lang-btn" data-lang="zh">ä¸­æ–‡</button>
-        <button class="lang-btn" data-lang="es">EspaÃ±ol</button>
-        <button class="lang-btn" data-lang="hi">à¤¹à¤¿à¤¨à¥à¤¦à¥€</button>
-        <button class="lang-btn" data-lang="ar">Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©</button>
+        <button class="lang-btn" data-lang="vi">Tiếng Việt</button>
+        <button class="lang-btn" data-lang="zh">中文</button>
+        <button class="lang-btn" data-lang="es">Español</button>
+        <button class="lang-btn" data-lang="hi">हिन्दी</button>
+        <button class="lang-btn" data-lang="ar">العربية</button>
       </div>
 
       <!-- Individual Plans Section -->
@@ -411,7 +411,7 @@
           cursor: pointer;
           margin-bottom: 15px;
           transition: all 0.2s;">
-          ðŸ”„ Restore Purchases
+          🔄 Restore Purchases
         </button>
 
         <p style="font-size: 11px; color: #666; line-height: 1.6; max-width: 620px; margin: 15px auto 0 auto; text-align: center;">
@@ -425,7 +425,7 @@
 
       <!-- Pass Code Redemption Section -->
 <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-  <h3 id="passCodeTitle">ðŸŽ« Have a Pass Code?</h3>
+  <h3 id="passCodeTitle">🎫 Have a Pass Code?</h3>
   <div style="display: flex; gap: 10px; flex-wrap: wrap">
     <input type="text" id="passCodeInput" placeholder="Enter pass code" style="flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" />
     <button id="redeemPassBtn" style="background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Redeem</button>
@@ -435,7 +435,7 @@
 
       <!-- Bulk Subscription Section -->
       <div class="organization-section">
-        <h2 id="orgTitle">ðŸ¢ For Organizations, Families, Clubs, etc.</h2>
+        <h2 id="orgTitle">🏢 For Organizations, Families, Clubs, etc.</h2>
         <p id="orgDesc">
           Sponsor 2 to 1000 users with your logo displayed on their app.
         </p>
@@ -494,12 +494,12 @@
         </div>
 
         <ul style="display: inline-block; text-align: left; margin: 20px 0">
-          <li id="benefit1">âœ“ Your logo shown to all sponsored users</li>
-          <li id="benefit2">âœ“ Sponsored users cannot change the logo</li>
-          <li id="benefit3">âœ“ Centralized account management</li>
-          <li id="benefit4">âœ“ Invoice payment (bank transfer)</li>
+          <li id="benefit1">✓ Your logo shown to all sponsored users</li>
+          <li id="benefit2">✓ Sponsored users cannot change the logo</li>
+          <li id="benefit3">✓ Centralized account management</li>
+          <li id="benefit4">✓ Invoice payment (bank transfer)</li>
           <li id="benefit5">
-            âœ“ Perfect for families, schools, universities, clubs, airports,
+            ✓ Perfect for families, schools, universities, clubs, airports,
             businesses, organizations, etc.
           </li>
         </ul>
@@ -591,7 +591,7 @@
           <span id="footerCopyright">All rights reserved.</span>
         </p>
         <p>
-          <span id="supportLabel">ðŸ“§ Support:</span>
+          <span id="supportLabel">📧 Support:</span>
 <a href="#" onclick="openContactModal(); return false;" style="color: #4267b2; text-decoration: none;">support@connectionsfinder.com</a>
         </p>
       </footer>
@@ -639,10 +639,10 @@
       firebase
         .auth()
         .setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-        .then(() => console.log("âœ… Auth persistence set to LOCAL"))
+        .then(() => console.log("✅ Auth persistence set to LOCAL"))
         .catch((err) => console.error("Auth persistence error:", err));
 
-      console.log("âœ… Firebase initialized in premium-iap.html");
+      console.log("✅ Firebase initialized in premium-iap.html");
     </script>
 
     <!-- Load premium-iap.js -->
@@ -658,74 +658,74 @@
   en: {
     pleaseEnter: "Please enter a pass code",
     pleaseSignIn: "Please sign in first",
-    invalidCode: "âŒ Invalid pass code",
-    alreadyUsed: "âŒ This pass code has already been used",
-    expired: "âŒ This pass code has expired",
-    success: "âœ… Subscription activated! Redirecting to dashboard...",
-    error: "âŒ Error: ",
+    invalidCode: "❌ Invalid pass code",
+    alreadyUsed: "❌ This pass code has already been used",
+    expired: "❌ This pass code has expired",
+    success: "✅ Subscription activated! Redirecting to dashboard...",
+    error: "❌ Error: ",
     activating: "Activating your subscription...",
     successTitle: "SUCCESS!",
     redirecting: "You will be redirected in a few seconds."
   },
   vi: {
-    pleaseEnter: "Vui lÃ²ng nháº­p mÃ£",
-    pleaseSignIn: "Vui lÃ²ng Ä‘Äƒng nháº­p trÆ°á»›c",
-    invalidCode: "âŒ MÃ£ khÃ´ng há»£p lá»‡",
-    alreadyUsed: "âŒ MÃ£ nÃ y Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng",
-    expired: "âŒ MÃ£ nÃ y Ä‘Ã£ háº¿t háº¡n",
-    success: "âœ… ÄÃ£ kÃ­ch hoáº¡t! Äang chuyá»ƒn Ä‘áº¿n trang chÃ­nh...",
-    error: "âŒ Lá»—i: ",
-    activating: "Äang kÃ­ch hoáº¡t gÃ³i cá»§a báº¡n...",
-    successTitle: "THÃ€NH CÃ”NG!",
-    redirecting: "Báº¡n sáº½ Ä‘Æ°á»£c chuyá»ƒn hÆ°á»›ng sau vÃ i giÃ¢y."
+    pleaseEnter: "Vui lòng nhập mã",
+    pleaseSignIn: "Vui lòng đăng nhập trước",
+    invalidCode: "❌ Mã không hợp lệ",
+    alreadyUsed: "❌ Mã này đã được sử dụng",
+    expired: "❌ Mã này đã hết hạn",
+    success: "✅ Đã kích hoạt! Đang chuyển đến trang chính...",
+    error: "❌ Lỗi: ",
+    activating: "Đang kích hoạt gói của bạn...",
+    successTitle: "THÀNH CÔNG!",
+    redirecting: "Bạn sẽ được chuyển hướng sau vài giây."
   },
   zh: {
-    pleaseEnter: "è¯·è¾“å…¥å¯†ç ",
-    pleaseSignIn: "è¯·å…ˆç™»å½•",
-    invalidCode: "âŒ æ— æ•ˆå¯†ç ",
-    alreadyUsed: "âŒ æ­¤å¯†ç å·²è¢«ä½¿ç”¨",
-    expired: "âŒ æ­¤å¯†ç å·²è¿‡æœŸ",
-    success: "âœ… è®¢é˜…å·²æ¿€æ´»ï¼æ­£åœ¨è·³è½¬åˆ°ä¸»é¡µ...",
-    error: "âŒ é”™è¯¯ï¼š",
-    activating: "æ­£åœ¨æ¿€æ´»æ‚¨çš„è®¢é˜…...",
-    successTitle: "æˆåŠŸï¼",
-    redirecting: "å‡ ç§’åŽæ‚¨å°†è¢«é‡å®šå‘ã€‚"
+    pleaseEnter: "请输入密码",
+    pleaseSignIn: "请先登录",
+    invalidCode: "❌ 无效密码",
+    alreadyUsed: "❌ 此密码已被使用",
+    expired: "❌ 此密码已过期",
+    success: "✅ 订阅已激活！正在跳转到主页...",
+    error: "❌ 错误：",
+    activating: "正在激活您的订阅...",
+    successTitle: "成功！",
+    redirecting: "几秒后您将被重定向。"
   },
   es: {
-    pleaseEnter: "Por favor ingrese un cÃ³digo",
-    pleaseSignIn: "Por favor inicie sesiÃ³n primero",
-    invalidCode: "âŒ CÃ³digo invÃ¡lido",
-    alreadyUsed: "âŒ Este cÃ³digo ya ha sido usado",
-    expired: "âŒ Este cÃ³digo ha expirado",
-    success: "âœ… Â¡SuscripciÃ³n activada! Redirigiendo al panel...",
-    error: "âŒ Error: ",
-    activating: "Activando su suscripciÃ³n...",
-    successTitle: "Â¡Ã‰XITO!",
-    redirecting: "SerÃ¡ redirigido en unos segundos."
+    pleaseEnter: "Por favor ingrese un código",
+    pleaseSignIn: "Por favor inicie sesión primero",
+    invalidCode: "❌ Código inválido",
+    alreadyUsed: "❌ Este código ya ha sido usado",
+    expired: "❌ Este código ha expirado",
+    success: "✅ ¡Suscripción activada! Redirigiendo al panel...",
+    error: "❌ Error: ",
+    activating: "Activando su suscripción...",
+    successTitle: "¡ÉXITO!",
+    redirecting: "Será redirigido en unos segundos."
   },
   hi: {
-    pleaseEnter: "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤à¤• à¤•à¥‹à¤¡ à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚",
-    pleaseSignIn: "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤ªà¤¹à¤²à¥‡ à¤¸à¤¾à¤‡à¤¨ à¤‡à¤¨ à¤•à¤°à¥‡à¤‚",
-    invalidCode: "âŒ à¤…à¤®à¤¾à¤¨à¥à¤¯ à¤•à¥‹à¤¡",
-    alreadyUsed: "âŒ à¤¯à¤¹ à¤•à¥‹à¤¡ à¤ªà¤¹à¤²à¥‡ à¤¹à¥€ à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤¿à¤¯à¤¾ à¤œà¤¾ à¤šà¥à¤•à¤¾ à¤¹à¥ˆ",
-    expired: "âŒ à¤¯à¤¹ à¤•à¥‹à¤¡ à¤¸à¤®à¤¾à¤ªà¥à¤¤ à¤¹à¥‹ à¤—à¤¯à¤¾ à¤¹à¥ˆ",
-    success: "âœ… à¤¸à¤¦à¤¸à¥à¤¯à¤¤à¤¾ à¤¸à¤•à¥à¤°à¤¿à¤¯! à¤¡à¥ˆà¤¶à¤¬à¥‹à¤°à¥à¤¡ à¤ªà¤° à¤ªà¥à¤¨à¤°à¥à¤¨à¤¿à¤°à¥à¤¦à¥‡à¤¶à¤¿à¤¤...",
-    error: "âŒ à¤¤à¥à¤°à¥à¤Ÿà¤¿: ",
-    activating: "à¤†à¤ªà¤•à¥€ à¤¸à¤¦à¤¸à¥à¤¯à¤¤à¤¾ à¤¸à¤•à¥à¤°à¤¿à¤¯ à¤¹à¥‹ à¤°à¤¹à¥€ à¤¹à¥ˆ...",
-    successTitle: "à¤¸à¤«à¤²à¤¤à¤¾!",
-    redirecting: "à¤•à¥à¤› à¤¸à¥‡à¤•à¤‚à¤¡ à¤®à¥‡à¤‚ à¤†à¤ª à¤ªà¥à¤¨à¤°à¥à¤¨à¤¿à¤°à¥à¤¦à¥‡à¤¶à¤¿à¤¤ à¤¹à¥‹ à¤œà¤¾à¤à¤‚à¤—à¥‡à¥¤"
+    pleaseEnter: "कृपया एक कोड दर्ज करें",
+    pleaseSignIn: "कृपया पहले साइन इन करें",
+    invalidCode: "❌ अमान्य कोड",
+    alreadyUsed: "❌ यह कोड पहले ही उपयोग किया जा चुका है",
+    expired: "❌ यह कोड समाप्त हो गया है",
+    success: "✅ सदस्यता सक्रिय! डैशबोर्ड पर पुनर्निर्देशित...",
+    error: "❌ त्रुटि: ",
+    activating: "आपकी सदस्यता सक्रिय हो रही है...",
+    successTitle: "सफलता!",
+    redirecting: "कुछ सेकंड में आप पुनर्निर्देशित हो जाएंगे।"
   },
   ar: {
-    pleaseEnter: "ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø±Ù…Ø²",
-    pleaseSignIn: "ÙŠØ±Ø¬Ù‰ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø£ÙˆÙ„Ø§Ù‹",
-    invalidCode: "âŒ Ø±Ù…Ø² ØºÙŠØ± ØµØ§Ù„Ø­",
-    alreadyUsed: "âŒ ØªÙ… Ø§Ø³ØªØ®Ø¯Ø§Ù… Ù‡Ø°Ø§ Ø§Ù„Ø±Ù…Ø² Ø¨Ø§Ù„ÙØ¹Ù„",
-    expired: "âŒ Ø§Ù†ØªÙ‡Øª ØµÙ„Ø§Ø­ÙŠØ© Ù‡Ø°Ø§ Ø§Ù„Ø±Ù…Ø²",
-    success: "âœ… ØªÙ… ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø§Ø´ØªØ±Ø§Ùƒ! Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªÙˆØ¬ÙŠÙ‡ Ø¥Ù„Ù‰ Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…...",
-    error: "âŒ Ø®Ø·Ø£: ",
-    activating: "Ø¬Ø§Ø±ÙŠ ØªÙØ¹ÙŠÙ„ Ø§Ø´ØªØ±Ø§ÙƒÙƒ...",
-    successTitle: "Ù†Ø¬Ø§Ø­!",
-    redirecting: "Ø³ÙŠØªÙ… Ø¥Ø¹Ø§Ø¯Ø© ØªÙˆØ¬ÙŠÙ‡Ùƒ Ø¨Ø¹Ø¯ Ø¨Ø¶Ø¹ Ø«ÙˆØ§Ù†Ù."
+    pleaseEnter: "يرجى إدخال رمز",
+    pleaseSignIn: "يرجى تسجيل الدخول أولاً",
+    invalidCode: "❌ رمز غير صالح",
+    alreadyUsed: "❌ تم استخدام هذا الرمز بالفعل",
+    expired: "❌ انتهت صلاحية هذا الرمز",
+    success: "✅ تم تفعيل الاشتراك! جاري التوجيه إلى لوحة التحكم...",
+    error: "❌ خطأ: ",
+    activating: "جاري تفعيل اشتراكك...",
+    successTitle: "نجاح!",
+    redirecting: "سيتم إعادة توجيهك بعد بضع ثوانٍ."
   }
 };
 
@@ -746,7 +746,7 @@ function showSuccessNotification(planName) {
   
   resultDiv.innerHTML = `
     <div style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-      <div style="font-size: 48px; margin-bottom: 10px;">ðŸŽ‰</div>
+      <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
       <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${getRedemptionMessage("successTitle")}</div>
       <div style="font-size: 16px; margin-bottom: 15px;">${planDisplay[planName] || "Premium"} ${getRedemptionMessage("success")}</div>
       <div style="font-size: 14px; opacity: 0.9;">${getRedemptionMessage("redirecting")}</div>
@@ -781,7 +781,7 @@ function showSuccessNotification(planName) {
         return;
       }
 
-      // Get current user â€” localStorage works on iOS (SDK user is null)
+      // Get current user — localStorage works on iOS (SDK user is null)
       let user = null;
       try {
         const stored = JSON.parse(localStorage.getItem("user") || "null");
@@ -812,14 +812,14 @@ function showSuccessNotification(planName) {
       const userId = user.uid;
 
       try {
-        console.log("ðŸ” REST read passcode:", code);
+        console.log("🔍 REST read passcode:", code);
 
         const projectId = "connectionsfinder-app";
         const restUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/pass_codes/${encodeURIComponent(code)}`;
 
         const passResp = await fetch(restUrl);
         if (!passResp.ok) {
-          console.log("âŒ Passcode not found (REST status:", passResp.status, ")");
+          console.log("❌ Passcode not found (REST status:", passResp.status, ")");
           resultDiv.innerHTML = getRedemptionMessage("invalidCode");
           return;
         }
@@ -833,26 +833,26 @@ function showSuccessNotification(planName) {
         // Convert REST fields to plain object
         const f = passDoc.fields;
         const data = {
-          used: f.used?.booleanValue ?? f.isUsed?.booleanValue ?? false,
+          used: f.used?.booleanValue © f.isUsed?.booleanValue © false,
           plan: f.plan?.stringValue || "monthly",
           expiresAt: f.expiresAt?.timestampValue || f.expiresAt?.stringValue || null,
           createdBy: f.createdBy?.stringValue || null,
           organizationEmail: f.organizationEmail?.stringValue || "",
-          isBulk: f.isBulk?.booleanValue ?? true,
+          isBulk: f.isBulk?.booleanValue © true,
         };
 
-        console.log("ðŸ” Passcode data:", data);
+        console.log("🔍 Passcode data:", data);
 
         // Already used?
         if (data.used === true) {
-          console.log("âŒ Passcode already used");
+          console.log("❌ Passcode already used");
           resultDiv.innerHTML = getRedemptionMessage("alreadyUsed");
           return;
         }
 
         // Expired?
         if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
-          console.log("âŒ Passcode expired");
+          console.log("❌ Passcode expired");
           resultDiv.innerHTML = getRedemptionMessage("expired");
           return;
         }
@@ -866,7 +866,7 @@ function showSuccessNotification(planName) {
           case "yearly": expiryDate.setFullYear(expiryDate.getFullYear() + 1); break;
           default: expiryDate.setMonth(expiryDate.getMonth() + 1);
         }
-        console.log("âœ… Expiry date calculated:", expiryDate);
+        console.log("✅ Expiry date calculated:", expiryDate);
 
         // Get a fresh auth token for REST writes
         let token = null;
@@ -914,7 +914,7 @@ function showSuccessNotification(planName) {
               },
               body: JSON.stringify(updateBody),
             });
-            console.log("ðŸ“¤ Passcode update status:", updateResp.status);
+            console.log("📤 Passcode update status:", updateResp.status);
           } catch (e) {
             console.warn("Passcode update failed (non-fatal):", e);
           }
@@ -947,7 +947,7 @@ function showSuccessNotification(planName) {
               },
               body: JSON.stringify(userUpdateBody),
             });
-            console.log("ðŸ“¤ User premium update status:", userResp.status);
+            console.log("📤 User premium update status:", userResp.status);
           } catch (e) {
             console.warn("User update failed (non-fatal):", e);
           }
@@ -956,11 +956,11 @@ function showSuccessNotification(planName) {
         // 3. Save premium flags to localStorage (works offline)
         localStorage.setItem(`premium_${userId}`, "true");
         localStorage.setItem(`premium_expiry_${userId}`, expiryDate.toISOString());
-        console.log("ðŸ’¾ Premium flags saved to localStorage");
+        console.log("💾 Premium flags saved to localStorage");
 
         // 4. Success!
         resultDiv.innerHTML = getRedemptionMessage("success");
-        console.log("ðŸŽ‰ Passcode redeemed successfully");
+        console.log("🎉 Passcode redeemed successfully");
 
         // Redirect to dashboard
         setTimeout(() => {
@@ -968,7 +968,7 @@ function showSuccessNotification(planName) {
         }, 2000);
 
       } catch (error) {
-        console.error("âŒ Redemption error:", error);
+        console.error("❌ Redemption error:", error);
         resultDiv.innerHTML = getRedemptionMessage("error") + (error.message || "");
       }
 
@@ -999,7 +999,7 @@ try {
       },
       body: JSON.stringify(userBody),
     });
-    console.log("ðŸ“¤ User sponsored update status:", uResp.status);
+    console.log("📤 User sponsored update status:", uResp.status);
   } else {
     console.warn("No token available for user update");
   }
@@ -1032,7 +1032,7 @@ try {
       },
       body: JSON.stringify(subBody),
     });
-    console.log("ðŸ“¤ Subscription update status:", sResp.status);
+    console.log("📤 Subscription update status:", sResp.status);
   }
 } catch (e) {
   console.warn("Subscription update failed (non-fatal):", e);
@@ -1060,7 +1060,7 @@ const planName = planDisplay[data.plan] || "Premium";
 
 resultDiv.innerHTML = `
   <div style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-    <div style="font-size: 48px; margin-bottom: 10px;">ðŸŽ‰</div>
+    <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
     <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">${getRedemptionMessage("successTitle")}</div>
     <div style="font-size: 16px; margin-bottom: 15px;">${planName} subscription activated!</div>
     <div style="font-size: 14px; opacity: 0.9;">Redirecting to dashboard...</div>
@@ -1144,54 +1144,54 @@ setTimeout(() => (window.location.href = "/dashboard.html"), 3000);
               copy_success: "Email address copied!",
             },
             vi: {
-              title: "LiÃªn há»‡ Connections",
-              message: "Äá»ƒ liÃªn há»‡ vá»›i chÃºng tÃ´i, vui lÃ²ng gá»­i email:",
-              instruction: "Vui lÃ²ng bao gá»“m tÃªn vÃ  chi tiáº¿t yÃªu cáº§u cá»§a báº¡n.",
-              response: "ChÃºng tÃ´i sáº½ pháº£n há»“i trong vÃ²ng 24-48 giá».",
-              request: "YÃªu cáº§u cá»§a báº¡n:",
-              copy: "Sao chÃ©p email",
-              close: "ÄÃ³ng",
-              copy_success: "ÄÃ£ sao chÃ©p Ä‘á»‹a chá»‰ email!",
+              title: "Liên hệ Connections",
+              message: "Để liên hệ với chúng tôi, vui lòng gửi email:",
+              instruction: "Vui lòng bao gồm tên và chi tiết yêu cầu của bạn.",
+              response: "Chúng tôi sẽ phản hồi trong vòng 24-48 giờ.",
+              request: "Yêu cầu của bạn:",
+              copy: "Sao chép email",
+              close: "Đóng",
+              copy_success: "Đã sao chép địa chỉ email!",
             },
             zh: {
-              title: "è”ç³» Connections",
-              message: "å¦‚éœ€è”ç³»æˆ‘ä»¬ï¼Œè¯·å‘é€ç”µå­é‚®ä»¶è‡³ï¼š",
-              instruction: "è¯·é™„ä¸Šæ‚¨çš„å§“åå’Œå’¨è¯¢è¯¦æƒ…ã€‚",
-              response: "æˆ‘ä»¬å°†åœ¨24-48å°æ—¶å†…å›žå¤ã€‚",
-              request: "æ‚¨çš„è¯·æ±‚ï¼š",
-              copy: "å¤åˆ¶é‚®ç®±",
-              close: "å…³é—­",
-              copy_success: "é‚®ç®±åœ°å€å·²å¤åˆ¶ï¼",
+              title: "联系 Connections",
+              message: "如需联系我们，请发送电子邮件至：",
+              instruction: "请附上您的姓名和咨询详情。",
+              response: "我们将在24-48小时内回复。",
+              request: "您的请求：",
+              copy: "复制邮箱",
+              close: "关闭",
+              copy_success: "邮箱地址已复制！",
             },
             es: {
               title: "Contactar Connections",
-              message: "Para contactarnos, por favor envÃ­e un correo a:",
+              message: "Para contactarnos, por favor envíe un correo a:",
               instruction: "Incluya su nombre y los detalles de su consulta.",
               response: "Responderemos dentro de 24-48 horas.",
               request: "Su solicitud:",
               copy: "Copiar correo",
               close: "Cerrar",
-              copy_success: "Â¡Correo electrÃ³nico copiado!",
+              copy_success: "¡Correo electrónico copiado!",
             },
             hi: {
-              title: "à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¥‡à¤‚ Connections",
-              message: "à¤¹à¤®à¤¸à¥‡ à¤¸à¤‚à¤ªà¤°à¥à¤• à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤, à¤•à¥ƒà¤ªà¤¯à¤¾ à¤ˆà¤®à¥‡à¤² à¤•à¤°à¥‡à¤‚:",
-              instruction: "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤…à¤ªà¤¨à¤¾ à¤¨à¤¾à¤® à¤”à¤° à¤ªà¥‚à¤›à¤¤à¤¾à¤› à¤•à¤¾ à¤µà¤¿à¤µà¤°à¤£ à¤¶à¤¾à¤®à¤¿à¤² à¤•à¤°à¥‡à¤‚à¥¤",
-              response: "à¤¹à¤® 24-48 à¤˜à¤‚à¤Ÿà¥‹à¤‚ à¤•à¥‡ à¤­à¥€à¤¤à¤° à¤œà¤µà¤¾à¤¬ à¤¦à¥‡à¤‚à¤—à¥‡à¥¤",
-              request: "à¤†à¤ªà¤•à¤¾ à¤…à¤¨à¥à¤°à¥‹à¤§:",
-              copy: "à¤ˆà¤®à¥‡à¤² à¤•à¥‰à¤ªà¥€ à¤•à¤°à¥‡à¤‚",
-              close: "à¤¬à¤‚à¤¦ à¤•à¤°à¥‡à¤‚",
-              copy_success: "à¤ˆà¤®à¥‡à¤² à¤ªà¤¤à¤¾ à¤•à¥‰à¤ªà¥€ à¤¹à¥‹ à¤—à¤¯à¤¾!",
+              title: "संपर्क करें Connections",
+              message: "हमसे संपर्क करने के लिए, कृपया ईमेल करें:",
+              instruction: "कृपया अपना नाम और पूछताछ का विवरण शामिल करें।",
+              response: "हम 24-48 घंटों के भीतर जवाब देंगे।",
+              request: "आपका अनुरोध:",
+              copy: "ईमेल कॉपी करें",
+              close: "बंद करें",
+              copy_success: "ईमेल पता कॉपी हो गया!",
             },
             ar: {
-              title: "Ø§ØªØµÙ„ Ø¨Ù€ Connections",
-              message: "Ù„Ù„Ø§ØªØµØ§Ù„ Ø¨Ù†Ø§ØŒ ÙŠØ±Ø¬Ù‰ Ø¥Ø±Ø³Ø§Ù„ Ø¨Ø±ÙŠØ¯ Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ Ø¥Ù„Ù‰:",
-              instruction: "ÙŠØ±Ø¬Ù‰ ØªØ¶Ù…ÙŠÙ† Ø§Ø³Ù…Ùƒ ÙˆØªÙØ§ØµÙŠÙ„ Ø§Ø³ØªÙØ³Ø§Ø±Ùƒ.",
-              response: "Ø³ÙˆÙ Ù†Ø±Ø¯ Ø®Ù„Ø§Ù„ 24-48 Ø³Ø§Ø¹Ø©.",
-              request: "Ø·Ù„Ø¨Ùƒ:",
-              copy: "Ù†Ø³Ø® Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ",
-              close: "Ø¥ØºÙ„Ø§Ù‚",
-              copy_success: "ØªÙ… Ù†Ø³Ø® Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ!",
+              title: "اتصل بـ Connections",
+              message: "للاتصال بنا، يرجى إرسال بريد إلكتروني إلى:",
+              instruction: "يرجى تضمين اسمك وتفاصيل استفسارك.",
+              response: "سوف نرد خلال 24-48 ساعة.",
+              request: "طلبك:",
+              copy: "نسخ البريد الإلكتروني",
+              close: "إغلاق",
+              copy_success: "تم نسخ عنوان البريد الإلكتروني!",
             },
           };
           const t = translations[lang] || translations.en;
@@ -1220,94 +1220,94 @@ const bulkModalTranslations = {
         thankYou: "Thank you."
     },
     vi: {
-        title: "YÃªu cáº§u bÃ¡o giÃ¡ sá»‘ lÆ°á»£ng lá»›n",
-        subtitle: "Nháº­n giÃ¡ Æ°u Ä‘Ã£i cho tá»• chá»©c",
-        yourRequest: "YÃªu cáº§u cá»§a báº¡n:",
-        users: "Sá»‘ lÆ°á»£ng ngÆ°á»i dÃ¹ng",
-        plan: "GÃ³i",
-        copyBtn: "Sao chÃ©p Ä‘á»‹a chá»‰ email",
-        gmailBtn: "Soáº¡n thÆ° trong Gmail",
-        outlookBtn: "Soáº¡n thÆ° trong Outlook",
-        yahooBtn: "Soáº¡n thÆ° trong Yahoo Mail",
-        cancelBtn: "Há»§y",
-        responseTime: "Pháº£n há»“i trong vÃ²ng 24-48 giá»",
-        emailSubject: "YÃªu cáº§u bÃ¡o giÃ¡ Ä‘Äƒng kÃ½ sá»‘ lÆ°á»£ng lá»›n",
-        copySuccess: "ÄÃ£ sao chÃ©p Ä‘á»‹a chá»‰ email!",
+        title: "Yêu cầu báo giá số lượng lớn",
+        subtitle: "Nhận giá ưu đãi cho tổ chức",
+        yourRequest: "Yêu cầu của bạn:",
+        users: "Số lượng người dùng",
+        plan: "Gói",
+        copyBtn: "Sao chép địa chỉ email",
+        gmailBtn: "Soạn thư trong Gmail",
+        outlookBtn: "Soạn thư trong Outlook",
+        yahooBtn: "Soạn thư trong Yahoo Mail",
+        cancelBtn: "Hủy",
+        responseTime: "Phản hồi trong vòng 24-48 giờ",
+        emailSubject: "Yêu cầu báo giá đăng ký số lượng lớn",
+        copySuccess: "Đã sao chép địa chỉ email!",
         emailAddress: "support@connectionsfinder.com",
-        messageTemplate: "Vui lÃ²ng gá»­i bÃ¡o giÃ¡ cho {count} ngÆ°á»i dÃ¹ng Ä‘Æ°á»£c tÃ i trá»£ vá»›i gÃ³i {plan}.",
-        thankYou: "Xin cáº£m Æ¡n."
+        messageTemplate: "Vui lòng gửi báo giá cho {count} người dùng được tài trợ với gói {plan}.",
+        thankYou: "Xin cảm ơn."
     },
     zh: {
-        title: "ç”³è¯·æ‰¹é‡æŠ¥ä»·",
-        subtitle: "ä¸ºç»„ç»‡èŽ·å–æŠ˜æ‰£ä»·æ ¼",
-        yourRequest: "æ‚¨çš„è¯·æ±‚ï¼š",
-        users: "ç”¨æˆ·æ•°é‡",
-        plan: "å¥—é¤",
-        copyBtn: "å¤åˆ¶é‚®ç®±åœ°å€",
-        gmailBtn: "åœ¨Gmailä¸­æ’°å†™",
-        outlookBtn: "åœ¨Outlookä¸­æ’°å†™",
-        yahooBtn: "åœ¨Yahooé‚®ç®±ä¸­æ’°å†™",
-        cancelBtn: "å–æ¶ˆ",
-        responseTime: "24-48å°æ—¶å†…å›žå¤",
-        emailSubject: "æ‰¹é‡è®¢é˜…æŠ¥ä»·ç”³è¯·",
-        copySuccess: "é‚®ç®±åœ°å€å·²å¤åˆ¶ï¼",
+        title: "申请批量报价",
+        subtitle: "为组织获取折扣价格",
+        yourRequest: "您的请求：",
+        users: "用户数量",
+        plan: "套餐",
+        copyBtn: "复制邮箱地址",
+        gmailBtn: "在Gmail中撰写",
+        outlookBtn: "在Outlook中撰写",
+        yahooBtn: "在Yahoo邮箱中撰写",
+        cancelBtn: "取消",
+        responseTime: "24-48小时内回复",
+        emailSubject: "批量订阅报价申请",
+        copySuccess: "邮箱地址已复制！",
         emailAddress: "support@connectionsfinder.com",
-        messageTemplate: "è¯·ä¸º {count} ä¸ªèµžåŠ©ç”¨æˆ·å‘é€ {plan} å¥—é¤çš„æŠ¥ä»·ã€‚",
-        thankYou: "è°¢è°¢ã€‚"
+        messageTemplate: "请为 {count} 个赞助用户发送 {plan} 套餐的报价。",
+        thankYou: "谢谢。"
     },
     es: {
-        title: "Solicitar cotizaciÃ³n por volumen",
-        subtitle: "ObtÃ©n precios con descuento para organizaciones",
+        title: "Solicitar cotización por volumen",
+        subtitle: "Obtén precios con descuento para organizaciones",
         yourRequest: "Tu solicitud:",
-        users: "NÃºmero de usuarios",
+        users: "Número de usuarios",
         plan: "Plan",
-        copyBtn: "Copiar direcciÃ³n de correo",
+        copyBtn: "Copiar dirección de correo",
         gmailBtn: "Redactar en Gmail",
         outlookBtn: "Redactar en Outlook",
         yahooBtn: "Redactar en Yahoo Mail",
         cancelBtn: "Cancelar",
         responseTime: "Respuesta en 24-48 horas",
-        emailSubject: "Solicitud de cotizaciÃ³n de suscripciÃ³n por volumen",
-        copySuccess: "Â¡DirecciÃ³n de correo copiada!",
+        emailSubject: "Solicitud de cotización de suscripción por volumen",
+        copySuccess: "¡Dirección de correo copiada!",
         emailAddress: "support@connectionsfinder.com",
-        messageTemplate: "Por favor, envÃ­eme una cotizaciÃ³n para {count} usuarios patrocinados con el plan {plan}.",
+        messageTemplate: "Por favor, envíeme una cotización para {count} usuarios patrocinados con el plan {plan}.",
         thankYou: "Gracias."
     },
     hi: {
-        title: "à¤¬à¤²à¥à¤• à¤•à¥‹à¤Ÿà¥‡à¤¶à¤¨ à¤•à¤¾ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¤°à¥‡à¤‚",
-        subtitle: "à¤¸à¤‚à¤—à¤ à¤¨à¥‹à¤‚ à¤•à¥‡ à¤²à¤¿à¤ à¤›à¥‚à¤Ÿ à¤®à¥‚à¤²à¥à¤¯ à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤•à¤°à¥‡à¤‚",
-        yourRequest: "à¤†à¤ªà¤•à¤¾ à¤…à¤¨à¥à¤°à¥‹à¤§:",
-        users: "à¤‰à¤ªà¤¯à¥‹à¤—à¤•à¤°à¥à¤¤à¤¾à¤“à¤‚ à¤•à¥€ à¤¸à¤‚à¤–à¥à¤¯à¤¾",
-        plan: "à¤¯à¥‹à¤œà¤¨à¤¾",
-        copyBtn: "à¤ˆà¤®à¥‡à¤² à¤ªà¤¤à¤¾ à¤•à¥‰à¤ªà¥€ à¤•à¤°à¥‡à¤‚",
-        gmailBtn: "Gmail à¤®à¥‡à¤‚ à¤²à¤¿à¤–à¥‡à¤‚",
-        outlookBtn: "Outlook à¤®à¥‡à¤‚ à¤²à¤¿à¤–à¥‡à¤‚",
-        yahooBtn: "Yahoo Mail à¤®à¥‡à¤‚ à¤²à¤¿à¤–à¥‡à¤‚",
-        cancelBtn: "à¤°à¤¦à¥à¤¦ à¤•à¤°à¥‡à¤‚",
-        responseTime: "24-48 à¤˜à¤‚à¤Ÿà¥‡ à¤•à¥‡ à¤­à¥€à¤¤à¤° à¤œà¤µà¤¾à¤¬",
-        emailSubject: "à¤¬à¤²à¥à¤• à¤¸à¤¦à¤¸à¥à¤¯à¤¤à¤¾ à¤•à¥‹à¤Ÿà¥‡à¤¶à¤¨ à¤…à¤¨à¥à¤°à¥‹à¤§",
-        copySuccess: "à¤ˆà¤®à¥‡à¤² à¤ªà¤¤à¤¾ à¤•à¥‰à¤ªà¥€ à¤¹à¥‹ à¤—à¤¯à¤¾!",
+        title: "बल्क कोटेशन का अनुरोध करें",
+        subtitle: "संगठनों के लिए छूट मूल्य प्राप्त करें",
+        yourRequest: "आपका अनुरोध:",
+        users: "उपयोगकर्ताओं की संख्या",
+        plan: "योजना",
+        copyBtn: "ईमेल पता कॉपी करें",
+        gmailBtn: "Gmail में लिखें",
+        outlookBtn: "Outlook में लिखें",
+        yahooBtn: "Yahoo Mail में लिखें",
+        cancelBtn: "रद्द करें",
+        responseTime: "24-48 घंटे के भीतर जवाब",
+        emailSubject: "बल्क सदस्यता कोटेशन अनुरोध",
+        copySuccess: "ईमेल पता कॉपी हो गया!",
         emailAddress: "support@connectionsfinder.com",
-        messageTemplate: "à¤•à¥ƒà¤ªà¤¯à¤¾ {plan} à¤¯à¥‹à¤œà¤¨à¤¾ à¤•à¥‡ à¤¸à¤¾à¤¥ {count} à¤ªà¥à¤°à¤¾à¤¯à¥‹à¤œà¤¿à¤¤ à¤‰à¤ªà¤¯à¥‹à¤—à¤•à¤°à¥à¤¤à¤¾à¤“à¤‚ à¤•à¥‡ à¤²à¤¿à¤ à¤®à¥à¤à¥‡ à¤•à¥‹à¤Ÿà¥‡à¤¶à¤¨ à¤­à¥‡à¤œà¥‡à¤‚à¥¤",
-        thankYou: "à¤§à¤¨à¥à¤¯à¤µà¤¾à¤¦à¥¤"
+        messageTemplate: "कृपया {plan} योजना के साथ {count} प्रायोजित उपयोगकर्ताओं के लिए मुझे कोटेशन भेजें।",
+        thankYou: "धन्यवाद।"
     },
     ar: {
-        title: "Ø·Ù„Ø¨ Ø¹Ø±Ø¶ Ø£Ø³Ø¹Ø§Ø± Ø¨Ø§Ù„Ø¬Ù…Ù„Ø©",
-        subtitle: "Ø§Ø­ØµÙ„ Ø¹Ù„Ù‰ Ø£Ø³Ø¹Ø§Ø± Ù…Ø®ÙØ¶Ø© Ù„Ù„Ù…Ø¤Ø³Ø³Ø§Øª",
-        yourRequest: "Ø·Ù„Ø¨Ùƒ:",
-        users: "Ø¹Ø¯Ø¯ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†",
-        plan: "Ø§Ù„Ø¨Ø§Ù‚Ø©",
-        copyBtn: "Ù†Ø³Ø® Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ",
-        gmailBtn: "ÙƒØªØ§Ø¨Ø© ÙÙŠ Gmail",
-        outlookBtn: "ÙƒØªØ§Ø¨Ø© ÙÙŠ Outlook",
-        yahooBtn: "ÙƒØªØ§Ø¨Ø© ÙÙŠ Yahoo Mail",
-        cancelBtn: "Ø¥Ù„ØºØ§Ø¡",
-        responseTime: "Ø§Ù„Ø±Ø¯ Ø®Ù„Ø§Ù„ 24-48 Ø³Ø§Ø¹Ø©",
-        emailSubject: "Ø·Ù„Ø¨ Ø¹Ø±Ø¶ Ø£Ø³Ø¹Ø§Ø± Ø§Ø´ØªØ±Ø§Ùƒ Ø¨Ø§Ù„Ø¬Ù…Ù„Ø©",
-        copySuccess: "ØªÙ… Ù†Ø³Ø® Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ!",
+        title: "طلب عرض أسعار بالجملة",
+        subtitle: "احصل على أسعار مخفضة للمؤسسات",
+        yourRequest: "طلبك:",
+        users: "عدد المستخدمين",
+        plan: "الباقة",
+        copyBtn: "نسخ عنوان البريد الإلكتروني",
+        gmailBtn: "كتابة في Gmail",
+        outlookBtn: "كتابة في Outlook",
+        yahooBtn: "كتابة في Yahoo Mail",
+        cancelBtn: "إلغاء",
+        responseTime: "الرد خلال 24-48 ساعة",
+        emailSubject: "طلب عرض أسعار اشتراك بالجملة",
+        copySuccess: "تم نسخ عنوان البريد الإلكتروني!",
         emailAddress: "support@connectionsfinder.com",
-        messageTemplate: "ÙŠØ±Ø¬Ù‰ Ø¥Ø±Ø³Ø§Ù„ Ø¹Ø±Ø¶ Ø³Ø¹Ø± Ù„Ù€ {count} Ù…Ø³ØªØ®Ø¯Ù… Ø¨Ø±Ø¹Ø§ÙŠØ© Ù…Ø¹ Ø¨Ø§Ù‚Ø© {plan}.",
-        thankYou: "Ø´ÙƒØ±Ø§Ù‹ Ù„Ùƒ."
+        messageTemplate: "يرجى إرسال عرض سعر لـ {count} مستخدم برعاية مع باقة {plan}.",
+        thankYou: "شكراً لك."
     }
 };
 
@@ -1319,10 +1319,10 @@ function getTranslatedPlanName(planText) {
         const t = premiumTranslations[currentLang];
         if (t) {
             // Map English plan names to translation keys
-            if (planText.includes('Monthly') || planText.includes('HÃ ng thÃ¡ng')) return t.org_bulk_monthly || t.monthly || planText;
-            if (planText.includes('3') || planText.includes('3 ThÃ¡ng')) return t.org_bulk_3months || t.three_months || planText;
-            if (planText.includes('6') || planText.includes('6 ThÃ¡ng')) return t.org_bulk_6months || t.six_months || planText;
-            if (planText.includes('Yearly') || planText.includes('HÃ ng nÄƒm')) return t.org_bulk_yearly || t.yearly || planText;
+            if (planText.includes('Monthly') || planText.includes('Hàng tháng')) return t.org_bulk_monthly || t.monthly || planText;
+            if (planText.includes('3') || planText.includes('3 Tháng')) return t.org_bulk_3months || t.three_months || planText;
+            if (planText.includes('6') || planText.includes('6 Tháng')) return t.org_bulk_6months || t.six_months || planText;
+            if (planText.includes('Yearly') || planText.includes('Hàng năm')) return t.org_bulk_yearly || t.yearly || planText;
         }
     }
     return planText;
@@ -1361,16 +1361,16 @@ function refreshBulkModalUI() {
     
     if (headerDiv) {
         headerDiv.innerHTML = `
-            <h3 style="margin: 0; font-size: 20px;">ðŸ“¦ ${getBulkText('title')}</h3>
+            <h3 style="margin: 0; font-size: 20px;">📦 ${getBulkText('title')}</h3>
             <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">${getBulkText('subtitle')}</p>
         `;
     }
     
-    if (copyBtn) copyBtn.innerHTML = `ðŸ“‹ ${getBulkText('copyBtn')}`;
-    if (gmailBtn) gmailBtn.innerHTML = `ðŸŒ ${getBulkText('gmailBtn')}`;
-    if (outlookBtn) outlookBtn.innerHTML = `ðŸŒ ${getBulkText('outlookBtn')}`;
-    if (yahooBtn) yahooBtn.innerHTML = `ðŸŒ ${getBulkText('yahooBtn')}`;
-    if (closeBtn) closeBtn.innerHTML = `âœ–ï¸ ${getBulkText('cancelBtn')}`;
+    if (copyBtn) copyBtn.innerHTML = `📋 ${getBulkText('copyBtn')}`;
+    if (gmailBtn) gmailBtn.innerHTML = `🌐 ${getBulkText('gmailBtn')}`;
+    if (outlookBtn) outlookBtn.innerHTML = `🌐 ${getBulkText('outlookBtn')}`;
+    if (yahooBtn) yahooBtn.innerHTML = `🌐 ${getBulkText('yahooBtn')}`;
+    if (closeBtn) closeBtn.innerHTML = `✖️ ${getBulkText('cancelBtn')}`;
     if (footer) footer.innerHTML = `<p style="margin: 0; font-size: 12px; color: #999; text-align: center;">${getBulkText('responseTime')}</p>`;
     
     if (window._currentBulkData) {
@@ -1379,7 +1379,7 @@ function refreshBulkModalUI() {
         const finalMsg = msg.replace('{count}', window._currentBulkData.userCount).replace('{plan}', translatedPlan);
         if (summaryDiv) {
             summaryDiv.innerHTML = `
-                <strong>ðŸ“‹ ${getBulkText('yourRequest')}</strong><br>
+                <strong>📋 ${getBulkText('yourRequest')}</strong><br>
                 ${getBulkText('users')}: ${window._currentBulkData.userCount}<br>
                 ${getBulkText('plan')}: ${translatedPlan}<br><br>
                 <em>"${finalMsg}"</em>
@@ -1403,7 +1403,7 @@ function openBulkQuoteModal(userCount, planText) {
             .replace('{count}', userCount)
             .replace('{plan}', translatedPlan);
         summaryDiv.innerHTML = `
-            <strong>ðŸ“‹ ${getBulkText('yourRequest')}</strong><br>
+            <strong>📋 ${getBulkText('yourRequest')}</strong><br>
             ${getBulkText('users')}: ${userCount}<br>
             ${getBulkText('plan')}: ${translatedPlan}<br><br>
             <em>"${msg}"</em>
@@ -1426,7 +1426,7 @@ function copyBulkEmailToClipboard() {
     navigator.clipboard.writeText(email).then(() => {
         const btn = document.getElementById('bulkCopyBtn');
         const orig = btn.innerHTML;
-        btn.innerHTML = `âœ… ${getBulkText('copySuccess')}`;
+        btn.innerHTML = `✅ ${getBulkText('copySuccess')}`;
         btn.style.background = '#218838';
         setTimeout(() => {
             btn.innerHTML = orig;
@@ -1487,13 +1487,13 @@ function attachBulkButtonListener() {
             const platform = isNative && window.Capacitor.getPlatform 
                              ? window.Capacitor.getPlatform() 
                              : "web";
-            console.log("ðŸ“¦ Bulk Quote button clicked - platform:", platform);
+            console.log("📦 Bulk Quote button clicked - platform:", platform);
 
             if (platform === "ios" || platform === "android") {
-                console.log("ðŸŒ Opening organization-quote.html in external browser");
+                console.log("🌐 Opening organization-quote.html in external browser");
                 window.open("https://connectionsfinder.com/organization-quote.html", "_system");
             } else {
-                console.log("ðŸŒ Web - opening modal");
+                console.log("🌐 Web - opening modal");
                 openBulkQuoteModal(userCount, planText);
             }
         });
@@ -1566,29 +1566,33 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
             const platform = isNative && window.Capacitor.getPlatform 
                              ? window.Capacitor.getPlatform() 
                              : "web";
-            console.log("ðŸ“¦ Bulk Quote button clicked - platform:", platform);
+            console.log("📦 Bulk Quote button clicked - platform:", platform);
 
             if (platform === "ios" || platform === "android") {
-                console.log("ðŸŒ Opening organization-quote.html in external browser");
+                console.log("🌐 Opening organization-quote.html in external browser");
                 window.open("https://connectionsfinder.com/organization-quote.html", "_system");
             } else {
-                console.log("ðŸŒ Web - opening modal");
+                console.log("🌐 Web - opening modal");
                 openBulkQuoteModal(userCount, planText);
             }
         });
-        console.log("âœ… Bulk quote modal ready (professional email provider style)");
+        console.log("✅ Bulk quote modal ready (professional email provider style)");
         return true;
     }
     return false;
 }
-</script>
+
+        setTimeout(attachBulkButtonListener, 500);
+        setTimeout(attachBulkButtonListener, 1000);
+      })();
+    </script>
 
 <!-- ============================================ -->
 <!-- CONTACT MODAL - ALL EMAIL PROVIDERS -->
 <!-- ============================================ -->
 <div id="contactModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10001; max-width: 400px; width: 90%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     <div style="background: linear-gradient(135deg, #4267b2, #365899); padding: 20px; border-radius: 16px 16px 0 0; color: white;">
-        <h3 style="margin: 0; font-size: 20px;">ðŸ“§ Contact Support</h3>
+        <h3 style="margin: 0; font-size: 20px;">📧 Contact Support</h3>
         <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">We're here to help!</p>
     </div>
     <div style="padding: 20px;">
@@ -1598,22 +1602,22 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
         
         <!-- Send Email Button (uses system chooser) -->
         <button id="contactSendBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #4267b2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ðŸ“§ Send Email
+            📧 Send Email
         </button>
 
         <!-- Desktop tip -->
         <p style="font-size: 11px; color: #666; margin: 6px 0 10px; text-align: center; line-height: 1.4;">
-            ðŸ’¡ Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.
+            💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.
         </p>
 
         <!-- Copy Email Button -->
         <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ðŸ“‹ Copy Email Address
+            📋 Copy Email Address
         </button>
 
         <!-- Cancel Button -->
         <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            âœ–ï¸ Cancel
+            ✖️ Cancel
         </button>
     </div>
     <div style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
@@ -1647,7 +1651,7 @@ function copyEmailToClipboard() {
     navigator.clipboard.writeText(email).then(() => {
         const copyBtn = document.getElementById('contactCopyBtn');
         const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = 'âœ… Copied!';
+        copyBtn.innerHTML = '✅ Copied!';
         copyBtn.style.background = '#218838';
         setTimeout(() => {
             copyBtn.innerHTML = originalText;
@@ -1694,7 +1698,7 @@ window.sendSupportEmail = sendSupportEmail;
 <!-- ============================================ -->
 <div id="bulkQuoteModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10003; max-width: 450px; width: 90%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     <div class="bulk-header" style="background: linear-gradient(135deg, #ff9800, #f57c00); padding: 20px; border-radius: 16px 16px 0 0; color: white;">
-        <h3 style="margin: 0; font-size: 20px;">ðŸ“¦ Request Bulk Quote</h3>
+        <h3 style="margin: 0; font-size: 20px;">📦 Request Bulk Quote</h3>
         <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">Get discounted pricing for organizations</p>
     </div>
     <div style="padding: 20px;">
@@ -1706,23 +1710,23 @@ window.sendSupportEmail = sendSupportEmail;
         </div>
         
         <button id="bulkCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ðŸ“‹ Copy Email Address
+            📋 Copy Email Address
         </button>
         
         <button id="bulkGmailBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #ea4335; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ðŸŒ Compose in Gmail
+            🌐 Compose in Gmail
         </button>
         
         <button id="bulkOutlookBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #0078d4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ðŸŒ Compose in Outlook
+            🌐 Compose in Outlook
         </button>
         
         <button id="bulkYahooBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #7b0099; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ðŸŒ Compose in Yahoo Mail
+            🌐 Compose in Yahoo Mail
         </button>
         
         <button id="bulkCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            âœ–ï¸ Cancel
+            ✖️ Cancel
         </button>
     </div>
     <div class="bulk-footer" style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
