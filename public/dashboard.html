@@ -255,7 +255,7 @@ console.log("🚀 App started - logging initialized");
   <div class="tab-content" id="saved-reports">
     <div id="saved-reports-section">
       
-      <h3 id="saved-reports-heading" data-translate="savedReportsTitle">Your Saved Reports</h3> <!-- Added ID -->
+      <h3 id="saved-reports-heading">Your Saved Reports</h3> <!-- Added ID -->
       <div id="saved-reports-container" class="reports-grid"></div>
       <button onclick="clearAllReports()" class="clear-all-btn" id="clear-all-btn">
   <i class="fas fa-trash"></i>
@@ -349,7 +349,7 @@ console.log("🚀 App started - logging initialized");
           </div>
 
           <div class="form-group">
-  <label data-translate="imageLabel" for="report-image">Upload Images:</label>
+  <label for="report-image">Upload Images:</label>
   <div class="custom-file-input" onclick="document.getElementById('report-image').click()">
     <span class="file-input-text" id="file-input-label">Choose files (max 5)</span>
     <input type="file" id="report-image" accept="image/*" multiple style="display: none">
@@ -1535,25 +1535,41 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-  // Bulletproof Dashboard Translation (Bypasses language-switcher.js)
-  setTimeout(function() {
+  // ============================================
+  // ISOLATED TRANSLATION FOR UPLOAD & SAVED REPORTS
+  // This script runs independently and enforces the text every 500ms
+  // so it can never be overwritten by the buggy language-switcher.js
+  // ============================================
+  
+  const customDict = {
+    en: { upload: "Upload Images:", saved: "Your Saved Reports" },
+    vi: { upload: "T?i l?n h?nh ?nh:", saved: "B?o c?o ?? l?u c?a b?n" },
+    es: { upload: "Subir Im?genes:", saved: "Tus informes guardados" },
+    zh: { upload: "?????", saved: "??????" },
+    hi: { upload: "?????? ????? ????:", saved: "???? ????? ?? ?????????" },
+    ar: { upload: "????? ?????:", saved: "??????? ????????" }
+  };
+
+  function enforceLabels() {
     const lang = localStorage.getItem('appLanguage') || 'en';
-    const dict = {
-      vi: { saved: 'B?o c?o ?? l?u c?a b?n', upload: 'T?i l?n h?nh ?nh:' },
-      es: { saved: 'Tus informes guardados', upload: 'Subir Im?genes:' },
-      zh: { saved: '??????', upload: '?????' },
-      hi: { saved: '???? ????? ?? ?????????', upload: '?????? ????? ????:' },
-      ar: { saved: '??????? ????????', upload: '????? ?????:' },
-      en: { saved: 'Your Saved Reports', upload: 'Upload Images:' }
-    };
-    const t = dict[lang] || dict.en;
+    const t = customDict[lang] || customDict.en;
 
-    const savedTitle = document.getElementById('saved-reports-heading');
-    if (savedTitle) savedTitle.innerText = t.saved;
+    // Fix Upload Label
+    const uploadEl = document.querySelector('label[for="report-image"]');
+    if (uploadEl && uploadEl.innerText !== t.upload) {
+      uploadEl.innerText = t.upload;
+    }
 
-    const uploadLabel = document.querySelector('label[for="report-image"]');
-    if (uploadLabel) uploadLabel.innerText = t.upload;
-  }, 500);
+    // Fix Saved Reports Title
+    const savedEl = document.getElementById('saved-reports-heading');
+    if (savedEl && savedEl.innerText !== t.saved) {
+      savedEl.innerText = t.saved;
+    }
+  }
+
+  // Run immediately, then every 500ms to override the buggy script
+  document.addEventListener('DOMContentLoaded', enforceLabels);
+  setInterval(enforceLabels, 500);
 </script>
 </body>
 </html>
