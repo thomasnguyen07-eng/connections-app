@@ -1533,5 +1533,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 })();
 </script>
+
+<script>
+  // =========================================================
+  // ULTIMATE FIX FOR REPORT TYPE, UPLOAD, AND SAVED REPORTS
+  // This script runs independently and forces the correct text
+  // =========================================================
+  const ultimateDict = {
+    en: { report: "Report Type:", upload: "Upload Images:", saved: "Your Saved Reports" },
+    vi: { report: "Lo?i b?o c?o:", upload: "T?i l?n h?nh ?nh:", saved: "B?o c?o ?? l?u c?a b?n" },
+    es: { report: "Tipo de informe:", upload: "Subir Im?genes:", saved: "Tus informes guardados" },
+    zh: { report: "?????", upload: "?????", saved: "??????" },
+    hi: { report: "??????? ??????:", upload: "?????? ????? ????:", saved: "???? ????? ?? ?????????" },
+    ar: { report: "??? ???????:", upload: "????? ?????:", saved: "??????? ????????" }
+  };
+
+  function enforceUltimateLabels() {
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const t = ultimateDict[lang] || ultimateDict.en;
+
+    // Fix Report Type
+    const repEl = document.getElementById('labelReportType');
+    if (repEl && repEl.innerText !== t.report) repEl.innerText = t.report;
+
+    // Fix Upload Images
+    const upEl = document.getElementById('labelUploadImages');
+    if (upEl && upEl.innerText !== t.upload) upEl.innerText = t.upload;
+
+    // Fix Saved Reports
+    const savEl = document.getElementById('saved-reports-heading');
+    if (savEl && savEl.innerText !== t.saved) savEl.innerText = t.saved;
+  }
+
+  // Run immediately, then every 500ms to override any broken scripts
+  document.addEventListener('DOMContentLoaded', enforceUltimateLabels);
+  setInterval(enforceUltimateLabels, 500);
+</script>
 </body>
 </html>
