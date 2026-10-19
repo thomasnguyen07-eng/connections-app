@@ -1,155 +1,75 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request a Bulk Quote - Connections</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        line-height: 1.6;
-        color: #333;
-      }
-      h1, h2 {
-        color: #4caf50;
-      }
-      h1 {
-        margin-top: 60px;
-      }
-      .hero {
-        background: linear-gradient(135deg, #ff9800, #ff5722);
-        color: white;
-        padding: 25px;
-        border-radius: 12px;
-        margin: 20px 0;
-      }
-      .hero h1 {
-        color: white;
-        margin: 0 0 10px 0;
-      }
-      .hero p {
-        margin: 0;
-        font-size: 16px;
-      }
-      .benefits {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin: 20px 0;
-      }
-      .benefits ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      .benefits li {
-        padding: 8px 0;
-        font-size: 15px;
-      }
-      .contact-box {
-        background: #e3f2fd;
-        padding: 25px;
-        border-radius: 12px;
-        margin: 30px 0;
-        text-align: center;
-      }
-      .contact-box a {
-        display: inline-block;
-        background: #2196f3;
-        color: white;
-        padding: 14px 28px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 16px;
-        font-weight: 600;
-        margin-top: 15px;
-      }
-      .contact-box a:hover {
-        background: #1976d2;
-      }
-      .response-time {
-        color: #666;
-        font-size: 14px;
-        margin-top: 15px;
-      }
-      .back-btn {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 9999;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 18px;
-        background: #6c757d;
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .back-btn { display: inline-block; background: #607d8b; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 20px; }
+        .header { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; }
+        .header h1 { margin: 0 0 10px 0; font-size: 28px; }
+        .header p { margin: 0; font-size: 16px; opacity: 0.9; }
+        .content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .content h2 { color: #4caf50; margin-top: 0; }
+        .content ul { list-style: none; padding: 0; }
+        .content li { margin-bottom: 15px; font-size: 16px; display: flex; align-items: flex-start; }
+        .content li span.check { color: #4caf50; font-weight: bold; margin-right: 10px; font-size: 20px; }
+        .contact-box { text-align: center; margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 12px; }
+        .contact-box h3 { margin-top: 0; font-size: 22px; }
+        .contact-box p { margin: 5px 0; }
+        .contact-box .email { font-size: 18px; color: #ff5722; font-weight: bold; }
+        .send-btn { display: inline-block; background: #4267b2; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 600; border: none; cursor: pointer; margin: 15px 0; }
+        .response-time { color: #888; font-size: 13px; margin-top: 15px; }
     </style>
-  </head>
-  <body>
-
-<script>
-    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-        document.body.classList.add('capacitor');
-    }
-</script>
-
+</head>
+<body>
     <div class="container">
-        <a href="dashboard.html" class="back-btn" id="backBtn">? Back to Main Page</a>
+        <a href="dashboard.html" class="back-btn" id="backBtn"></a>
         
         <div class="header">
-            <h1 id="headerTitle">?? Request a Bulk Quote</h1>
-            <p id="headerSubtitle">Get discounted pricing for organizations</p>
+            <h1 id="headerTitle"></h1>
+            <p id="headerSubtitle"></p>
         </div>
 
         <div class="content">
-            <h2 id="whyTitle">Why Sponsor Users with Connections?</h2>
+            <h2 id="whyTitle"></h2>
             <ul>
-                <li><span class="check">?</span> <strong id="b1">Your logo shown to all sponsored users</strong></li>
-                <li><span class="check">?</span> <strong id="b2">Centralized account management for your team</strong></li>
-                <li><span class="check">?</span> <strong id="b3">Volume discounts ? save up to 42%</strong></li>
-                <li><span class="check">?</span> <strong id="b4">Invoice payment (bank transfer)</strong></li>
-                <li><span class="check">?</span> <strong id="b5">Perfect for families, schools, universities, clubs, and businesses</strong></li>
-                <li><span class="check">?</span> <strong id="b6">Sponsored users get free access to premium features</strong></li>
+                <li><span class="check">?</span> <span id="b1"></span></li>
+                <li><span class="check">?</span> <span id="b2"></span></li>
+                <li><span class="check">?</span> <span id="b3"></span></li>
+                <li><span class="check">?</span> <span id="b4"></span></li>
+                <li><span class="check">?</span> <span id="b5"></span></li>
+                <li><span class="check">?</span> <span id="b6"></span></li>
             </ul>
 
-            <h2 id="howTitle">How It Works</h2>
+            <h2 id="howTitle"></h2>
             <ol>
-                <li id="s1"><strong>Send us your requirements</strong> ? number of users, subscription duration, organization details</li>
-                <li id="s2"><strong>Receive a custom quote</strong> within 24?48 hours</li>
-                <li id="s3"><strong>Approve and pay</strong> via bank transfer (invoice)</li>
-                <li id="s4"><strong>Get your pass codes</strong> ? distribute them to your sponsored users</li>
-                <li id="s5"><strong>Users redeem</strong> the codes to activate premium features</li>
+                <li id="s1"></li>
+                <li id="s2"></li>
+                <li id="s3"></li>
+                <li id="s4"></li>
+                <li id="s5"></li>
             </ol>
 
             <div class="contact-box">
-                <h3 id="contactTitle">?? Contact Us</h3>
-                <p id="emailLabel">Email us with your requirements:</p>
+                <h3 id="contactTitle"></h3>
+                <p id="emailLabel"></p>
                 <p><strong class="email">support@connectionsfinder.com</strong></p>
                 
-                <button id="sendEmailBtn" class="send-btn">?? Send Email Request</button>
-                <p class="response-time" id="responseTime">Response within 24?48 hours</p>
+                <button id="sendEmailBtn" class="send-btn"></button>
+                <p class="response-time" id="responseTime"></p>
             </div>
         </div>
         
         <p style="text-align: center; color: #999; font-size: 13px; margin-top: 40px;">
-            <span id="rightsText">? 2026 Connections. All rights reserved.</span>
+            <span id="rightsText"></span>
         </p>
     </div>
 
     <script>
-        // Translation Dictionary
-        window.QUOTE_TRANSLATIONS = {
+        const translations = {
             en: { back: "? Back to Main Page", title: "?? Request a Bulk Quote", subtitle: "Get discounted pricing for organizations", why: "Why Sponsor Users with Connections?", b1: "Your logo shown to all sponsored users", b2: "Centralized account management for your team", b3: "Volume discounts ? save up to 42%", b4: "Invoice payment (bank transfer)", b5: "Perfect for families, schools, universities, clubs, and businesses", b6: "Sponsored users get free access to premium features", how: "How It Works", s1: "<strong>Send us your requirements</strong> ? number of users, subscription duration, organization details", s2: "<strong>Receive a custom quote</strong> within 24?48 hours", s3: "<strong>Approve and pay</strong> via bank transfer (invoice)", s4: "<strong>Get your pass codes</strong> ? distribute them to your sponsored users", s5: "<strong>Users redeem</strong> the codes to activate premium features", contact: "?? Contact Us", email: "Email us with your requirements:", sendBtn: "?? Send Email Request", response: "Response within 24?48 hours", rights: "? 2026 Connections. All rights reserved.", noEmailTitle: "?? No email app detected", noEmailDesc: "Your device doesn't have a default email app installed. Choose one of the options below to send your message:", openGmail: "Open Gmail", openOutlook: "Open Outlook", openYahoo: "Open Yahoo" },
             vi: { back: "? Quay l?i trang ch?nh", title: "?? Y?u c?u b?o gi? s? l??ng l?n", subtitle: "Nh?n gi? ?u ??i cho t? ch?c", why: "T?i sao n?n t?i tr? ng??i d?ng v?i Connections?", b1: "Logo c?a b?n hi?n th? cho t?t c? ng??i d?ng ???c t?i tr?", b2: "Qu?n l? t?i kho?n t?p trung cho nh?m c?a b?n", b3: "Gi?m gi? theo s? l??ng ? ti?t ki?m ??n 42%", b4: "Thanh to?n b?ng h?a ??n (chuy?n kho?n ng?n h?ng)", b5: "Ho?n h?o cho gia ??nh, tr??ng h?c, tr??ng ??i h?c, c?u l?c b? v? doanh nghi?p", b6: "Ng??i d?ng ???c t?i tr? ???c truy c?p mi?n ph? c?c t?nh n?ng cao c?p", how: "C?ch th?c ho?t ??ng", s1: "<strong>G?i y?u c?u c?a b?n</strong> ? s? l??ng ng??i d?ng, th?i h?n ??ng k?, chi ti?t t? ch?c", s2: "<strong>Nh?n b?o gi? t?y ch?nh</strong> trong v?ng 24?48 gi?", s3: "<strong>Ph? duy?t v? thanh to?n</strong> qua chuy?n kho?n ng?n h?ng (h?a ??n)", s4: "<strong>Nh?n m? th?ng h?nh</strong> ? ph?n ph?i ch?ng cho ng??i d?ng ???c t?i tr?", s5: "<strong>Ng??i d?ng ??i m?</strong> ?? k?ch ho?t t?nh n?ng cao c?p", contact: "?? Li?n h? v?i ch?ng t?i", email: "G?i email cho ch?ng t?i v?i y?u c?u c?a b?n:", sendBtn: "?? G?i y?u c?u qua email", response: "Ph?n h?i trong v?ng 24?48 gi?", rights: "? 2026 Connections. B?o l?u m?i quy?n.", noEmailTitle: "?? Kh?ng t?m th?y ?ng d?ng email", noEmailDesc: "Thi?t b? c?a b?n kh?ng c?i ??t ?ng d?ng email m?c ??nh. Ch?n m?t trong c?c t?y ch?n b?n d??i ?? g?i tin nh?n:", openGmail: "M? Gmail", openOutlook: "M? Outlook", openYahoo: "M? Yahoo" },
             zh: { back: "? ????", title: "?? ??????", subtitle: "???????????", why: "????? Connections ?????", b1: "??????????????", b2: "???????????", b3: "???? ? ???? 42%", b4: "??????????", b5: "???????????????????", b6: "??????????????", how: "????", s1: "<strong>?????????</strong> ? ??????????????", s2: "<strong>? 24?48 ?????????</strong>", s3: "<strong>???????????????</strong>", s4: "<strong>???????</strong> ? ??????????", s5: "<strong>??????</strong>???????", contact: "?? ????", email: "?????????????", sendBtn: "?? ????????", response: "? 24?48 ?????", rights: "? 2026 Connections. ???????", noEmailTitle: "?? ??????????", noEmailDesc: "??????????????????????????????", openGmail: "?? Gmail", openOutlook: "?? Outlook", openYahoo: "?? Yahoo" },
@@ -158,12 +78,11 @@
             ar: { back: "? ?????? ??? ?????? ????????", title: "?? ??? ??? ????? ???????", subtitle: "???? ??? ????? ????? ????????", why: "????? ???? ?????????? ?? Connections?", b1: "??? ??? ????? ????? ?????????? ?????????", b2: "????? ???? ?????? ??????", b3: "?????? ?????? ? ??? ??? 42%", b4: "????? ????????? (????? ????)", b5: "????? ???????? ???????? ????????? ???????? ????????", b6: "???? ?????????? ????????? ??? ???? ????? ??????? ???????", how: "??? ????", s1: "<strong>???? ??? ????????</strong> ? ??? ??????????? ???? ????????? ??????? ???????", s2: "<strong>???? ??? ??? ????? ???? ???? 24-48 ????</strong>", s3: "<strong>???????? ?????? ??? ??????? ?????? (??????)</strong>", s4: "<strong>???? ??? ???? ?????? ?????? ??</strong> ? ????? ??? ?????????? ?????????", s5: "<strong>?????? ?????????? ??????</strong> ?????? ??????? ???????", contact: "?? ???? ???", email: "?????? ??? ?????? ?????????? ?????????:", sendBtn: "?? ????? ??? ??????? ??????????", response: "???? ???? 24-48 ????", rights: "? 2026 Connections. ???? ?????? ??????.", noEmailTitle: "?? ?? ??? ?????? ????? ???? ????????", noEmailDesc: "????? ?? ????? ??? ????? ???? ???????? ??????? ????. ???? ??? ???????? ????? ?????? ??????:", openGmail: "???? Gmail", openOutlook: "???? Outlook", openYahoo: "???? Yahoo" }
         };
 
-        // Apply Translations
-        function updateQuoteTranslations() {
+        function applyTranslations() {
             const lang = localStorage.getItem('premiumLanguage') || localStorage.getItem('userLanguage') || localStorage.getItem('appLanguage') || 'en';
-            const t = window.QUOTE_TRANSLATIONS[lang] || window.QUOTE_TRANSLATIONS.en;
-            window.CURRENT_QUOTE_T = t;
-
+            const t = translations[lang] || translations.en;
+            
+            // Fill the text
             document.getElementById('backBtn').innerHTML = t.back;
             document.getElementById('headerTitle').innerHTML = t.title;
             document.getElementById('headerSubtitle').innerHTML = t.subtitle;
@@ -185,57 +104,50 @@
             document.getElementById('sendEmailBtn').innerHTML = t.sendBtn;
             document.getElementById('responseTime').innerHTML = t.response;
             document.getElementById('rightsText').innerHTML = t.rights;
+
+            // Setup the button
+            document.getElementById('sendEmailBtn').onclick = function() {
+                const recipient = "support@connectionsfinder.com";
+                const subject = "Bulk Subscription Quote Request";
+                const body = "Hello,\n\nI would like to request a bulk quote.\n\nNumber of users: \nPlan type (Monthly/3 Months/6 Months/Yearly): \nOrganization name: \nContact email: \n\nThank you.";
+
+                const mailtoLink = "mailto:" + recipient + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+                window.location.href = mailtoLink;
+
+                setTimeout(() => {
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    if (document.hasFocus() && !isMobile) {
+                        const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(recipient) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+                        const outlookUrl = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+                        const yahooUrl = "https://compose.mail.yahoo.com/?to=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+                        
+                        const fallback = document.createElement("div");
+                        fallback.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; justify-content: center; align-items: center;";
+                        fallback.innerHTML = 
+                            <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 480px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+                                <button id="fallback-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 22px; cursor: pointer; color: #666;">&times;</button>
+                                <h3 style="margin-top: 0; color: #333;">\</h3>
+                                <p style="color: #555; font-size: 14px; line-height: 1.5;">\</p>
+                                <div style="display: flex; gap: 10px; margin: 15px 0;">
+                                    <a href="" target="_blank" style="flex:1; padding: 12px; background: #D44638; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">\</a>
+                                    <a href="" target="_blank" style="flex:1; padding: 12px; background: #0072C6; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">\</a>
+                                    <a href="" target="_blank" style="flex:1; padding: 12px; background: #720E9E; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">\</a>
+                                </div>
+                            </div>
+                        ;
+                        document.body.appendChild(fallback);
+                        document.getElementById("fallback-close").onclick = function() { fallback.remove(); };
+                        fallback.addEventListener("click", function(e) { if (e.target === fallback) fallback.remove(); });
+                    }
+                }, 800);
+            };
         }
 
-        document.addEventListener('DOMContentLoaded', updateQuoteTranslations);
-
-        // Email Button Logic
-        document.getElementById('sendEmailBtn').addEventListener('click', function() {
-            const recipient = "support@connectionsfinder.com";
-            const subject = "Bulk Subscription Quote Request";
-            const body = "Hello,\n\nI would like to request a bulk quote.\n\nNumber of users: \nPlan type (Monthly/3 Months/6 Months/Yearly): \nOrganization name: \nContact email: \n\nThank you.";
-
-            const mailtoLink = "mailto:" + recipient + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-            window.location.href = mailtoLink;
-
-            setTimeout(() => {
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (document.hasFocus() && !isMobile) {
-                    const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(recipient) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-                    const outlookUrl = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-                    const yahooUrl = "https://compose.mail.yahoo.com/?to=" + encodeURIComponent(recipient) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-
-                    const t = window.CURRENT_QUOTE_T || window.QUOTE_TRANSLATIONS.en;
-
-                    const fallback = document.createElement("div");
-                    fallback.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; justify-content: center; align-items: center;";
-                    fallback.innerHTML =                         <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 480px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
-                            <button id="fallback-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 22px; cursor: pointer; color: #666;">&times;</button>
-                            <h3 style="margin-top: 0; color: #333;">\</h3>
-                            <p style="color: #555; font-size: 14px; line-height: 1.5;">\</p>
-                            <div style="display: flex; gap: 10px; margin: 15px 0;">
-                                <a href="" target="_blank" style="flex:1; padding: 12px; background: #D44638; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">\</a>
-                                <a href="" target="_blank" style="flex:1; padding: 12px; background: #0072C6; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">\</a>
-                                <a href="" target="_blank" style="flex:1; padding: 12px; background: #720E9E; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">\</a>
-                            </div>
-                        </div>
-                    \;
-                    document.body.appendChild(fallback);
-                    document.getElementById("fallback-close").onclick = function() { fallback.remove(); };
-                    fallback.addEventListener("click", function(e) { if (e.target === fallback) fallback.remove(); });
-                }
-            }, 800);
-        });
+        document.addEventListener('DOMContentLoaded', applyTranslations);
+        // Also run immediately in case DOMContentLoaded already fired
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            applyTranslations();
+        }
     </script>
-
-<style>
-    /* Hide Restore Purchases on web browsers, show only in native app */
-    .web-hide-restore {
-        display: none !important;
-    }
-    body.capacitor .web-hide-restore {
-        display: block !important;
-    }
-</style>
 </body>
 </html>
