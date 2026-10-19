@@ -31,14 +31,23 @@ document.addEventListener("DOMContentLoaded", function () {
   window.currentTranslations = {};
 
   function translate(key) {
-    // Add this fallback check
     if (!window.currentTranslations) return key;
-
+    
     const keys = key.split(".");
     let result = window.currentTranslations;
     for (const k of keys) {
       result = result?.[k];
       if (!result) break;
+    }
+    
+    // If translation is missing, fallback to English instead of showing raw key
+    if (!result && window.currentTranslations !== window.englishTranslations) {
+        let fallback = window.englishTranslations || {};
+        for (const k of keys) {
+            fallback = fallback?.[k];
+            if (!fallback) break;
+        }
+        return fallback || key;
     }
     return result || key;
   }

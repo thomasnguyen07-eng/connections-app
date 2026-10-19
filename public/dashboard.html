@@ -1533,5 +1533,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 })();
 </script>
+
+<script>
+  // Small script to translate the file input text based on language
+  setInterval(() => {
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      if (lang === 'vi') {
+        fileInput.setAttribute('data-text', 'Ch?n t?p (t?i ?a 5)');
+      } else if (lang === 'es') {
+        fileInput.setAttribute('data-text', 'Elegir archivo (m?x 5)');
+      } else {
+        fileInput.setAttribute('data-text', 'Choose files (max 5)');
+      }
+    }
+  }, 500);
+</script>
 </body>
 </html>
