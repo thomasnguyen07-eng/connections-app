@@ -21,6 +21,11 @@ document.addEventListener("DOMContentLoaded", function () {
     "buttons.delete": ".delete-btn",
     // ✅ ADD THIS LINE
     "buttons.subscribe": "#subscribeBtn span",
+    "reportTypes.missing_person": '[data-translate="reportTypes.missing_person"]',
+    "reportTypes.lost_item": '[data-translate="reportTypes.lost_item"]',
+    "reportTypes.found_person": '[data-translate="reportTypes.found_person"]',
+    "reportTypes.found_item": '[data-translate="reportTypes.found_item"]',
+    "reportTypes.event": '[data-translate="reportTypes.event"]',
   };
 
   window.currentTranslations = {};
