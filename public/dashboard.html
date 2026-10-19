@@ -255,7 +255,7 @@ console.log("🚀 App started - logging initialized");
   <div class="tab-content" id="saved-reports">
     <div id="saved-reports-section">
       
-      <h3 id="saved-reports-heading">Your Saved Reports</h3> <!-- Added ID -->
+      <h3 id="saved-reports-heading" data-translate="savedReportsTitle">Your Saved Reports</h3> <!-- Added ID -->
       <div id="saved-reports-container" class="reports-grid"></div>
       <button onclick="clearAllReports()" class="clear-all-btn" id="clear-all-btn">
   <i class="fas fa-trash"></i>
@@ -349,7 +349,7 @@ console.log("🚀 App started - logging initialized");
           </div>
 
           <div class="form-group">
-  <label for="report-image">Upload Images:</label>
+  <label for="report-image" data-translate="imageLabel">Upload Images:</label>
   <div class="custom-file-input" onclick="document.getElementById('report-image').click()">
     <span class="file-input-text" id="file-input-label">Choose files (max 5)</span>
     <input type="file" id="report-image" accept="image/*" multiple style="display: none">
