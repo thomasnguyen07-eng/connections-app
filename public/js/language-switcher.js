@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
     "reportTypes.found_person": '[data-translate="reportTypes.found_person"]',
     "reportTypes.found_item": '[data-translate="reportTypes.found_item"]',
     "reportTypes.event": '[data-translate="reportTypes.event"]',
+    imageInput: 'input[type="file"]',
+    savedReportsTitle: 'h2:has-text("Your Saved Reports"), .saved-reports-title, #savedReportsTitle',
   };
 
   window.currentTranslations = {};
