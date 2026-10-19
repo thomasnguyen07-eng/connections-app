@@ -4,12 +4,12 @@ document.addEventListener("DOMContentLoaded", function () {
     appTitle: "header h1",
     newReportTab: '[data-tab="new-report"]',
     savedReportsTab: '[data-tab="saved-reports"]',
-    reportTypeLabel: '[data-translate="reportTypeLabel"]',
-    titleLabel: '[data-translate="titleLabel"]',
-    descriptionLabel: '[data-translate="descriptionLabel"]',
-    locationLabel: '[data-translate="locationLabel"]',
-    contactLabel: '[data-translate="contactLabel"]',
-    imageLabel: '[data-translate="imageLabel"]',
+    reportTypeLabel: 'label[for="report-type"]',
+    titleLabel: 'label[for="report-title"]',
+    descriptionLabel: 'label[for="report-description"]',
+    locationLabel: 'label[for="location-text-input"]',
+    contactLabel: 'label[for="reporter-contact"]',
+    imageLabel: 'label[for="report-image"]',
     submitButton: '#report-form button[type="submit"]',
     useLocationButton: 'button[onclick*="useCurrentLocation"]',
     showOnMapButton: 'button[onclick*="findAddress"]',
@@ -21,35 +21,19 @@ document.addEventListener("DOMContentLoaded", function () {
     "buttons.delete": ".delete-btn",
     // ✅ ADD THIS LINE
     "buttons.subscribe": "#subscribeBtn span",
-    "reportTypes.missing_person": '[data-translate="reportTypes.missing_person"]',
-    "reportTypes.lost_item": '[data-translate="reportTypes.lost_item"]',
-    "reportTypes.found_person": '[data-translate="reportTypes.found_person"]',
-    "reportTypes.found_item": '[data-translate="reportTypes.found_item"]',
-    "reportTypes.event": '[data-translate="reportTypes.event"]',
-    imageInput: 'input[type="file"]',
-    savedReportsTitle: "#saved-reports-heading",
   };
 
   window.currentTranslations = {};
 
   function translate(key) {
+    // Add this fallback check
     if (!window.currentTranslations) return key;
-    
+
     const keys = key.split(".");
     let result = window.currentTranslations;
     for (const k of keys) {
       result = result?.[k];
       if (!result) break;
-    }
-    
-    // If translation is missing, fallback to English instead of showing raw key
-    if (!result && window.currentTranslations !== window.englishTranslations) {
-        let fallback = window.englishTranslations || {};
-        for (const k of keys) {
-            fallback = fallback?.[k];
-            if (!fallback) break;
-        }
-        return fallback || key;
     }
     return result || key;
   }
@@ -66,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
       // ▼▼▼ REPLACE this block ▼▼▼
-      setTimeout(applyTranslations, 300);
+      applyTranslations();
 
       // 👇 ADD THIS LINE 👇
       if (typeof loadCompactWarning === "function") {

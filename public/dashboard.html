@@ -255,7 +255,7 @@ console.log("🚀 App started - logging initialized");
   <div class="tab-content" id="saved-reports">
     <div id="saved-reports-section">
       
-      <h3 id="saved-reports-heading" data-translate="savedReportsTitle">Your Saved Reports</h3> <!-- Added ID -->
+      <h3 id="saved-reports-heading">Your Saved Reports</h3> <!-- Added ID -->
       <div id="saved-reports-container" class="reports-grid"></div>
       <button onclick="clearAllReports()" class="clear-all-btn" id="clear-all-btn">
   <i class="fas fa-trash"></i>
@@ -277,23 +277,23 @@ console.log("🚀 App started - logging initialized");
       <div class="report-type-buttons">
   <button type="button" class="type-btn" data-type="missing_person" onclick="selectReportType('missing_person')">
     <span class="type-icon">🚨</span>
-    <span class="type-label" data-translate="reportTypes.missing_person">Missing Person</span>
+    <span class="type-label">Missing Person</span>
   </button>
   <button type="button" class="type-btn" data-type="lost_item" onclick="selectReportType('lost_item')">
     <span class="type-icon">🔍</span>
-    <span class="type-label" data-translate="reportTypes.lost_item">Lost Item</span>
+    <span class="type-label">Lost Item</span>
   </button>
   <button type="button" class="type-btn" data-type="found_person" onclick="selectReportType('found_person')">
     <span class="type-icon">🙏</span>
-    <span class="type-label" data-translate="reportTypes.found_person">Found Person</span>
+    <span class="type-label">Found Person</span>
   </button>
   <button type="button" class="type-btn" data-type="found_item" onclick="selectReportType('found_item')">
     <span class="type-icon">🔄</span>
-    <span class="type-label" data-translate="reportTypes.found_item">Found Item</span>
+    <span class="type-label">Found Item</span>
   </button>
   <button type="button" class="type-btn" data-type="event" onclick="selectReportType('event')">
     <span class="type-icon">🎉</span>
-    <span class="type-label" data-translate="reportTypes.event">Event</span>
+    <span class="type-label">Event</span>
   </button>
 </div>
       <!-- Hidden input to store selected type (for form submission) -->
@@ -349,7 +349,7 @@ console.log("🚀 App started - logging initialized");
           </div>
 
           <div class="form-group">
-  <label for="report-image" data-translate="imageLabel">Upload Images:</label>
+  <label for="report-image">Upload Images:</label>
   <div class="custom-file-input" onclick="document.getElementById('report-image').click()">
     <span class="file-input-text" id="file-input-label">Choose files (max 5)</span>
     <input type="file" id="report-image" accept="image/*" multiple style="display: none">
@@ -1532,43 +1532,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('Worm restore failed:', e);
     }
 })();
-</script>
-
-<script>
-  // Small script to translate the file input text based on language
-  setInterval(() => {
-    const lang = localStorage.getItem('appLanguage') || 'en';
-    const fileInput = document.querySelector('input[type="file"]');
-    if (fileInput) {
-      if (lang === 'vi') {
-        fileInput.setAttribute('data-text', 'Ch?n t?p (t?i ?a 5)');
-      } else if (lang === 'es') {
-        fileInput.setAttribute('data-text', 'Elegir archivo (m?x 5)');
-      } else {
-        fileInput.setAttribute('data-text', 'Choose files (max 5)');
-      }
-    }
-  }, 500);
-</script>
-
-<script>
-  // Translate the file input text based on language
-  function translateFileInput() {
-    const lang = localStorage.getItem('appLanguage') || 'en';
-    const fileInput = document.querySelector('input[type="file"]');
-    if (fileInput) {
-      if (lang === 'vi') fileInput.setAttribute('data-text', 'Ch?n t?p (t?i ?a 5)');
-      else if (lang === 'es') fileInput.setAttribute('data-text', 'Elegir archivos (m?x. 5)');
-      else if (lang === 'zh') fileInput.setAttribute('data-text', '???????5??');
-      else if (lang === 'hi') fileInput.setAttribute('data-text', '??????? ????? (?????? 5)');
-      else if (lang === 'ar') fileInput.setAttribute('data-text', '???? ??????? (??? ???? 5)');
-      else fileInput.setAttribute('data-text', 'Choose files (max 5)');
-    }
-  }
-
-  // Run when page loads and when language changes
-  document.addEventListener('DOMContentLoaded', translateFileInput);
-  window.addEventListener('storage', translateFileInput);
 </script>
 </body>
 </html>
