@@ -1533,43 +1533,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 })();
 </script>
-
-<script>
-  // ============================================
-  // ISOLATED TRANSLATION FOR UPLOAD & SAVED REPORTS
-  // This script runs independently and enforces the text every 500ms
-  // so it can never be overwritten by the buggy language-switcher.js
-  // ============================================
-  
-  const customDict = {
-    en: { upload: "Upload Images:", saved: "Your Saved Reports" },
-    vi: { upload: "T?i l?n h?nh ?nh:", saved: "B?o c?o ?? l?u c?a b?n" },
-    es: { upload: "Subir Im?genes:", saved: "Tus informes guardados" },
-    zh: { upload: "?????", saved: "??????" },
-    hi: { upload: "?????? ????? ????:", saved: "???? ????? ?? ?????????" },
-    ar: { upload: "????? ?????:", saved: "??????? ????????" }
-  };
-
-  function enforceLabels() {
-    const lang = localStorage.getItem('appLanguage') || 'en';
-    const t = customDict[lang] || customDict.en;
-
-    // Fix Upload Label
-    const uploadEl = document.querySelector('label[for="report-image"]');
-    if (uploadEl && uploadEl.innerText !== t.upload) {
-      uploadEl.innerText = t.upload;
-    }
-
-    // Fix Saved Reports Title
-    const savedEl = document.getElementById('saved-reports-heading');
-    if (savedEl && savedEl.innerText !== t.saved) {
-      savedEl.innerText = t.saved;
-    }
-  }
-
-  // Run immediately, then every 500ms to override the buggy script
-  document.addEventListener('DOMContentLoaded', enforceLabels);
-  setInterval(enforceLabels, 500);
-</script>
 </body>
 </html>
