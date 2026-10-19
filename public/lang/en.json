@@ -98,5 +98,7 @@
     "noFileChosen": "No file chosen"
   },
   "deleting": "Deleting...",
-  "clearing": "Clearing..."
+  "clearing": "Clearing...",
+  "savedReportsTitle": "Your Saved Reports",
+  "imageInput": "Choose files (max 5)"
 }

@@ -98,5 +98,7 @@
     "noFileChosen": "Ningún archivo seleccionado"
   },
   "deleting": "Eliminando...",
-  "clearing": "Limpiando..."
+  "clearing": "Limpiando...",
+  "savedReportsTitle": "Tus informes guardados",
+  "imageInput": "Elegir archivos (m?x. 5)"
 }
