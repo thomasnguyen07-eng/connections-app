@@ -1550,5 +1550,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 500);
 </script>
+
+<script>
+  // Translate the file input text based on language
+  function translateFileInput() {
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      if (lang === 'vi') fileInput.setAttribute('data-text', 'Ch?n t?p (t?i ?a 5)');
+      else if (lang === 'es') fileInput.setAttribute('data-text', 'Elegir archivos (m?x. 5)');
+      else if (lang === 'zh') fileInput.setAttribute('data-text', '???????5??');
+      else if (lang === 'hi') fileInput.setAttribute('data-text', '??????? ????? (?????? 5)');
+      else if (lang === 'ar') fileInput.setAttribute('data-text', '???? ??????? (??? ???? 5)');
+      else fileInput.setAttribute('data-text', 'Choose files (max 5)');
+    }
+  }
+
+  // Run when page loads and when language changes
+  document.addEventListener('DOMContentLoaded', translateFileInput);
+  window.addEventListener('storage', translateFileInput);
+</script>
 </body>
 </html>

@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
       // ▼▼▼ REPLACE this block ▼▼▼
-      setTimeout(applyTranslations, 100);
+      setTimeout(applyTranslations, 300);
 
       // 👇 ADD THIS LINE 👇
       if (typeof loadCompactWarning === "function") {
