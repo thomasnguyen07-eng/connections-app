@@ -273,7 +273,7 @@ console.log("🚀 App started - logging initialized");
          
            <!-- REPORT TYPE - ICON BUTTONS (Replaces dropdown) -->
     <div class="form-group">
-      <label data-translate="reportTypeLabel">Report Type</label>
+      <label >Report Type</label>
       <div class="report-type-buttons">
   <button type="button" class="type-btn" data-type="missing_person" onclick="selectReportType('missing_person')">
     <span class="type-icon">🚨</span>
@@ -1570,38 +1570,34 @@ document.addEventListener('DOMContentLoaded', function() {
   setInterval(enforceUltimateLabels, 500);
 </script>
 
+
+
 <script>
-  // INVINCIBLE TRANSLATION SCRIPT
-  function enforceFinalLabels() {
+  // THE PEACEFUL FIX
+  // We wait for the window to completely finish loading, then we apply the text.
+  // No setInterval, no fighting.
+  
+  window.addEventListener('load', function() {
     const lang = localStorage.getItem('appLanguage') || 'en';
     
-    // We use &#...; (HTML entities) so the text is guaranteed to render correctly
     const dict = {
       en: { report: "Report Type:", saved: "Your Saved Reports" },
-      vi: { report: "Loại báo cáo:", saved: "Báo cáo đã lưu của bạn" },
+      vi: { report: "Lo\u1EA1i b\u00E1o c\u00E1o:", saved: "B\u00E1o c\u00E1o \u0111\u00E3 l\u01B0u c\u1EE7a b\u1EA1n" },
       es: { report: "Tipo de informe:", saved: "Tus informes guardados" },
-      zh: { report: "报告类型：", saved: "您保存的报告" },
-      hi: { report: "रिपोर्ट प्रकार:", saved: "आपकी सहेजी गई रिपोर्टें" },
-      ar: { report: "نوع التقرير:", saved: "تقاريرك المحفوظة" }
+      zh: { report: "\u62A5\u544A\u7C7B\u578B\uFF1A", saved: "\u60A8\u4FDD\u5B58\u7684\u62A5\u544A" },
+      hi: { report: "\u0930\u093F\u092A\u094B\u0930\u094D\u091F \u092A\u094D\u0930\u0915\u093E\u0930:", saved: "\u0906\u092A\u0915\u0940 \u0938\u0939\u0947\u091C\u0940 \u0917\u0908 \u0930\u093F\u092A\u094B\u0930\u094D\u091F\u0947\u0902" },
+      ar: { report: "\u0646\u0648\u0639 \u0627\u0644\u062A\u0642\u0631\u064A\u0631:", saved: "\u062A\u0642\u0627\u0631\u064A\u0631\u0643 \u0627\u0644\u0645\u062D\u0641\u0648\u0638\u0629" }
     };
     
     const t = dict[lang] || dict.en;
 
-    const repEl = document.getElementById('labelReportType');
-    if (repEl && repEl.innerText !== t.report) repEl.innerText = t.report;
+    // Apply the text ONCE. Since the broken script no longer has the data-translate attribute to grab, it won't overwrite us.
+    const repEl = document.querySelector('label[for="report-type"]');
+    if (repEl) repEl.innerHTML = t.report;
 
     const savEl = document.getElementById('saved-reports-heading');
-    if (savEl && savEl.innerText !== t.saved) savEl.innerText = t.saved;
-  }
-
-  // 1. Run when page loads
-  document.addEventListener('DOMContentLoaded', enforceFinalLabels);
-  
-  // 2. Run every 200ms to fight off the broken language-switcher
-  setInterval(enforceFinalLabels, 200);
-  
-  // 3. FORCE IT to run right before the window closes/reloads
-  window.addEventListener('beforeunload', enforceFinalLabels);
+    if (savEl) savEl.innerHTML = t.saved;
+  });
 </script>
 </body>
 </html>
