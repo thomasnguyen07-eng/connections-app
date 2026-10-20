@@ -255,7 +255,7 @@ console.log("🚀 App started - logging initialized");
   <div class="tab-content" id="saved-reports">
     <div id="saved-reports-section">
       
-      <h3 id="saved-reports-heading" id="savedTitle">Your Saved Reports</h3> <!-- Added ID -->
+      <h3 id="saved-reports-heading">Your Saved Reports</h3> <!-- Added ID -->
       <div id="saved-reports-container" class="reports-grid"></div>
       <button onclick="clearAllReports()" class="clear-all-btn" id="clear-all-btn">
   <i class="fas fa-trash"></i>
@@ -273,7 +273,7 @@ console.log("🚀 App started - logging initialized");
          
            <!-- REPORT TYPE - ICON BUTTONS (Replaces dropdown) -->
     <div class="form-group">
-      <label >Report Type</label>
+      <label for="report-type" id="labelReportType">Report Type:</label>
       <div class="report-type-buttons">
   <button type="button" class="type-btn" data-type="missing_person" onclick="selectReportType('missing_person')">
     <span class="type-icon">🚨</span>
@@ -1536,47 +1536,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
   // =========================================================
-  // ULTIMATE FIX FOR REPORT TYPE, UPLOAD, AND SAVED REPORTS
-  // This script runs independently and forces the correct text
+  // THE FINAL, PERFECT DASHBOARD TRANSLATION SCRIPT
   // =========================================================
-  const ultimateDict = {
-    en: { report: "Report Type:", upload: "Upload Images:", saved: "Your Saved Reports" },
-    vi: { report: "Lo?i b?o c?o:", upload: "T?i l?n h?nh ?nh:", saved: "B?o c?o ?? l?u c?a b?n" },
-    es: { report: "Tipo de informe:", upload: "Subir Im?genes:", saved: "Tus informes guardados" },
-    zh: { report: "?????", upload: "?????", saved: "??????" },
-    hi: { report: "??????? ??????:", upload: "?????? ????? ????:", saved: "???? ????? ?? ?????????" },
-    ar: { report: "??? ???????:", upload: "????? ?????:", saved: "??????? ????????" }
-  };
-
-  function enforceUltimateLabels() {
-    const lang = localStorage.getItem('appLanguage') || 'en';
-    const t = ultimateDict[lang] || ultimateDict.en;
-
-    // Fix Report Type
-    const repEl = document.getElementById('labelReportType');
-    if (repEl && repEl.innerText !== t.report) repEl.innerText = t.report;
-
-    // Fix Upload Images
-    const upEl = document.getElementById('labelUploadImages');
-    if (upEl && upEl.innerText !== t.upload) upEl.innerText = t.upload;
-
-    // Fix Saved Reports
-    const savEl = document.getElementById('saved-reports-heading');
-    if (savEl && savEl.innerText !== t.saved) savEl.innerText = t.saved;
-  }
-
-  // Run immediately, then every 500ms to override any broken scripts
-  document.addEventListener('DOMContentLoaded', enforceUltimateLabels);
-  setInterval(enforceUltimateLabels, 500);
-</script>
-
-
-
-<script>
-  // THE PEACEFUL FIX
-  // We wait for the window to completely finish loading, then we apply the text.
-  // No setInterval, no fighting.
-  
   window.addEventListener('load', function() {
     const lang = localStorage.getItem('appLanguage') || 'en';
     
@@ -1591,8 +1552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const t = dict[lang] || dict.en;
 
-    // Apply the text ONCE. Since the broken script no longer has the data-translate attribute to grab, it won't overwrite us.
-    const repEl = document.querySelector('label[for="report-type"]');
+    const repEl = document.getElementById('labelReportType');
     if (repEl) repEl.innerHTML = t.report;
 
     const savEl = document.getElementById('saved-reports-heading');
