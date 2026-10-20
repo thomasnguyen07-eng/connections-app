@@ -100,3 +100,8 @@ functions/.env
 *.BEFORE-*
 *.OLD
 *.BACKUP-*
+
+# Never commit damaged/backup files
+*.DAMAGED-*
+*.BROKEN-*
+*.BEFORE-*

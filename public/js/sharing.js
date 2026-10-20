@@ -1,4 +1,4 @@
-// Clear any stale form-restore data on fresh load (auto-expire after 60s)
+﻿// Clear any stale form-restore data on fresh load (auto-expire after 60s)
 (function clearStaleFormData() {
   try {
     const raw = localStorage.getItem("savedFormDataBeforeShare");
@@ -11,6 +11,87 @@
   } catch (e) {}
 })();
 
+// ============================================
+// EMAIL FROM NOTICE — self-contained translations
+// (kept here to avoid touching TRANSLATION_PATCH in reports.js)
+// ============================================
+window.EMAIL_FROM_NOTICE = {
+  en: "Your email will be sent from your phone's default email app. Recipients can reply directly to you.",
+  vi: "Email của bạn sẽ được gửi từ ứng dụng email mặc định trên điện thoại. Người nhận có thể trả lời trực tiếp cho bạn.",
+  zh: "您的电子邮件将从手机上的默认电子邮件应用发送。收件人可以直接回复您。",
+  es: "Su correo se enviará desde la aplicación de correo predeterminada de su teléfono. Los destinatarios pueden responderle directamente.",
+  hi: "आपका ईमेल आपके फ़ोन के डिफ़ॉल्ट ईमेल ऐप से भेजा जाएगा। प्राप्तकर्ता सीधे आपको जवाब दे सकते हैं।",
+  ar: "سيتم إرسال بريدك الإلكتروني من تطبيق البريد الإلكتروني الافتراضي على هاتفك. يمكن للمستلمين الرد عليك مباشرة."
+};
+
+
+// ============================================
+// DESKTOP FALLBACK: shown if mailto: fails on laptop/desktop
+// (Mobile always handles mailto: natively — this is only for desktop)
+// ============================================
+window.showNoEmailAppFallback = function (recipient, subject, body) {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) return; // Mobile never needs this fallback
+
+  // Build webmail compose URLs
+  const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1" +
+    "&to=" + encodeURIComponent(recipient || "") +
+    "&su=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+  const outlookUrl = "https://outlook.live.com/mail/0/deeplink/compose" +
+    "?to=" + encodeURIComponent(recipient || "") +
+    "&subject=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+  const yahooUrl = "https://compose.mail.yahoo.com/" +
+    "?to=" + encodeURIComponent(recipient || "") +
+    "&subject=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+
+  const fallback = document.createElement("div");
+  fallback.id = "no-email-app-fallback";
+  fallback.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; justify-content: center; align-items: center;";
+
+  fallback.innerHTML = `
+    <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 480px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+      <button id="fallback-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 22px; cursor: pointer; color: #666;">&times;</button>
+      <h3 style="margin-top: 0; color: #333;">📧 No email app detected</h3>
+      <p style="color: #555; font-size: 14px; line-height: 1.5;">
+        Your device doesn't have a default email app installed. Choose one of the options below to send your message:
+      </p>
+      <div style="display: flex; gap: 10px; margin: 15px 0;">
+        <a href="${gmailUrl}" target="_blank" style="flex:1; padding: 12px; background: #D44638; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Gmail</a>
+        <a href="${outlookUrl}" target="_blank" style="flex:1; padding: 12px; background: #0072C6; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Outlook</a>
+        <a href="${yahooUrl}" target="_blank" style="flex:1; padding: 12px; background: #720E9E; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Yahoo</a>
+      </div>
+      <div style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+        <p style="color: #888; font-size: 12px; margin-bottom: 10px;">Or copy the message and paste it into any email app:</p>
+        <button id="fallback-copy" style="width: 100%; padding: 10px; background: #198754; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">📋 Copy Message</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(fallback);
+
+  document.getElementById("fallback-close").onclick = function () {
+    fallback.remove();
+  };
+
+  fallback.addEventListener("click", function (e) {
+    if (e.target === fallback) fallback.remove();
+  });
+
+  document.getElementById("fallback-copy").onclick = function () {
+    const textToCopy = "To: " + (recipient || "") + "\\nSubject: " + (subject || "") + "\\n\\n" + (body || "");
+    navigator.clipboard.writeText(textToCopy).then(function () {
+      const btn = document.getElementById("fallback-copy");
+      btn.textContent = "✅ Copied!";
+      btn.style.background = "#0d6efd";
+      setTimeout(function() { btn.textContent = "📋 Copy Message"; btn.style.background = "#198754"; }, 2000);
+    }).catch(function () {
+      alert("Copy failed. Please select the text manually.");
+    });
+  };
+};
 // ============================================
 // SHARE URL FIX — use HTTPS, not capacitor://
 // On iOS, window.location.href is capacitor://localhost/... which
@@ -928,11 +1009,14 @@ async function ensureImagePackageStorage(imageUrls) {
 
       console.log("🔥 Firestore data prepared:", firestoreData);
 
-      // Use the EXACT same method as WhatsApp/Twitter
-      const docRef = await window.fb.firestore.addDoc(
-        window.fb.firestore.collection("imagePackages"),
-        firestoreData,
+      // Use setDoc with our custom packageId as the document ID
+      // This ensures the URL ?id=img_XXX matches the Firestore document ID
+      const docRef = window.fb.firestore.doc(
+        window.fb.firestore.db,
+        "imagePackages",
+        packageId,
       );
+      await window.fb.firestore.setDoc(docRef, firestoreData);
 
       console.log(
         "🔥 SUCCESS: Firestore document created with ID:",
@@ -993,7 +1077,7 @@ async function ensureImagePackageStorage(imageUrls) {
   }
 
   // 3. Final package URL
-  const packageUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}`;
+  const packageUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}&forceFirestore=true`;
 
   console.log("📦 FINAL PACKAGE SUMMARY:");
   console.log("📦 Package URL:", packageUrl);
@@ -1127,7 +1211,7 @@ function openGmail(subject, body, recipient = "") {
     //    Use location.href instead — it opens the Gmail app or browser.
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
-      window.location.href = gmailUrl;
+      window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(cleanBody)}`;
     } else {
       window.open(gmailUrl, "_blank");
     }
@@ -1225,21 +1309,12 @@ function showEmailShareModal(params = {}) {
                       readonly>${enhancedBody}</textarea>  <!-- USE enhancedBody HERE -->
         </div>
 
-        <!-- ✅ YAHOO TIP - WITH TRANSLATIONS (this stays as is) -->
-<div style="margin-bottom: 15px; padding: 8px; background: #f8f9fa; border-left: 4px solid #720E9E; font-size: 12px;">
-    <strong>📧 Yahoo Users:</strong> 
-    <span>${TRANSLATION_PATCH?.yahooDuplicateTip?.[lang] || "After sending, look for the 'Show images' button in your Yahoo inbox to view photos. If you receive duplicate emails, it's a Yahoo feature - you can safely ignore the extra copy."}</span>
-</div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <button class="email-provider-btn" data-provider="gmail" style="flex: 1; padding: 10px; background: #D44638; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Gmail
-            </button>
-            <button class="email-provider-btn" data-provider="outlook" style="flex: 1; padding: 10px; background: #0072C6; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 0 10px;">
-                Outlook
-            </button>
-            <button class="email-provider-btn" data-provider="yahoo" style="flex: 1; padding: 10px; background: #720E9E; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Yahoo ⓘ
+        <div style="margin-bottom: 10px; padding: 8px; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px; font-size: 12px; color: #333;">
+            📧 ${window.EMAIL_FROM_NOTICE?.[lang] || window.EMAIL_FROM_NOTICE?.en}
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="email-provider-btn" data-provider="send" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">
+                ✉️ Send Email
             </button>
         </div>
     </div>
@@ -1288,6 +1363,7 @@ function showEmailShareModal(params = {}) {
     
   // 7. Email provider handlers
   // === REPLACE THE EMAIL BUTTON HANDLER CODE ===
+  // 7. Email button handler — single Send Email button (uses mailto:)
   function setupEmailButtonHandlers() {
     document.querySelectorAll(".email-provider-btn").forEach((btn) => {
       btn.addEventListener("click", function () {
@@ -1296,73 +1372,16 @@ function showEmailShareModal(params = {}) {
         const { value: body } = getElement("email-body");
         const { value: recipient } = getElement("recipient-email");
 
-        // 🚫 REMOVED: no longer persisting recipient on Send.
-        //    Prevents previous report's recipient from appearing in the next report.
+        // Single mailto: — opens the OS email picker (Gmail, Outlook, Yahoo, etc.)
+        const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
 
-        if (this.dataset.provider === "gmail") {
-          openGmail(subject, body, recipient);
-        } else if (this.dataset.provider === "outlook") {
-          let finalBody = body;
-          const recipient =
-            document.getElementById("recipient-email")?.value || "";
-          const subject = document.getElementById("email-subject")?.value || "";
-          const lang = localStorage.getItem("userLanguage") || "en";
-
-          // ✅ FIXED MOBILE DETECTION
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(
-            navigator.userAgent,
-          );
-
-          if (isMobile) {
-            console.log("📱 Mobile Outlook - using Outlook deep link");
-
-            // Try Outlook deep link first
-            const outlookDeepLink = `ms-outlook://compose?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}`;
-
-            // Fallback to mailto if Outlook not installed
-            window.location.href = outlookDeepLink;
-
-            // If Outlook not installed, this will fail silently, so also open mailto
-            setTimeout(() => {
-              const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}`;
-              window.location.href = mailtoLink;
-            }, 500);
-          } else {
-            console.log("💻 Desktop Outlook - using web interface");
-            const outlookLink = `https://outlook.live.com/mail/0/deeplink/compose?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}${recipient ? "&to=" + encodeURIComponent(recipient) : ""}`;
-            window.open(outlookLink, "_blank", "width=800,height=600");
+        // Desktop fallback: if no email app opened, show fallback modal
+        setTimeout(() => {
+          if (document.hasFocus() && !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            window.showNoEmailAppFallback(recipient, subject, body);
           }
-        } else if (this.dataset.provider === "yahoo") {
-          // Get values
-          let subject = document.getElementById("email-subject")?.value || "";
-          let body = document.getElementById("email-body")?.value || "";
-          // Add right after getting the body
-          console.log("📝 Original body length:", body.length);
-          console.log("📝 Body preview:", body.substring(0, 100) + "...");
-
-          const recipient =
-            document.getElementById("recipient-email")?.value || "";
-          const lang = localStorage.getItem("userLanguage") || "en";
-
-          // Create Yahoo mail URL
-          const params = new URLSearchParams();
-          params.set("subject", subject);
-          params.set("body", body);
-          if (recipient) params.set("to", recipient);
-
-          // Open Yahoo mail
-          const yahooUrl = `https://compose.mail.yahoo.com/?${params.toString()}`;
-          console.log("Using Yahoo compose URL:", yahooUrl);
-
-          // 📱 On mobile (Capacitor WebView), window.open is blocked.
-          //    Use location.href instead — opens Yahoo app or browser.
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-          if (isMobile) {
-            window.location.href = yahooUrl;
-          } else {
-            window.open(yahooUrl, "_blank", "width=800,height=600");
-          }
-        }
+        }, 800);
       });
     });
   }
@@ -1452,11 +1471,16 @@ function showEmailShareModal(params = {}) {
         params.set("body", body);
         if (recipient) params.set("to", recipient);
 
-        const yahooWindow = window.open(
-          `https://compose.mail.yahoo.com/?${params.toString()}`,
-          "_blank",
-          "width=800,height=600",
-        );
+        const isMobileReshare = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobileReshare) {
+          window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        } else {
+          const yahooWindow = window.open(
+            `https://compose.mail.yahoo.com/?${params.toString()}`,
+            "_blank",
+            "width=800,height=600",
+          );
+        }
 
         // Reset flag when window closes or after timeout
         const checkWindow = setInterval(() => {
@@ -2245,8 +2269,7 @@ console.log("[1] sharing.js loaded");
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
         justify-content: center; align-items: center;
-    `;mailto
-
+    `;
 
     // Add this div right before the button group (around line where buttons are)
     modal.innerHTML = `
@@ -2266,16 +2289,11 @@ console.log("[1] sharing.js loaded");
             <textarea id="email-body" style="width: 100%; height: 200px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">${escapeHtml(enhancedBody)}</textarea>
         </div>
         
-        <!-- ✅ ADD THE YAHOO TIP HERE -->
-        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #720E9E; border-radius: 4px; font-size: 13px;">
-            <strong>📧 ${getYahooTipTitle(lang)}</strong>
-            <span>${getYahooTipMessage(lang)}</span>
+        <div style="margin-bottom: 10px; padding: 8px; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px; font-size: 12px; color: #333;">
+            📧 ${window.EMAIL_FROM_NOTICE?.[lang] || window.EMAIL_FROM_NOTICE?.en}
         </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button id="email-send-gmail" style="flex:1; padding: 10px; background: #D44638; color: white; border: none; border-radius: 4px; cursor: pointer;">Gmail</button>
-            <button id="email-send-outlook" style="flex:1; padding: 10px; background: #0072C6; color: white; border: none; border-radius: 4px; cursor: pointer;">Outlook</button>
-            <button id="email-send-yahoo" style="flex:1; padding: 10px; background: #720E9E; color: white; border: none; border-radius: 4px; cursor: pointer;">Yahoo</button>
+        <div style="margin-top: 20px;">
+            <button id="email-send-btn" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">✉️ Send Email</button>
         </div>
         <button id="email-cancel" style="width: 100%; padding: 10px; margin-top: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">${TRANSLATION_PATCH?.buttons?.close?.[lang] || "Close"}</button>
     </div>
@@ -2303,62 +2321,20 @@ console.log("[1] sharing.js loaded");
         .getElementById("email-cancel")
         ?.addEventListener("click", closeModal);
       
-    // Gmail button - mobile friendly
+    // Send Email button — single mailto: (opens the OS email picker)
     document
-      .getElementById("email-send-gmail")
+      .getElementById("email-send-btn")
       ?.addEventListener("click", () => {
         const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const mailtoLink = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
 
-        if (isMobile) {
-          window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        } else {
-          window.open(
-            `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
-      });
-
-    // Outlook button - with Outlook deep link for mobile
-    const outlookBtn = document.getElementById("email-send-outlook");
-    if (outlookBtn) {
-      outlookBtn.addEventListener("click", () => {
-        const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        if (isMobile) {
-          // Use Outlook deep link protocol
-          const outlookDeepLink = `ms-outlook://compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          console.log("Opening Outlook deep link:", outlookDeepLink);
-          window.location.href = outlookDeepLink;
-
-          // Fallback to mailto if Outlook not installed
-          setTimeout(() => {
-            if (document.hasFocus()) {
-              console.log("Outlook not installed, falling back to mailto");
-              window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            }
-          }, 500);
-        } else {
-          // Desktop: open Outlook web
-          window.open(
-            `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
-      });
-    }
-
-    // Yahoo button
-    document
-      .getElementById("email-send-yahoo")
-      ?.addEventListener("click", () => {
-        const { to, subject, body } = getCurrentValues();
-        window.open(
-          `https://compose.mail.yahoo.com/?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-          "_blank",
-        );
+        // Desktop fallback: if no email app opened, show fallback modal
+        setTimeout(() => {
+          if (document.hasFocus() && !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            window.showNoEmailAppFallback(to, subject, body);
+          }
+        }, 800);
       });
   }
 
@@ -5513,7 +5489,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const packageUrl = await Promise.race([
               ensureImagePackageStorage(report.imageUrls),
               new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Zalo package timeout (2500ms)")), 2500)
+                setTimeout(() => reject(new Error("Zalo package timeout (15000ms)")), 15000)
               ),
             ]);
               
