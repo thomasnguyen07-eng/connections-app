@@ -255,7 +255,7 @@ console.log("🚀 App started - logging initialized");
   <div class="tab-content" id="saved-reports">
     <div id="saved-reports-section">
       
-      <h3 id="saved-reports-heading">Your Saved Reports</h3> <!-- Added ID -->
+      <h3 id="saved-reports-heading" id="savedTitle">Your Saved Reports</h3> <!-- Added ID -->
       <div id="saved-reports-container" class="reports-grid"></div>
       <button onclick="clearAllReports()" class="clear-all-btn" id="clear-all-btn">
   <i class="fas fa-trash"></i>
@@ -1568,6 +1568,40 @@ document.addEventListener('DOMContentLoaded', function() {
   // Run immediately, then every 500ms to override any broken scripts
   document.addEventListener('DOMContentLoaded', enforceUltimateLabels);
   setInterval(enforceUltimateLabels, 500);
+</script>
+
+<script>
+  // INVINCIBLE TRANSLATION SCRIPT
+  function enforceFinalLabels() {
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    
+    // We use &#...; (HTML entities) so the text is guaranteed to render correctly
+    const dict = {
+      en: { report: "Report Type:", saved: "Your Saved Reports" },
+      vi: { report: "Loại báo cáo:", saved: "Báo cáo đã lưu của bạn" },
+      es: { report: "Tipo de informe:", saved: "Tus informes guardados" },
+      zh: { report: "报告类型：", saved: "您保存的报告" },
+      hi: { report: "रिपोर्ट प्रकार:", saved: "आपकी सहेजी गई रिपोर्टें" },
+      ar: { report: "نوع التقرير:", saved: "تقاريرك المحفوظة" }
+    };
+    
+    const t = dict[lang] || dict.en;
+
+    const repEl = document.getElementById('labelReportType');
+    if (repEl && repEl.innerText !== t.report) repEl.innerText = t.report;
+
+    const savEl = document.getElementById('saved-reports-heading');
+    if (savEl && savEl.innerText !== t.saved) savEl.innerText = t.saved;
+  }
+
+  // 1. Run when page loads
+  document.addEventListener('DOMContentLoaded', enforceFinalLabels);
+  
+  // 2. Run every 200ms to fight off the broken language-switcher
+  setInterval(enforceFinalLabels, 200);
+  
+  // 3. FORCE IT to run right before the window closes/reloads
+  window.addEventListener('beforeunload', enforceFinalLabels);
 </script>
 </body>
 </html>
