@@ -521,7 +521,8 @@ class SimpleAvatarUpload {
         };
         const msg = filenameMessages[lang](blockedWord);
         alert(msg);
-        e.target.value = "";
+        const _fi = document.querySelector('input[type="file"]');
+        if (_fi) _fi.value = "";
         this.isProcessingFile = false;
         return;
       }
@@ -530,7 +531,14 @@ class SimpleAvatarUpload {
         // SIGHTENGINE CHECK - BYPASSED FOR TESTING
         // ============================================
         console.log("⚠️ SightEngine check bypassed for testing");
-        const analysis = { safe: true, reason: null };
+        const analysis = await window.moderateImageWithSightEngine(file);
+        if (!analysis.safe) {
+          alert(window.getViolationMessage(analysis.reason, "en"));
+          const _fi = document.querySelector('input[type="file"]');
+          if (_fi) _fi.value = "";
+          this.isProcessingFile = false;
+          return;
+        }
         
         // Check permissions (owner bypasses entirely)
         const sdkUser = window.fb?.auth?.currentUser;
@@ -553,7 +561,8 @@ class SimpleAvatarUpload {
           } else {
             alert("Cannot upload: " + (permissions.reason || "unknown"));
           }
-          e.target.value = "";
+          const _fi = document.querySelector('input[type="file"]');
+          if (_fi) _fi.value = "";
           return;
         }
         
@@ -570,7 +579,8 @@ class SimpleAvatarUpload {
         this.processAvatarFile(file);
         
       // Clear input
-      e.target.value = "";
+      const _fi = document.querySelector('input[type="file"]');
+      if (_fi) _fi.value = "";
     };
 
     fileInput.addEventListener("change", handleFileChange);
@@ -1512,7 +1522,8 @@ class SimpleAvatarUpload {
     // Check file type
     if (!file.type.startsWith("image/")) {
       alert(this.getTranslation("notImage"));
-      event.target.value = "";
+      const _fi = document.querySelector('input[type="file"]');
+      if (_fi) _fi.value = "";
       this.isProcessingFile = false;
       return;
     }
@@ -1562,7 +1573,8 @@ class SimpleAvatarUpload {
       };
       const msg = filenameMessages[lang](blockedWord);
       alert(msg);
-      event.target.value = "";
+      const _fi = document.querySelector('input[type="file"]');
+      if (_fi) _fi.value = "";
       this.isProcessingFile = false;
       return;
     }
@@ -1571,7 +1583,14 @@ class SimpleAvatarUpload {
       // SIGHTENGINE CHECK - BYPASSED FOR TESTING
       // ============================================
       console.log("⚠️ SightEngine check on avatar bypassed for testing");
-      const analysis = { safe: true, reason: null };
+      const analysis = await window.moderateImageWithSightEngine(file);
+      if (!analysis.safe) {
+        alert(window.getViolationMessage(analysis.reason, "en"));
+        const _fi = document.querySelector('input[type="file"]');
+        if (_fi) _fi.value = "";
+        this.isProcessingFile = false;
+        return;
+      }
       
     // Send mobile log
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
