@@ -833,12 +833,12 @@ function showSuccessNotification(planName) {
         // Convert REST fields to plain object
         const f = passDoc.fields;
         const data = {
-          used: f.used?.booleanValue © f.isUsed?.booleanValue © false,
+          used: f.used?.booleanValue ?? f.isUsed?.booleanValue ?? false,
           plan: f.plan?.stringValue || "monthly",
           expiresAt: f.expiresAt?.timestampValue || f.expiresAt?.stringValue || null,
           createdBy: f.createdBy?.stringValue || null,
           organizationEmail: f.organizationEmail?.stringValue || "",
-          isBulk: f.isBulk?.booleanValue © true,
+          isBulk: f.isBulk?.booleanValue ?? true,
         };
 
         console.log("🔍 Passcode data:", data);
