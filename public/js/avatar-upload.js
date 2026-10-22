@@ -533,7 +533,7 @@ class SimpleAvatarUpload {
         console.log("⚠️ SightEngine check bypassed for testing");
         const analysis = await window.moderateImageWithSightEngine(file);
         if (!analysis.safe) {
-          alert(window.getViolationMessage(analysis.reason, "en"));
+          alert(window.getViolationMessage(analysis.reason, localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en"));
           const _fi = document.querySelector('input[type="file"]');
           if (_fi) _fi.value = "";
           this.isProcessingFile = false;
@@ -1585,7 +1585,7 @@ class SimpleAvatarUpload {
       console.log("⚠️ SightEngine check on avatar bypassed for testing");
       const analysis = await window.moderateImageWithSightEngine(file);
       if (!analysis.safe) {
-        alert(window.getViolationMessage(analysis.reason, "en"));
+        alert(window.getViolationMessage(analysis.reason, localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en"));
         const _fi = document.querySelector('input[type="file"]');
         if (_fi) _fi.value = "";
         this.isProcessingFile = false;
