@@ -80,8 +80,8 @@ async function moderateImageWithSightEngine(file) {
 
       if (data.status === "failure") {
         console.error("SightEngine error:", data.error);
-        // FAIL CLOSED: if moderation API fails, block the upload for safety
-        resolve({ safe: false, reason: "moderation_unavailable" });
+        // TEMPORARY: fail-open to allow uploads while API quota issue is fixed
+        resolve({ safe: true, reason: null });
         return;
       }
 
@@ -123,8 +123,8 @@ async function moderateImageWithSightEngine(file) {
       }
     } catch (error) {
       console.error("SightEngine error:", error);
-      // FAIL CLOSED: if moderation API throws, block the upload for safety
-      resolve({ safe: false, reason: "moderation_unavailable" });
+      // TEMPORARY: fail-open to allow uploads while API quota issue is fixed
+      resolve({ safe: true, reason: null });
     }
   });
 }
