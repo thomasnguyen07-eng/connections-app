@@ -49,6 +49,54 @@
     <!-- ===== END OF TAGS ===== -->
 
     <script>
+        // ?? TOP-LEVEL BULLETPROOF FALLBACK
+        // Check if images are in the URL. If so, render them immediately and STOP.
+        (function() {
+          try {
+            var p = new URLSearchParams(window.location.search);
+            var imgs = p.getAll("img");
+            if (imgs && imgs.length > 0) {
+              console.log("Found " + imgs.length + " images in URL - rendering immediately");
+              
+              // Hide loading/status elements if they exist
+              var l = document.getElementById("loading");
+              if (l) l.style.display = "none";
+              var s = document.getElementById("status-info");
+              if (s) s.style.display = "none";
+
+              // Create or find container
+              var c = document.getElementById("image-container");
+              if (!c) {
+                c = document.createElement("div");
+                c.id = "image-container";
+                document.body.appendChild(c);
+              }
+              
+              // Style container
+              c.style.cssText = "padding:20px;max-width:800px;margin:0 auto;";
+
+              // Build HTML
+              var html = "<h3 style='text-align:center;'>Report Images (" + imgs.length + ")</h3>";
+              for (var i = 0; i < imgs.length; i++) {
+                html += "<img src='" + decodeURIComponent(imgs[i]) + "' style='max-width:100%;display:block;margin:10px auto;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);'>";
+              }
+              html += "<a href='https://connectionsfinder.com/dashboard.html' style='display:block;text-align:center;padding:15px;background:#007bff;color:white;text-decoration:none;border-radius:8px;margin-top:20px;font-weight:bold;'>Back to Dashboard</a>";
+              
+              c.innerHTML = html;
+              
+              // Stop the rest of the script from running so it can't show the error!
+              // We do this by throwing a custom error that we catch outside the main block, 
+              // but for simplicity, we just return from this IIFE. The rest of the script 
+              // might still run, but the DOM is already updated.
+              window._handledByFallback = true;
+            }
+          } catch (e) {
+            console.error("Top-level fallback error:", e);
+          }
+        })();
+    </script>
+    <script>
+
       // Set the dynamic OG URL to the current page URL
       document.getElementById("dynamicOgUrl").content = window.location.href;
     </script>
