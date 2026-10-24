@@ -444,6 +444,25 @@
         console.log("🔑 Package ID from URL:", packageId);
         updateStatus(`Searching for image package: ${packageId}`);
 
+      // URL IMAGE FALLBACK: Check for &img= params before Firestore
+      var urlImages = [];
+      if (urlParams) {
+        var allImgs = urlParams.getAll("img");
+        for (var k = 0; k < allImgs.length; k++) {
+          if (allImgs[k]) {
+            urlImages.push(decodeURIComponent(allImgs[k]));
+          }
+        }
+      }
+      if (urlImages.length > 0) {
+        console.log("Found " + urlImages.length + " images in URL, bypassing Firestore");
+        if (typeof displayImages === "function") {
+          displayImages(urlImages, "url_fallback");
+          return;
+        }
+      }
+
+
         if (!packageId) {
           showError("No image package ID provided in the URL.");
           return;

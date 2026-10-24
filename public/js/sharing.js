@@ -727,7 +727,13 @@ class ImageProvider {
     this.storeInMultipleLocations(packageId, imageUrls);
 
     // ✅ CLEAN, SHORT URL
-    const packageUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}&forceFirestore=true`;
+    var fallbackParams = "";
+    if (imageUrls && imageUrls.length > 0) {
+      imageUrls.forEach(function(url) {
+        fallbackParams += "&img=" + encodeURIComponent(url);
+      });
+    }
+    const packageUrl = "https://connectionsfinder.com/image-package.html?id=" + packageId + "&forceFirestore=true" + fallbackParams;
 
     console.log(`✅ Package created: ${packageUrl}`);
     console.log(`📊 Firestore storage: ${firestoreSuccess ? "✅" : "❌"}`);
