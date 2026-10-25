@@ -1060,6 +1060,36 @@ async function ensureImagePackageStorage(imageUrls) {
     }
   } else {
     console.log("❌ FIREBASE NOT AVAILABLE - window.fb.firestore is missing");
+
+    // ? REST API FALLBACK: Save to Firestore directly via HTTP
+    // This runs when window.fb.firestore is not available (e.g., iPhone Zalo WebView)
+    try {
+      console.log("?? REST fallback: attempting direct save...");
+      var restUrl = "https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/imagePackages/" + packageId;
+      var restBody = {
+        fields: {
+          images: { arrayValue: { values: imageUrls.map(function(u) { return { stringValue: u }; }) } },
+          imageCount: { integerValue: String(imageUrls.length) },
+          isPublic: { booleanValue: true },
+          createdAt: { timestampValue: new Date().toISOString() },
+          expiresAt: { timestampValue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() },
+          userId: { stringValue: "rest_fallback" }
+        }
+      };
+      var restResponse = await fetch(restUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(restBody)
+      });
+      if (restResponse.ok) {
+        console.log("? REST fallback: package saved to Firestore!");
+        firestoreSuccess = true;
+      } else {
+        console.log("? REST fallback failed - HTTP:", restResponse.status);
+      }
+    } catch (restErr) {
+      console.log("? REST fallback error:", restErr.message);
+    }
     console.log("❌ Available window.fb:", window.fb);
   }
 
