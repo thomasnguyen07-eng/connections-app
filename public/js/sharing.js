@@ -1058,7 +1058,10 @@ async function ensureImagePackageStorage(imageUrls) {
         };
         var restResponseCatch = await fetch(restUrlCatch, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + (JSON.parse(localStorage.getItem("user") || "{}").idToken || "")
+          },
           body: JSON.stringify(restBodyCatch)
         });
         if (restResponseCatch.ok) {
@@ -1108,7 +1111,10 @@ async function ensureImagePackageStorage(imageUrls) {
       };
       var restResponse = await fetch(restUrl, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + (JSON.parse(localStorage.getItem("user") || "{}").idToken || "")
+        },
         body: JSON.stringify(restBody)
       });
       if (restResponse.ok) {
