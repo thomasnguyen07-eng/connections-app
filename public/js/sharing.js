@@ -990,6 +990,13 @@ async function ensureImagePackageStorage(imageUrls) {
 
   // 1. CRITICAL: ALWAYS STORE IN FIRESTORE FOR MOBILE
   let firestoreSuccess = false;
+  // ? Wait up to 5 seconds for Firebase to initialize (fixes mobile race condition)
+  console.log("? Waiting for Firebase to initialize...");
+  for (let waitAttempt = 0; waitAttempt < 50; waitAttempt++) {
+    if (window.fb && window.fb.firestore) break;
+    await new Promise(function(resolve) { setTimeout(resolve, 100); });
+  }
+
   if (window.fb && window.fb.firestore) {
     console.log("🔥 Firestore is available - attempting storage...");
 
