@@ -1057,7 +1057,7 @@ async function ensureImagePackageStorage(imageUrls) {
           }
         };
         var restResponseCatch = await fetch(restUrlCatch, {
-          method: "POST",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(restBodyCatch)
         });
@@ -1107,7 +1107,7 @@ async function ensureImagePackageStorage(imageUrls) {
         }
       };
       var restResponse = await fetch(restUrl, {
-        method: "POST",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(restBody)
       });
