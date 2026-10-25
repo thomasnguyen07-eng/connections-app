@@ -1041,6 +1041,36 @@ async function ensureImagePackageStorage(imageUrls) {
       console.log("🔥 Error name:", error.name);
 
       // Try alternative Firestore method
+
+      // ? REST API FALLBACK: Save directly to Firestore (bypasses broken SDK)
+      try {
+        console.log("?? REST fallback (catch block): attempting direct save...");
+        var restUrlCatch = "https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/imagePackages/" + packageId;
+        var restBodyCatch = {
+          fields: {
+            images: { arrayValue: { values: imageUrls.map(function(u) { return { stringValue: u }; }) } },
+            imageCount: { integerValue: String(imageUrls.length) },
+            isPublic: { booleanValue: true },
+            createdAt: { timestampValue: new Date().toISOString() },
+            expiresAt: { timestampValue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() },
+            userId: { stringValue: "rest_fallback_catch" }
+          }
+        };
+        var restResponseCatch = await fetch(restUrlCatch, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(restBodyCatch)
+        });
+        if (restResponseCatch.ok) {
+          console.log("? REST fallback (catch): package saved!");
+          firestoreSuccess = true;
+        } else {
+          console.log("? REST fallback (catch) failed - HTTP:", restResponseCatch.status);
+        }
+      } catch (restErrCatch) {
+        console.log("? REST fallback (catch) error:", restErrCatch.message);
+      }
+
       try {
         console.log("🔥 Attempting alternative Firestore method...");
         // Some Firebase versions use different methods
