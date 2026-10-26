@@ -547,7 +547,13 @@ class SimpleAvatarUpload {
             ar: "⚠️ الاعتدال غير متاح مؤقتًا. يرجى التأكد من أن صورتك تتبع إرشاداتنا بشأن الصور الحساسة."
           };
           var warnMsg = warnDict[userLang] || warnDict.en;
-          alert(warnMsg);
+          // Use a Blob to force the browser to read the string as UTF-8
+          var blob = new Blob([warnMsg], {type: 'text/plain;charset=utf-8'});
+          var reader = new FileReader();
+          reader.onload = function() {
+            alert(reader.result);
+          };
+          reader.readAsText(blob);
           
           // Log to Firestore for admin review
           try {
