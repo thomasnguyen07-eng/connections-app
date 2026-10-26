@@ -80,8 +80,9 @@ async function moderateImageWithSightEngine(file) {
 
       if (data.status === "failure") {
         console.error("SightEngine error:", data.error);
-        // TEMPORARY: fail-open to allow uploads while API quota issue is fixed
-        resolve({ safe: true, reason: null });
+        // FAIL OPEN: Allow upload so users can post missing person photos
+        // We return "moderation_unavailable" so the app can warn the user and log it
+        resolve({ safe: true, reason: "moderation_unavailable" });
         return;
       }
 

@@ -532,6 +532,46 @@ class SimpleAvatarUpload {
         // ============================================
         console.log("⚠️ SightEngine check bypassed for testing");
         const analysis = await window.moderateImageWithSightEngine(file);
+        
+        // NEW: If moderation is unavailable, warn user AND log for admin review
+        if (analysis.safe && analysis.reason === "moderation_unavailable") {
+          var userLang = localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en";
+          var warnMsg = window.MODERATION_WARNING && window.MODERATION_WARNING[userLang] 
+            ? window.MODERATION_WARNING[userLang] 
+            : "?? Moderation is temporarily unavailable. Please ensure your image follows our guidelines.";
+          alert(warnMsg);
+          
+          // Log to Firestore for admin review
+          try {
+            var userData = JSON.parse(localStorage.getItem("user") || "{}");
+            var logPayload = {
+              fields: {
+                userId: { stringValue: userData.uid || "anon" },
+                userEmail: { stringValue: userData.email || "" },
+                imageName: { stringValue: file.name || "unknown" },
+                imageSize: { integerValue: String(file.size || 0) },
+                reason: { stringValue: "moderation_unavailable" },
+                source: { stringValue: "avatar_upload" },
+                timestamp: { timestampValue: new Date().toISOString() },
+                status: { stringValue: "pending" },
+                reviewedBy: { stringValue: "" }
+              }
+            };
+            var logUrl = "https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/moderation_pending";
+            var idToken = userData.idToken || "";
+            fetch(logUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + idToken
+              },
+              body: JSON.stringify(logPayload)
+            }).catch(function(e) { console.log("Log to Firestore failed:", e); });
+          } catch(e) {
+            console.log("Failed to log moderation pending:", e);
+          }
+        }
+        
         if (!analysis.safe) {
           alert(window.getViolationMessage(analysis.reason, localStorage.getItem("userLanguage") || localStorage.getItem("appLanguage") || "en"));
           const _fi = document.querySelector('input[type="file"]');
