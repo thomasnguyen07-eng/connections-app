@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Processing - Connections App</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+      }
+
+      .success {
+        color: #4caf50;
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      .processing {
+        color: #ff9800;
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      .error {
+        color: #f44336;
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 15px;
+      }
+
+      p {
+        color: #666;
+        margin-bottom: 25px;
+        line-height: 1.6;
+      }
+
+      .button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+      }
+
+      .button:hover {
+        background-color: #388e3c;
+      }
+
+      .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="processing" style="display: none">
+        <div class="loading-spinner"></div>
+        <h1>Processing Payment</h1>
+        <p>
+          Please wait while we process your payment. This may take a few
+          moments.
+        </p>
+      </div>
+
+      <div id="success" style="display: none">
+        <div class="success"><i class="fas fa-check-circle"></i></div>
+        <h1>Payment Successful!</h1>
+        <p>
+          Thank you for your subscription. Your premium account has been
+          activated.
+        </p>
+        <a href="../dashboard.html" class="button">Go to Dashboard</a>
+      </div>
+
+      <div id="error" style="display: none">
+        <div class="error"><i class="fas fa-exclamation-circle"></i></div>
+        <h1>Payment Failed</h1>
+        <p id="error-message">
+          There was an issue processing your payment. Please try again.
+        </p>
+        <a href="../premium.html" class="button">Try Again</a>
+      </div>
+    </div>
+
+    <script>
+      // Parse URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const resultCode = urlParams.get("resultCode");
+      const orderId = urlParams.get("orderId");
+      const message = urlParams.get("message");
+
+      // Check payment status
+      function checkPaymentStatus() {
+        if (resultCode === "0") {
+          // Payment successful
+          document.getElementById("processing").style.display = "none";
+          document.getElementById("success").style.display = "block";
+
+          // Update UI to show success
+          console.log("Payment successful for order:", orderId);
+        } else if (resultCode) {
+          // Payment failed
+          document.getElementById("processing").style.display = "none";
+          document.getElementById("error").style.display = "block";
+
+          if (message) {
+            document.getElementById("error-message").textContent =
+              "Payment failed: " + decodeURIComponent(message);
+          }
+
+          console.error(
+            "Payment failed. Result code:",
+            resultCode,
+            "Message:",
+            message
+          );
+        } else {
+          // Still processing or no result yet
+          document.getElementById("processing").style.display = "block";
+
+          // Check with server for final status
+          checkWithServer(orderId);
+        }
+      }
+
+      // Check payment status with server
+      async function checkWithServer(orderId) {
+        if (!orderId) {
+          document.getElementById("processing").style.display = "none";
+          document.getElementById("error").style.display = "block";
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/momo/check-status/${orderId}`);
+          const result = await response.json();
+
+          if (result.success) {
+            document.getElementById("processing").style.display = "none";
+            document.getElementById("success").style.display = "block";
+          } else {
+            document.getElementById("processing").style.display = "none";
+            document.getElementById("error").style.display = "block";
+
+            if (result.message) {
+              document.getElementById("error-message").textContent =
+                "Payment failed: " + result.message;
+            }
+          }
+        } catch (error) {
+          console.error("Error checking payment status:", error);
+          // If we can't check with server, show processing message
+          document.getElementById("processing").style.display = "block";
+        }
+      }
+
+      // Initialize page
+      window.onload = function () {
+        checkPaymentStatus();
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+{
+  "appTitle": "Kết Nối",
+  "newReportTab": "Tin Nhắn Mới",
+  "savedReportsTab": "Tin Nhắn Đã Lưu",
+  "reportTypeLabel": "Loại Tin Nhắn:",
+  "titleLabel": "Tiêu Đề:",
+  "descriptionLabel": "Chi tiết:",
+  "locationLabel": "Chi Tiết Địa Điểm:",
+  "contactLabel": "Xin Liên Hệ:",
+  "imageLabel": "Tải Lên Hình Ảnh:",
+  "submitButton": "Gửi Tin nhắn",
+  "useLocationButton": "Dùng Vị Trí Của Tôi",
+  "showOnMapButton": "Hiển Thị Trên Bản Đồ",
+  "reportTypes": {
+    "select": "Chọn loại",
+    "missing_person": "🚨 Người mất tích",
+    "lost_item": "🔍 Đồ vật bị mất",
+    "found_person": "🙏 Người được tìm thấy",
+    "found_item": "🔄 Đồ vật được tìm thấy",
+    "event": "🎉 Sự kiện"
+  },
+  "buttons": {
+    "submit": "Gửi Tin Nhắn",
+    "submitting": "Đang gửi...",
+    "share": "Chia Sẻ",
+    "reshare": "Chia Sẻ Lại",
+    "delete": "Xóa",
+    "clearAll": "Xóa Tất Cả",
+    "backToDashboard": "Quay Lại Bảng Điều Khiển",
+    "retry": "Thử Lại",
+    "useMyLocation": "Dùng Vị Trí Của Tôi",
+    "locating": "Đang xác định vị trí...",
+    "save": "Lưu tin nhắn",
+    "signin": "Đăng Nhập",
+    "signup": "Đăng Ký",
+    "logout": "Đăng xuất",
+    "subscribe": "Đăng ký",
+    "guide": "Hướng dẫn"
+  },
+  "warnings": {
+    "fraud": "Báo cáo giả gây hại cho cộng đồng. Cố tình gửi thông tin sai có thể dẫn đến cấm vĩnh viễn và hành động pháp lý.",
+    "spam": "Báo cáo quá nhiều (vượt giới hạn gói của bạn) có thể bị xem xét tài khoản. Nâng cấp để tăng dung lượng.",
+    "privacy": "KHÔNG chia sẻ thông tin nhạy cảm (ví dụ: thẻ tín dụng, CMND). Vi phạm sẽ bị xóa và báo cáo cơ quan chức năng.",
+    "images": "Chỉ tải lên ảnh liên quan đến đồ vật. Không nội dung nhạy cảm/phản cảm. Vi phạm nhiều lần sẽ bị khóa tài khoản.",
+    "tos": "Bằng cách dùng ứng dụng này, bạn đồng ý với Điều Khoản Dịch Vụ và Chính Sách Bảo Mật. Lạm dụng có thể dẫn đến chấm dứt tài khoản.",
+    "legal": "Chúng tôi hợp tác với cơ quan pháp luật. Hành vi phạm pháp (ví dụ: đồ ăn cắp) sẽ bị báo cáo.",
+    "scams": "Không bao giờ chia sẻ chi tiết thanh toán. Báo cáo bất kỳ ai đòi tiền cho đồ thất lạc.",
+    "meetings": "Gặp nhau ở nơi công cộng. Chúng tôi không chịu trách nhiệm cho tương tác ngoài ứng dụng.",
+    "data": "Báo cáo miễn phí tự động xóa sau 6 tháng. Tiếp tục gửi?"
+  },
+  "success": {
+    "submit": "Gửi tin nhắn thành công!",
+    "delete": "Xóa báo cáo thành công",
+    "clearAll": "Xóa tất cả báo cáo thành công"
+  },
+  "errors": {
+    "submit": "Lỗi khi gửi báo cáo. Vui lòng thử lại.",
+    "load": "Tải báo cáo thất bại. Vui lòng tải lại.",
+    "delete": "Xóa báo cáo thất bại",
+    "clearAll": "Xóa tất cả báo cáo thất bại",  
+    "location": "Lỗi khi tìm vị trí",
+    "clearAllFailed": "Lỗi khi xóa tất cả. Vui lòng thử lại."
+  },
+  "labels": {
+    "yourCurrentLocation": "Vị Trí Hiện Tại Của Bạn",
+    "selectedLocation": "Vị Trí Đã Chọn",
+    "untitledReport": "Báo Cáo Không Tên"
+  },
+  "messages": {
+    "confirmClearAll": "Xóa VĨNH VIỄN TẤT CẢ báo cáo đã lưu?",
+    "allReportsCleared": "Đã xóa tất cả báo cáo thành công"
+  },
+  "greetings": {
+    "share": "Gửi bạn,\nTôi chia sẻ thông tin này:"
+  },
+  "closingLines": {
+    "missing_person": "Hãy giúp tìm kiếm. Chia sẻ rộng rãi",
+    "lost_item": "Hãy giúp tìm lại",
+    "found_person": "Hãy giúp đoàn tụ gia đình",
+    "found_item": "Hãy liên hệ nếu là của bạn",
+    "event": "Tham gia cùng chúng tôi. Lan tỏa thông tin",
+    "thank_you": "Cảm ơn sự giúp đỡ của bạn"
+  },
+  "reportSharing": {
+    "shareButton": "Chia sẻ báo cáo này",
+    "appReference": "Báo cáo được chia sẻ qua MissingLostAndFoundApp"
+  },
+  "dashboard": {
+    "yourSavedReports": "Báo Cáo Đã Lưu Của Bạn",
+    "logout": "Đăng Xuất"
+  },
+  "fileUpload": {
+    "chooseFile": "Chọn tệp",
+    "noFileChosen": "Không có tệp nào được chọn"
+  },
+  "deleting": "Đang xóa...",
+  "clearing": "Đang xóa..."
+  
+}

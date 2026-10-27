@@ -1,0 +1,99 @@
+{
+  "appTitle": "Conexiones",
+  "newReportTab": "Nuevo Reporte",
+  "savedReportsTab": "Reportes Guardados",
+  "reportTypeLabel": "Tipo de Reporte:",
+  "titleLabel": "Título:",
+  "descriptionLabel": "Descripción:",
+  "locationLabel": "Detalles de Ubicación:",
+  "contactLabel": "Tu Contacto:",
+  "imageLabel": "Subir Imagen:",
+  "submitButton": "Enviar Reporte",
+  "useLocationButton": "Usar Mi Ubicación",
+  "showOnMapButton": "Mostrar en Mapa",
+  "reportTypes": {
+    "select": "Seleccionar tipo",
+    "missing_person": "🚨 Persona desaparecida",
+    "lost_item": "🔍 Objeto perdido",
+    "found_person": "🙏 Persona encontrada",
+    "found_item": "🔄 Objeto encontrado",
+    "event": "🎉 Evento"
+  },
+  "buttons": {
+    "submit": "Enviar Reporte",
+    "submitting": "Enviando...",
+    "share": "Compartir",
+    "reshare": "Volver a Compartir",
+    "delete": "Eliminar",
+    "clearAll": "Limpiar Todo",
+    "backToDashboard": "Volver al Panel",
+    "retry": "Reintentar",
+    "useMyLocation": "Usar Mi Ubicación",
+    "locating": "Ubicando...",
+    "save": "Guardar reporte",
+    "signin": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "subscribe": "Suscribirse",
+    "guide": "Guía"
+  },
+  "warnings": {
+    "fraud": "Reportes falsos dañan a la comunidad. Enviar listados falsos intencionalmente puede resultar en una prohibición permanente y acciones legales.",
+    "spam": "Reportes excesivos (más allá de los límites de tu plan) pueden activar una revisión de cuenta. Actualiza para más capacidad.",
+    "privacy": "NO compartas información sensible (ej. tarjetas de crédito, identificaciones). Las violaciones serán eliminadas y reportadas a las autoridades.",
+    "images": "Sube solo fotos relevantes del artículo. No contenido explícito/ofensivo. Violaciones repetidas prohibirán tu cuenta.",
+    "tos": "Al usar esta app, aceptas nuestros Términos de Servicio y Política de Privacidad. El mal uso puede llevar a la terminación de la cuenta.",
+    "legal": "Cooperamos con las autoridades. Actividades ilegales (ej. artículos robados) serán reportadas.",
+    "scams": "Nunca compartas detalles de pago. Reporta a cualquiera que exija dinero por objetos perdidos.",
+    "meetings": "Reúnete en lugares públicos. No somos responsables por interacciones fuera de la app.",
+    "data": "Los reportes gratis se borran automáticamente después de 6 meses. ¿Continuar con el envío?"
+  },
+  "success": {
+    "submit": "¡Reporte enviado con éxito!",
+    "delete": "Reporte eliminado con éxito",
+    "clearAll": "Todos los reportes limpiados con éxito"
+  },
+  "errors": {
+    "submit": "Error al enviar el reporte. Por favor intenta nuevamente.",
+    "load": "Fallo al cargar reportes. Por favor refresca.",
+    "delete": "Fallo al eliminar reporte",
+    "clearAll": "Fallo al limpiar todos los reportes",  
+    "location": "Error al obtener ubicación",
+    "clearAllFailed": "Error al limpiar reportes. Por favor intenta nuevamente."
+  },
+  "labels": {
+    "yourCurrentLocation": "Tu Ubicación Actual",
+    "selectedLocation": "Ubicación Seleccionada",
+    "untitledReport": "Reporte Sin Título"
+  },
+  "messages": {
+    "confirmClearAll": "¿Eliminar permanentemente TODOS los reportes guardados?",
+    "allReportsCleared": "Todos los reportes fueron limpiados con éxito"
+  },
+  "greetings": {
+    "share": "Queridos amigos,\nComparto esta información:"
+  },
+  "closingLines": {
+    "missing_person": "Por favor ayude a encontrar. Comparta ampliamente",
+    "lost_item": "Por favor ayude a localizar",
+    "found_person": "Por favor ayude a reunir con la familia",
+    "found_item": "Por favor contacte si es suyo",
+    "event": "Únase a nosotros. Difunda la palabra",
+    "thank_you": "Gracias por su ayuda"
+  },
+  "reportSharing": {
+    "shareButton": "Compartir este reporte",
+    "appReference": "Reporte compartido vía MissingLostAndFoundApp"
+  },
+  "dashboard": {
+    "yourSavedReports": "Tus Reportes Guardados",
+    "logout": "Cerrar Sesión"
+  },
+  "fileUpload": {
+    "chooseFile": "Seleccionar archivo",
+    "noFileChosen": "Ningún archivo seleccionado"
+  },
+  "deleting": "Eliminando...",
+  "clearing": "Limpiando..."
+    
+}

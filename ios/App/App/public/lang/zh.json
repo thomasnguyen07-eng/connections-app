@@ -1,0 +1,99 @@
+{
+  "appTitle": "联系",
+  "newReportTab": "新报告",
+  "savedReportsTab": "已保存报告",
+  "reportTypeLabel": "报告类型:",
+  "titleLabel": "标题:",
+  "descriptionLabel": "描述:",
+  "locationLabel": "位置详情:",
+  "contactLabel": "您的联系方式:",
+  "imageLabel": "上传图片:",
+  "submitButton": "提交报告",
+  "useLocationButton": "使用我的位置",
+  "showOnMapButton": "在地图上显示",
+  "reportTypes": {
+    "select": "选择类型",
+    "missing_person": "🚨 走失人员",
+    "lost_item": "🔍 丢失物品",
+    "found_person": "🙏 发现人员",
+    "found_item": "🔄 发现物品",
+    "event": "🎉 活动"
+  },
+  "buttons": {
+    "submit": "提交报告",
+    "submitting": "提交中...",
+    "share": "分享",
+    "reshare": "重新分享",
+    "delete": "删除",
+    "clearAll": "清除全部",
+    "backToDashboard": "返回仪表板",
+    "retry": "重试",
+    "useMyLocation": "使用我的位置",
+    "locating": "定位中...",
+    "save": "保存报告",
+    "signin": "登录",
+    "signup": "注册",
+    "logout": "退出登录",
+    "subscribe": "订阅",
+    "guide": "指南"
+  },
+  "warnings": {
+    "fraud": "虚假报告危害社区。故意提交虚假信息可能导致永久封禁和法律行动。",
+    "spam": "过度报告(超出您的计划限制)可能触发账户审查。升级以获得更多容量。",
+    "privacy": "请勿分享敏感信息(如信用卡、身份证)。违规内容将被删除并报告给当局。",
+    "images": "仅上传相关物品照片。禁止露骨/冒犯性内容。重复违规将封禁您的账户。",
+    "tos": "使用本应用即表示您同意我们的服务条款和隐私政策。滥用可能导致账户终止。",
+    "legal": "我们与执法部门合作。非法活动(如赃物)将被举报。",
+    "scams": "切勿分享支付详情。举报任何为失物索要钱财的人。",
+    "meetings": "请在公共场所见面。我们对线下互动不承担责任。",
+    "data": "免费报告将在6个月后自动删除。继续提交？"
+  },
+  "success": {
+    "submit": "报告提交成功！",
+    "delete": "报告删除成功",
+    "clearAll": "所有报告清除成功"
+  },
+  "errors": {
+    "submit": "提交报告出错。请重试。",
+    "load": "加载报告失败。请刷新。",
+    "delete": "删除报告失败",
+    "clearAll": "清除所有报告失败",  
+    "location": "获取位置出错",
+    "clearAllFailed": "清除报告失败。请重试。"
+  },
+  "labels": {
+    "yourCurrentLocation": "您当前的位置",
+    "selectedLocation": "选定位置",
+    "untitledReport": "未命名报告"
+  },
+  "messages": {
+    "confirmClearAll": "永久删除所有保存的报告？",
+    "allReportsCleared": "所有报告已成功清除"
+  },
+  "greetings": {
+    "share": "亲爱的朋友们，\n我分享以下信息："
+  },
+  "closingLines": {
+    "missing_person": "请帮忙寻找。广泛传播",
+    "lost_item": "请帮忙定位",
+    "found_person": "请帮忙联系家人",
+    "found_item": "如果是您的物品请联系",
+    "event": "加入我们。传播信息",
+    "thank_you": "感谢您的帮助"
+  },
+  "reportSharing": {
+    "shareButton": "分享此报告",
+    "appReference": "报告通过MissingLostAndFoundApp分享"
+  },
+  "dashboard": {
+    "yourSavedReports": "您保存的报告",
+    "logout": "退出登录"
+  },
+  "fileUpload": {
+    "chooseFile": "选择文件",
+    "noFileChosen": "未选择文件"
+  },
+  "deleting": "删除中...",
+  "clearing": "清除中..."
+
+}

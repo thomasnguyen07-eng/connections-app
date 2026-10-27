@@ -1,0 +1,36 @@
+{
+  "test_users": [
+    {
+      "email": "test1@example.com",
+      "password": "Test123!",
+      "name": "Test User 1",
+      "type": "individual",
+      "subscription": "none"
+    },
+    {
+      "email": "test2@example.com",
+      "password": "Test123!",
+      "name": "Test User 2",
+      "type": "sponsored",
+      "sponsor": "owner_account@email.com"
+    },
+    {
+      "email": "test3@example.com",
+      "password": "Test123!",
+      "name": "Test Organization",
+      "type": "organization",
+      "subscription": "bulk_monthly_10users"
+    }
+  ],
+  "test_passcodes": [
+    "TEST-CONN-001",
+    "TEST-CONN-002",
+    "TEST-CONN-003"
+  ],
+  "test_payments": {
+    "paypal_test_email": "sb-test@example.com",
+    "paypal_test_password": "Test123!",
+    "momo_test_number": "0900000000",
+    "bank_test_account": "TEST-ACCOUNT-123"
+  }
+}

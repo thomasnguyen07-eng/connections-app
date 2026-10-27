@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- ===== STANDARD FACEBOOK TAGS ===== -->
+    <meta property="fb:app_id" content="1192380645773075" />
+    <meta property="fb:pages" content="101628931705282" />
+
+    <!-- Open Graph Tags (COMPLETE, NO DUPLICATES) -->
+    <meta
+      property="og:title"
+      content="Connections Premium - Subscription Plans"
+    />
+    <meta
+      property="og:description"
+      content="Subscribe to Connections for premium features: upload more images, priority support, and enhanced reporting."
+    />
+    <meta
+      property="og:image"
+      content="https://connectionsfinder.com/images/logo-new.png"
+    />
+    <meta property="og:image:width" content="300" />
+    <meta property="og:image:height" content="300" />
+    <meta property="og:image:type" content="image/png" />
+    <meta
+      property="og:image:secure_url"
+      content="https://connectionsfinder.com/images/logo-new.png"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Connections" />
+    <meta
+      property="og:url"
+      content="https://connectionsfinder.com/premium.html"
+    />
+    <!-- ADD THESE NEW TAGS FOR BETTER MULTI-LANGUAGE SUPPORT -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="vi_VN" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <meta property="og:locale:alternate" content="ar_AR" />
+    <link rel="canonical" href="https://connectionsfinder.com/premium.html" />
+
+    <!-- Cache control - helps with Facebook scraping -->
+    <meta property="og:ttl" content="1209600" />
+
+    <!-- Link to your Facebook Page -->
+    <meta
+      property="article:publisher"
+      content="https://www.facebook.com/101628931705282"
+    />
+    <!-- ===== END OF STANDARD TAGS ===== -->
+
+    <!-- Add this after your existing Open Graph tags -->
+    <meta property="og:updated_time" content="2024-12-01T00:00:00Z" />
+    <meta property="article:published_time" content="2024-01-01T00:00:00Z" />
+    <meta property="article:modified_time" content="2024-12-01T00:00:00Z" />
+
+    <!-- Your Facebook App ID -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #4caf50;
+        --primary-dark: #388e3c;
+        --light-gray: #f5f5f5;
+        --dark: #333;
+        --gray: #666;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--light-gray);
+        color: var(--dark);
+        line-height: 1.6;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        flex: 1;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        color: var(--primary);
+        margin-bottom: 5px;
+        font-size: 2.8rem;
+      }
+
+      .subtitle {
+        color: var(--gray);
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+        font-weight: 500;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .subscribe-label {
+        color: var(--primary);
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .section-header {
+        text-align: center;
+        margin: 40px 0 20px 0;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--primary);
+      }
+
+      .section-header h2 {
+        color: var(--primary);
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+      }
+
+      .section-subtitle {
+        color: var(--gray);
+        font-size: 1rem;
+        font-style: italic;
+      }
+
+      .organization-section {
+        background: var(--light-gray);
+        border-radius: 8px;
+        padding: 25px;
+        margin: 40px 0 30px 0;
+      }
+
+      .beta-banner {
+        background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+
+      .expiry-notice {
+        background-color: #fff8e1;
+        border-left: 4px solid #ffc107;
+        padding: 12px 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .image-limits {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 12px 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .language-selector {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+
+      .lang-btn {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      .lang-btn:hover,
+      .lang-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      /* Fix pricing plans layout - 4 columns */
+      .pricing-plans {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+        width: 100%;
+      }
+
+      /* Ensure plans don't stack vertically */
+      .plan {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 400px;
+        margin: 0;
+      }
+
+      /* Make sure content fits properly */
+      .plan-features {
+        flex-grow: 1;
+        margin-bottom: 15px;
+      }
+
+      /* Responsive design for smaller screens */
+      @media (max-width: 1200px) {
+        .pricing-plans {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .pricing-plans {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Fix Chinese text specifically */
+      [data-lang="zh"] .plan-name,
+      [data-lang="zh"] .subscribe-btn span,
+      [data-lang="zh"] .plan-features span {
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed !important;
+        line-height: 1.4 !important;
+      }
+
+      /* Ensure language buttons stay horizontal */
+      .language-selector {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .lang-btn {
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed !important;
+      }
+
+      .plan {
+        background: var(--light-gray);
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        transition: transform 0.3s ease;
+        border: 2px solid transparent;
+      }
+
+      .plan:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+      }
+
+      .plan.recommended {
+        border-color: var(--primary);
+        position: relative;
+      }
+
+      .recommended-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--primary);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
+
+      .plan-name {
+        font-size: 1.3rem;
+        color: var(--dark);
+        margin-bottom: 15px;
+        font-weight: bold;
+      }
+
+      .plan-price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary);
+        margin-bottom: 5px;
+      }
+
+      .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0;
+        text-align: left;
+      }
+
+      .plan-features li {
+        padding: 5px 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .plan-features i {
+        color: var(--primary);
+        margin-right: 8px;
+      }
+
+      .subscribe-btn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .subscribe-btn:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .payment-methods {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+      }
+
+      .payment-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border: none;
+        min-width: 160px;
+        justify-content: center;
+      }
+
+      .payment-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .payment-button:active {
+        transform: translateY(-1px);
+      }
+
+      .payment-button.paypal {
+        background: linear-gradient(135deg, #0070ba, #005ea6);
+        color: white;
+      }
+
+      .payment-button.paypal:hover {
+        background: linear-gradient(135deg, #005ea6, #004c8c);
+      }
+
+      .payment-button.momo {
+        background: linear-gradient(135deg, #b1216a, #8a1c5a);
+        color: white;
+      }
+
+      .payment-button.momo:hover {
+        background: linear-gradient(135deg, #8a1c5a, #6a1546);
+      }
+
+      .payment-button.bank {
+        background: linear-gradient(135deg, #28a745, #218838);
+        color: white;
+      }
+
+      .payment-button.bank:hover {
+        background: linear-gradient(135deg, #218838, #1e7e34);
+      }
+
+      .payment-button i {
+        font-size: 1.3rem;
+      }
+
+      .organization-section {
+        background: var(--light-gray);
+        border-radius: 8px;
+        padding: 25px;
+        margin: 30px 0;
+      }
+
+      .org-title {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--dark);
+      }
+
+      .org-benefits {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--gray);
+      }
+
+      .calculator {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .calculator label {
+        font-weight: bold;
+      }
+
+      .calculator input,
+      .calculator select {
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+      }
+
+      .calculator button {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .calculator-output {
+        background-color: white;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 15px;
+        text-align: center;
+      }
+
+      .highlight {
+        color: var(--primary);
+        font-weight: bold;
+      }
+
+      .contact-info {
+        text-align: center;
+        margin: 30px 0;
+        padding: 20px;
+        background: var(--light-gray);
+        border-radius: 8px;
+      }
+
+      .contact-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--gray);
+      }
+
+      .contact-item i {
+        color: var(--primary);
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 30px;
+        color: var(--gray);
+        padding: 20px;
+        border-top: 1px solid #eee;
+      }
+
+      .back-button {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        font-size: 1rem;
+      }
+
+      .back-button:hover {
+        background-color: #545b62;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 25px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .close {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #aaa;
+      }
+
+      .close:hover {
+        color: #000;
+      }
+
+      @media (max-width: 768px) {
+        .pricing-plans {
+          grid-template-columns: 1fr;
+        }
+
+        .container {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 2.2rem;
+        }
+
+        .payment-methods {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .payment-button {
+          width: 100%;
+          max-width: 250px;
+        }
+      }
+
+      /* Fix Chinese text layout - apply to all Chinese text */
+      [data-lang="zh"] .lang-btn,
+      [data-lang="zh"] .plan-name,
+      [data-lang="zh"] .subscribe-btn span,
+      [data-lang="zh"] .section-header h2,
+      [data-lang="zh"] .section-subtitle,
+      [data-lang="zh"] .beta-banner,
+      [data-lang="zh"] .expiry-notice,
+      [data-lang="zh"] .image-limits,
+      [data-lang="zh"] .plan-features span,
+      [data-lang="zh"] .calculator label,
+      [data-lang="zh"] .calculator-output p,
+      [data-lang="zh"] .contact-item span,
+      [data-lang="zh"] footer p,
+      [data-lang="zh"] footer span {
+        line-height: 1.2 !important;
+        word-break: keep-all !important;
+        white-space: normal !important;
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed !important;
+      }
+
+      /* Specifically fix the language buttons for Chinese */
+      [data-lang="zh"] .lang-btn {
+        padding: 10px 12px !important;
+        min-width: 60px !important;
+        text-align: center !important;
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed !important;
+      }
+
+      /* Ensure all Chinese text is horizontal */
+      body[data-lang="zh"] * {
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed !important;
+      }
+    </style>
+    <style>
+      .payment-modal-buttons {
+        position: sticky !important;
+        bottom: 0 !important;
+        background: white !important;
+        z-index: 1000 !important;
+        padding: 20px 25px !important;
+        border-top: 2px solid #007bff !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Back to Main Page Button -->
+      <button id="backToMainBtn" class="back-button">
+        ← Back to Main Page
+      </button>
+
+      <header>
+        <h1 data-i18n="title">Connections</h1>
+        <p class="subtitle" data-i18n="subtitle">
+          Your all-in-one community communication hub
+        </p>
+      </header>
+
+      <div class="beta-banner" data-i18n="beta_banner">
+        🚀 Beta Version - Special Launch Pricing! Upgrade to business accounts
+        coming soon.
+      </div>
+
+      <div class="expiry-notice" data-i18n="expiry_notice">
+        📅 Subscriptions automatically expire after the selected period. You
+        will receive reminders to renew.
+      </div>
+
+      <div class="image-limits" data-i18n="image_limits">
+        📸 Limit: 5 images per report to ensure optimal performance for all
+        users.
+      </div>
+
+      <div class="language-selector">
+        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn" data-lang="vi">Tiếng Việt</button>
+        <button class="lang-btn" data-lang="zh">中文</button>
+        <button class="lang-btn" data-lang="es">Español</button>
+        <button class="lang-btn" data-lang="hi">हिन्दी</button>
+        <button class="lang-btn" data-lang="ar">العربية</button>
+      </div>
+
+      <!-- Individual Subscription Plans Section -->
+      <div class="section-header">
+        <h2 data-i18n="individual_plans">Individual Subscription Plans</h2>
+        <p class="section-subtitle" data-i18n="individual_subtitle">
+          Personal plans for individual users
+        </p>
+      </div>
+
+      <!-- Individual Subscription Plans -->
+      <div class="pricing-plans">
+        <div class="plan">
+          <h3 class="plan-name" data-i18n="monthly">Monthly</h3>
+          <div class="plan-price">-</div>
+          <p class="plan-period">/month</p>
+          <ul class="plan-features">
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature1">Personal avatar</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature2">5 images per report</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature3">Unlimited reports</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature4">Multi-platform sharing</span>
+            </li>
+          </ul>
+          <button class="subscribe-btn" data-plan="monthly">
+            <i class="fas fa-check"></i>
+            <span data-i18n="subscribe">Subscribe</span>
+          </button>
+        </div>
+
+        <div class="plan recommended">
+          <div class="recommended-badge" data-i18n="popular">Popular</div>
+          <h3 class="plan-name" data-i18n="three_months">3 Months</h3>
+          <div class="plan-price">-</div>
+          <p class="plan-period">/3 months</p>
+          <p class="plan-savings" data-i18n="save_10">Save 10%</p>
+          <ul class="plan-features">
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature1">Personal avatar</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature2">5 images per report</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature3">Unlimited reports</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature4">Multi-platform sharing</span>
+            </li>
+          </ul>
+          <button class="subscribe-btn" data-plan="three_months">
+            <i class="fas fa-check"></i>
+            <span data-i18n="subscribe">Subscribe</span>
+          </button>
+        </div>
+
+        <div class="plan">
+          <h3 class="plan-name" data-i18n="six_months">6 Months</h3>
+          <div class="plan-price">-</div>
+          <p class="plan-period">/6 months</p>
+          <p class="plan-savings" data-i18n="save_20">Save 20%</p>
+          <ul class="plan-features">
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature1">Personal avatar</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature2">5 images per report</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature3">Unlimited reports</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature4">Multi-platform sharing</span>
+            </li>
+          </ul>
+          <button class="subscribe-btn" data-plan="six_months">
+            <i class="fas fa-check"></i>
+            <span data-i18n="subscribe">Subscribe</span>
+          </button>
+        </div>
+
+        <div class="plan">
+          <h3 class="plan-name" data-i18n="yearly">Yearly</h3>
+          <div class="plan-price">-</div>
+          <p class="plan-period">/year</p>
+          <p class="plan-savings" data-i18n="save_42">Save 42%</p>
+          <ul class="plan-features">
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature1">Personal avatar</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature2">5 images per report</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature3">Unlimited reports</span>
+            </li>
+            <li>
+              <i class="fas fa-check"></i>
+              <span data-i18n="feature4">Multi-platform sharing</span>
+            </li>
+          </ul>
+          <button class="subscribe-btn" data-plan="yearly">
+            <i class="fas fa-check"></i>
+            <span data-i18n="subscribe">Subscribe</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bulk Subscription Plans Section -->
+      <div class="organization-section">
+        <div class="section-header">
+          <h2 data-i18n="bulk_plans">Bulk Subscription Plans</h2>
+          <p class="section-subtitle" data-i18n="bulk_subtitle">
+            Sponsor users and display your logo. Your logo is fixed; sponsored
+            users cannot change it. Perfect for airports, schools, businesses,
+            and organizations.
+          </p>
+        </div>
+
+        <div class="calculator">
+          <label for="userCount" data-i18n="user_count">Number of Users:</label>
+          <input type="number" id="userCount" min="1" value="10" />
+
+          <label for="bulkPlanType" data-i18n="plan_type">Plan Type:</label>
+          <select id="bulkPlanType">
+            <!-- Options will be populated by premium.js -->
+          </select>
+
+          <button id="calculateBulkPrice" data-i18n="calculate">
+            Calculate Price
+          </button>
+
+          <div class="calculator-output">
+            <p id="pricePerUser"></p>
+            <p id="totalPrice"></p>
+            <p id="youSave" class="highlight"></p>
+          </div>
+        </div>
+
+        <!-- Add this right after the calculator-output div -->
+        <div class="bulk-subscribe-section">
+          <button
+            id="bulkSubscribeBtn"
+            class="subscribe-btn bulk-subscribe-btn"
+            data-i18n="subscribe_bulk"
+          >
+            Subscribe Bulk Plan
+          </button>
+          <p class="bulk-note" data-i18n="bulk_note">
+            After payment, you'll receive sponsor codes to distribute to your
+            users.
+          </p>
+        </div>
+      </div>
+
+      <div class="contact-info">
+        <div class="contact-details">
+          <div class="contact-item">
+            <i class="fas fa-phone"></i>
+            <span>+84 0906756201</span>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-envelope"></i>
+            <span>support@connectionsfinder.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        &copy; 2026 Connections App.
+        <span data-i18n="all_rights">All rights reserved.</span>
+      </p>
+      <p data-i18n="beta_footer">
+        Beta Version - Prices may change when we upgrade to business accounts
+      </p>
+    </footer>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalTitle">Payment Instructions</h3>
+        <div id="modalBody" style="white-space: pre-line; margin: 20px 0"></div>
+        <button
+          onclick="copyPaymentInstructions()"
+          style="
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+        >
+          Copy Instructions
+        </button>
+      </div>
+    </div>
+    <script src="./js/premium.js?v=3"></script>
+    <!-- At the bottom of premium.html, before </body> -->
+    <script src="./js/firebase-premium-loader.js"></script>
+    <script>
+      console.log("📦 Loading momo-payment.js...");
+    </script>
+    <script
+      src="./js/momo-payment.js"
+      onload="console.log('✅ momo-payment.js loaded successfully')"
+      onerror="console.error('❌ momo-payment.js failed to load')"
+    ></script>
+    <script>
+      console.log("📦 Loading premium.js...");
+      console.log("MoMo payment available:", typeof window.selectPlanWithMomo);
+      console.log("MoMo payment class available:", window.momoPayment);
+    </script>
+  </body>
+</html>
