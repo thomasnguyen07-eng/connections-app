@@ -177,7 +177,13 @@
 
       <div id="admin-check" class="admin-only" style="display: none">
         ⚠️ Admin access only. You do not have permission to view this page.
-        <div id="login-help" style="margin-top: 10px; font-size: 14px"></div>
+        <div id="login-help" style="margin-top: 10px; font-size: 14px"></div>        <div id="login-box" style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+          <h3 style="margin-bottom: 10px;">Admin Login</h3>
+          <input type="email" id="admin-email" placeholder="Email" style="display:block; width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+          <input type="password" id="admin-password" placeholder="Password" style="display:block; width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+          <button onclick="adminLogin()" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Sign In</button>
+          <p id="login-error" style="color: red; margin-top: 10px; font-size: 14px;"></p>
+        </div>
       </div>
 
       <div id="dashboard-content" style="display: none">
@@ -393,6 +399,39 @@
           <div id="moderation-container">
             <div class="loading">Loading flagged reports...</div>
           </div>
+
+        <!-- ============================================ -->
+        <!-- MODERATION PENDING (new - API down) -->
+        <!-- ============================================ -->
+        <div
+          class="card"
+          style="
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 15px;
+            "
+          >
+            <h2>⏳ Moderation Pending</h2>
+            <div class="button-group">
+              <button class="btn-refresh" onclick="loadModerationPending()">
+                🔄 Refresh
+              </button>
+            </div>
+          </div>
+          <div id="moderation-pending-container">
+            <div class="loading">Loading moderation pending items...</div>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -408,6 +447,36 @@
     </script>
 
     <script type="module">
+      window.loadModerationPending = async function() {
+        const container = document.getElementById("moderation-pending-container");
+        if (!container) return;
+        container.innerHTML = '<div class="loading">Loading moderation pending...</div>';
+        
+        try {
+          const q = query(collection(db, "moderation_pending"), limit(50));
+          const snapshot = await getDocs(q);
+          
+          if (snapshot.empty) {
+            container.innerHTML = '<div class="success">✅ No pending moderation items.</div>';
+            return;
+          }
+          
+          let html = '<div style="overflow-x: auto;"><table><thead><tr><th>Time</th><th>User Email</th><th>Image Name</th><th>Source</th><th>Actions</th></tr></thead><tbody>';
+          
+          for (const doc of snapshot.docs) {
+            const item = doc.data();
+            const ts = item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleString() : "N/A";
+            
+            html += '<tr><td>' + escapeHtml(ts) + '</td><td>' + escapeHtml(item.userEmail || "N/A") + '</td><td>' + escapeHtml(item.imageName || "N/A") + '</td><td>' + escapeHtml(item.source || "N/A") + '</td><td><button class="btn-block" onclick="approveModerationPending(' + "'" + doc.id + "'" + ')">✅ Approve</button> <button class="btn-cleanup" onclick="blockModerationPending(' + "'" + doc.id + "'" + ')">🚫 Block</button></td></tr>';
+          }
+          
+          html += "</tbody></table></div>";
+          container.innerHTML = html;
+          
+        } catch (error) {
+          container.innerHTML = '<div class="error" style="color:red;">Error: ' + error.message + '</div>';
+        }
+      }
       import {
         collection,
         getDocs,
@@ -987,6 +1056,101 @@
       }
 
       // ============================================
+      // NEW: Load moderation_pending (uploads during API outage)
+      // ============================================
+      async function loadModerationPending() {
+        const container = document.getElementById("moderation-pending-container");
+        if (!container) return;
+        container.innerHTML =
+          '<div class="loading">Loading moderation pending...</div>';
+        try {
+          const q = query(
+            collection(db, "moderation_pending"),
+            orderBy("timestamp", "desc"),
+            limit(50),
+          );
+          const snapshot = await getDocs(q);
+          if (snapshot.empty) {
+            container.innerHTML =
+              '<div class="success">? No pending moderation items.</div>';
+            return;
+          }
+          let html =
+            '<div style="overflow-x: auto;"><table><thead><tr><th>Time</th><th>User Email</th><th>Image Name</th><th>Source</th><th>Actions</th></tr></thead><tbody>';
+          for (const doc of snapshot.docs) {
+            const item = doc.data();
+            const ts = item.timestamp
+              ? new Date(
+                  typeof item.timestamp === "string"
+                    ? item.timestamp
+                    : item.timestamp.toDate
+                    ? item.timestamp.toDate()
+                    : item.timestamp,
+                ).toLocaleString()
+              : "N/A";
+            html += `<tr><td>${escapeHtml(ts)}</td><td>${escapeHtml(item.userEmail || "N/A")}</td><td>${escapeHtml(item.imageName || "N/A")}</td><td>${escapeHtml(item.source || "N/A")}</td><td><button class="btn-block" onclick="approveModerationPending('${doc.id}')">✅ Approve</button> <button class="btn-cleanup" onclick="blockModerationPending('${doc.id}')">🚫 Block</button></td></tr>`;
+          }
+          html += "</tbody></table></div>";
+          container.innerHTML = html;
+        } catch (error) {
+          container.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        }
+      }
+
+      window.approveModerationPending = async function (docId) {
+        if (!confirm("Approve this image as safe?")) return;
+        try {
+          await updateDoc(doc(db, "moderation_pending", docId), {
+            status: "approved",
+            reviewedBy: "thomasnguyen07@gmail.com",
+            reviewedAt: new Date(),
+          });
+          alert("? Approved. Reloading...");
+          loadModerationPending();
+        } catch (err) {
+          alert("? Failed to approve: " + err.message);
+        }
+      };
+
+      window.blockModerationPending = async function (docId) {
+        if (!confirm("Block this image? It will be removed from pending.")) return;
+        try {
+          const pendingDoc = await getDoc(doc(db, "moderation_pending", docId));
+          const data = pendingDoc.data();
+          await updateDoc(doc(db, "moderation_pending", docId), {
+            status: "blocked",
+            reviewedBy: "thomasnguyen07@gmail.com",
+            reviewedAt: new Date(),
+          });
+          if (data && data.userId) {
+            const userRef = doc(db, "users", data.userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              const violations = (userData.violations || 0) + 1;
+              const newStatus = violations >= 3 ? "blocked" : userData.status || "active";
+              await updateDoc(userRef, {
+                violations: violations,
+                status: newStatus,
+                flaggedAt: new Date(),
+                flaggedReason: "Moderation pending: confirmed violation",
+                flaggedBy: "admin_review",
+              });
+              alert(
+                "?? Image blocked. User now has " +
+                  violations +
+                  " violation(s)." +
+                  (newStatus === "blocked" ? " User has been BLOCKED." : ""),
+              );
+            }
+          }
+          loadModerationPending();
+        } catch (err) {
+          alert("? Failed to block: " + err.message);
+        }
+      }
+
+      // ============================================
       // HELPER FUNCTIONS
       // ============================================
       function escapeHtml(text) {
@@ -1342,12 +1506,24 @@
       // ============================================
       // AUTH STATE
       // ============================================
+            window.adminLogin = async function() {
+        const email = document.getElementById("admin-email").value;
+        const password = document.getElementById("admin-password").value;
+        const errorEl = document.getElementById("login-error");
+        try {
+          const authMod = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js");
+          await authMod.signInWithEmailAndPassword(auth, email, password);
+          errorEl.innerText = "";
+        } catch (error) {
+          errorEl.innerText = "Login failed: " + error.message;
+        }
+      };
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           currentUser = user;
           document.getElementById("user-info").innerHTML =
             `<div>✅ ${user.email} <button onclick="logout()" style="margin-left:10px;">Logout</button></div>`;
-          if (user.email === "thomasnguyen07@gmail.com") {
+          if (user.email === "thomasnguyen07@gmail.com" || user.uid === "TKeukKH45nVbMQ0VRDaneTZ4ts33") {
             document.getElementById("admin-check").style.display = "none";
             document.getElementById("dashboard-content").style.display =
               "block";
