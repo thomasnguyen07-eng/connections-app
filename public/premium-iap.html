@@ -1487,7 +1487,7 @@ function attachBulkButtonListener() {
                              : "web";
             console.log("📦 Bulk Quote button clicked - platform:", platform);
 
-            window.open("https://connectionsfinder.com/organization-quote.html", "_blank");
+            window.open("https://connectionsfinder.com/organization-quote.html?lang=" + (localStorage.getItem('appLanguage') || 'en'), "_blank");
         });
         return true;
     }
@@ -1560,7 +1560,7 @@ window.closeBulkQuoteModal = closeBulkQuoteModal;
                              : "web";
             console.log("📦 Bulk Quote button clicked - platform:", platform);
 
-            window.open("https://connectionsfinder.com/organization-quote.html", "_blank");
+            window.open("https://connectionsfinder.com/organization-quote.html?lang=" + (localStorage.getItem('appLanguage') || 'en'), "_blank");
         });
         console.log("✅ Bulk quote modal ready (professional email provider style)");
         return true;

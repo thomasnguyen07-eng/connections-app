@@ -192,7 +192,12 @@
     };
 
     function translateOrgQuotePage() {
-        const lang = localStorage.getItem('appLanguage') || 'en';
+                // Check if the language is in the URL (e.g., ?lang=vi)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        
+        // Use the URL language if it exists, otherwise fall back to localStorage
+        const lang = urlLang || localStorage.getItem('appLanguage') || 'en';
         const t = orgQuoteTranslations[lang] || orgQuoteTranslations['en'];
 
         if(document.querySelector('.hero h1')) document.querySelector('.hero h1').innerHTML = t.title;
