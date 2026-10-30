@@ -320,7 +320,7 @@
           <div class="recommended-badge" id="popularBadge">Popular</div>
           <h3 class="plan-name" data-plan="three_months">3 Months</h3>
           <div class="plan-price" id="price-3months"
-          <div class="plan-savings" id="savings3months">Save 10%</div>
+          <div class="plan-savings" id="savings3months"><span id="save-10">Save 10%</span></div>
           <ul class="plan-features">
             <li>
               <i class="fas fa-check"></i>
@@ -348,7 +348,7 @@
         <div class="plan">
           <h3 class="plan-name" data-plan="six_months">6 Months</h3>
           <div class="plan-price" id="price-6months"
-          <div class="plan-savings" id="savings6months">Save 20%</div>
+          <div class="plan-savings" id="savings6months"><span id="save-20">Save 20%</span></div>
           <ul class="plan-features">
             <li>
               <i class="fas fa-check"></i>
@@ -376,7 +376,7 @@
         <div class="plan">
           <h3 class="plan-name" data-plan="yearly">Yearly</h3>
           <div class="plan-price" id="price-yearly"
-          <div class="plan-savings" id="savingsyearly">Save 42%</div>
+          <div class="plan-savings" id="savingsyearly"><span id="save-42">Save 42%</span></div>
           <ul class="plan-features">
             <li>
               <i class="fas fa-check"></i>
@@ -412,14 +412,11 @@
           cursor: pointer;
           margin-bottom: 15px;
           transition: all 0.2s;">
-          🔄 Restore Purchases
+          <span id="restore-text"><span id="restore-text">🔄 Restore Purchases</span></span>
         </button>
 
         <p style="font-size: 11px; color: #666; line-height: 1.6; max-width: 620px; margin: 15px auto 0 auto; text-align: center;">
-          Payment will be charged to your Apple ID account at confirmation of purchase.
-          Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period.
-          Your account will be charged for renewal within 24 hours prior to the end of the current period.
-          You can manage and cancel your subscriptions by going to your account settings on the App Store after purchase.
+          <span id="legal-text">Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your account settings on the App Store after purchase.</span>
         </p>
 
       </div>
@@ -1726,5 +1723,52 @@ window.sendSupportEmail = sendSupportEmail;
 </div>
 
 <div id="bulkModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10002;" onclick="closeBulkQuoteModal()"></div>
+    
+    
+    
+    
+    
+    <script>
+    function translatePremiumTexts() {
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const t = {
+            en: { restore: "🔄 Restore Purchases", legal: "Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your account settings on the App Store after purchase.", save: "Save" },
+            vi: { restore: "🔄 Khôi phục Giao dịch", legal: "Thanh toán sẽ được tính vào tài khoản Apple ID của bạn khi xác nhận mua hàng. Đăng ký sẽ tự động gia hạn trừ khi bị hủy ít nhất 24 giờ trước khi kết thúc kỳ hiện tại. Tài khoản của bạn sẽ bị tính phí gia hạn trong vòng 24 giờ trước khi kết thúc kỳ hiện tại. Bạn có thể quản lý và hủy đăng ký bằng cách truy cập cài đặt tài khoản trên App Store sau khi mua.", save: "Tiết kiệm" },
+            es: { restore: "🔄 Restaurar Compras", legal: "El pago se cargará a su cuenta de Apple ID al confirmar la compra. La suscripción se renueva automáticamente a menos que se cancele al menos 24 horas antes del final del período actual. Su cuenta se cargará por la renovación dentro de las 24 horas previas al final del período actual. Puede administrar y cancelar sus suscripciones yendo a la configuración de su cuenta en el App Store después de la compra.", save: "Ahorra" },
+            zh: { restore: "🔄 恢复购买", legal: "购买确认后，款项将从您的 Apple ID 帐户中扣除。除非在当前周期结束前至少 24 小时取消，否则订阅将自动续订。您的帐户将在当前周期结束前 24 小时内收取续订费用。购买后，您可以通过前往 App Store 的帐户设置来管理和取消订阅。", save: "节省" },
+            hi: { restore: "🔄 खरीदारी पुनर्स्थापित करें", legal: "खरीद की पुष्टि होने पर भुगतान आपके Apple ID खाते से लिया जाएगा। जब तक वर्तमान अवधि समाप्त होने से कम से कम 24 घंटे पहले रद्द नहीं किया जाता, तब तक सदस्यता स्वतः नवीनीकृत हो जाती है। वर्तमान अवधि समाप्त होने से 24 घंटे के भीतर नवीनीकरण के लिए आपके खाते से शुल्क लिया जाएगा। खरीद के बाद App Store में अपनी खाता सेटिंग्स में जाकर आप अपनी सदस्यताओं को प्रबंधित और रद्द कर सकते हैं।", save: "बचाएं" },
+            ar: { restore: "🔄 استعادة المشتريات", legal: "سيتم تحصيل الدفع من حساب Apple ID الخاص بك عند تأكيد الشراء. يتم تجديد الاشتراك تلقائيًا ما لم يتم إلغاؤه قبل 24 ساعة على الأقل من نهاية الفترة الحالية. سيتم تحصيل رسوم التجديد من حسابك في غضون 24 ساعة قبل نهاية الفترة الحالية. يمكنك إدارة اشتراكاتك وإلغاؤها من خلال الانتقال إلى إعدادات حسابك في App Store بعد الشراء.", save: "وفر" }
+        }[lang] || t['en'];
+
+        const restoreEl = document.getElementById('restore-text');
+        if (restoreEl) restoreEl.innerText = t.restore;
+
+        const legalEl = document.getElementById('legal-text');
+        if (legalEl) legalEl.innerText = t.legal;
+
+        const save10 = document.getElementById('save-10');
+        if (save10) save10.innerText = t.save + " 10%";
+        
+        const save20 = document.getElementById('save-20');
+        if (save20) save20.innerText = t.save + " 20%";
+        
+        const save42 = document.getElementById('save-42');
+        if (save42) save42.innerText = t.save + " 42%";
+    }
+
+    // 1. Run on page load
+    setTimeout(translatePremiumTexts, 500);
+
+    // 2. Run every time a language button is clicked!
+    document.addEventListener('DOMContentLoaded', function() {
+        const langButtons = document.querySelectorAll('.lang-btn, button');
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Small delay to let the main script update the language first
+                setTimeout(translatePremiumTexts, 100);
+            });
+        });
+    });
+    </script>
 </body>
 </html>
