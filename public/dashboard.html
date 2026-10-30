@@ -1160,37 +1160,37 @@ setTimeout(() => {
 <!-- ============================================ -->
 <div id="contactModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10001; max-width: 400px; width: 90%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     <div style="background: linear-gradient(135deg, #4267b2, #365899); padding: 20px; border-radius: 16px 16px 0 0; color: white;">
-        <h3 style="margin: 0; font-size: 20px;">📧 Contact Support</h3>
-        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">We're here to help!</p>
+        <h3 style="margin: 0; font-size: 20px;" id="modal-title">📧 Contact Support</h3>
+        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;"><span id="modal-subtitle">We're here to help!</span></p>
     </div>
     <div style="padding: 20px;">
         <p style="margin: 0 0 15px; color: #666; font-size: 14px; text-align: center;">
-            Email us at: <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
+            <span id="modal-email-label">Email us at:</span> <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
         </p>
         
-        <!-- Send Email Button (uses system chooser) -->
+        <!-- <span id="modal-send-btn-text">Send Email</span> Button (uses system chooser) -->
         <button id="contactSendBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #4267b2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            📧 Send Email
+            📧 <span id="modal-send-btn-text">Send Email</span>
         </button>
 
         <!-- Desktop tip -->
         <p style="font-size: 11px; color: #666; margin: 6px 0 10px; text-align: center; line-height: 1.4;">
-            💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.
+            💡 Desktop tip: If <span id="modal-send-btn-text">Send Email</span> doesn't open, use Copy Email and paste into your webmail.
         </p>
 
         <!-- Copy Email Button -->
         <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            📋 Copy Email Address
+            📋 <span id="modal-copy-btn-text">Copy Email Address</span>
         </button>
 
-        <!-- Cancel Button -->
+        <!-- <span id="modal-cancel-btn-text">Cancel</span> Button -->
         <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            ✖️ Cancel
+            ✖️ <span id="modal-cancel-btn-text">Cancel</span>
         </button>
     </div>
     <div style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
         <p style="margin: 0; font-size: 12px; color: #999; text-align: center;">
-            Response within 24-48 hours
+            <span id="modal-response-time">Response within 24-48 hours</span>
         </p>
     </div>
 </div>
@@ -1219,7 +1219,7 @@ function copyEmailToClipboard() {
     navigator.clipboard.writeText(email).then(() => {
         const copyBtn = document.getElementById('contactCopyBtn');
         const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '✅ Copied!';
+        copyBtn.innerHTML = '✅ <span id="modal-copied-text">Copied!</span>';
         copyBtn.style.background = '#218838';
         setTimeout(() => {
             copyBtn.innerHTML = originalText;
@@ -1559,5 +1559,34 @@ document.addEventListener('DOMContentLoaded', function() {
     if (savEl) savEl.innerHTML = t.saved;
   });
 </script>
+    <script>
+    function translateContactModal() {
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const t = {
+            en: { title: "📧 Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours" },
+            vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ" },
+            es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas" },
+            zh: { title: "📧 联系支持", sub: "我们随时为您提供帮助！", email: "发送电子邮件至：", send: "发送邮件", tip: "桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copy: "复制邮箱地址", cancel: "取消", resp: "24-48小时内回复" },
+            hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें ईमेल करें:", send: "ईमेल भेजें", tip: "डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया" },
+            ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة" }
+        }[lang] || t['en'];
+
+        if(document.getElementById('modal-title')) document.getElementById('modal-title').innerHTML = t.title;
+        if(document.getElementById('modal-subtitle')) document.getElementById('modal-subtitle').innerText = t.sub;
+        if(document.getElementById('modal-email-label')) document.getElementById('modal-email-label').innerText = t.email;
+        if(document.getElementById('modal-send-btn-text')) document.getElementById('modal-send-btn-text').innerText = t.send;
+        if(document.getElementById('modal-tip')) document.getElementById('modal-tip').innerText = t.tip;
+        if(document.getElementById('modal-copy-btn-text')) document.getElementById('modal-copy-btn-text').innerText = t.copy;
+        if(document.getElementById('modal-copied-text')) {
+            const copiedT = { en: "Copied!", vi: "Đã sao chép!", es: "¡Copiado!", zh: "已复制！", hi: "कॉपी किया गया!", ar: "تم النسخ!" }[lang] || "Copied!";
+            document.getElementById('modal-copied-text').innerText = copiedT;
+        }
+        if(document.getElementById('modal-cancel-btn-text')) document.getElementById('modal-cancel-btn-text').innerText = t.cancel;
+        if(document.getElementById('modal-response-time')) document.getElementById('modal-response-time').innerText = t.resp;
+    }
+
+    setTimeout(translateContactModal, 500);
+    document.querySelectorAll('.lang-btn, select').forEach(btn => btn.addEventListener('click', () => setTimeout(translateContactModal, 100)));
+    </script>
 </body>
 </html>
