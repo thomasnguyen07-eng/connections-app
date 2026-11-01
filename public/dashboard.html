@@ -1563,12 +1563,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function translateContactModal() {
         const lang = localStorage.getItem('appLanguage') || 'en';
         const t = {
-            en: { title: "📧 Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours" },
-            vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ" },
-            es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas" },
-            zh: { title: "📧 联系支持", sub: "我们随时为您提供帮助！", email: "发送电子邮件至：", send: "发送邮件", tip: "桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copy: "复制邮箱地址", cancel: "取消", resp: "24-48小时内回复" },
-            hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें ईमेल करें:", send: "ईमेल भेजें", tip: "डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया" },
-            ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة" }
+            en: { title: "📧 Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours", tip: "Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copied: "Copied!" },
+            vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ", tip: "Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copied: "Đã sao chép!" },
+            es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas", tip: "Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copied: "¡Copiado!" },
+            zh: { title: "📧 联系支持", sub: "我们随时为您提供帮助！", email: "发送电子邮件至：", send: "发送邮件", tip: "桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copy: "复制邮箱地址", cancel: "取消", resp: "24-48小时内回复", tip: "桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copied: "已复制！" },
+            hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें ईमेल करें:", send: "ईमेल भेजें", tip: "डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया", tip: "डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copied: "कॉपी किया गया!" },
+            ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة", tip: "نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copied: "تم النسخ!" }
         }[lang] || t['en'];
 
         if(document.getElementById('modal-title')) document.getElementById('modal-title').innerHTML = t.title;
@@ -1582,11 +1582,61 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modal-copied-text').innerText = copiedT;
         }
         if(document.getElementById('modal-cancel-btn-text')) document.getElementById('modal-cancel-btn-text').innerText = t.cancel;
+        if(document.getElementById('modal-tip')) document.getElementById('modal-tip').innerText = t.tip;
+        if(document.getElementById('modal-copied-text')) document.getElementById('modal-copied-text').innerText = t.copied;
         if(document.getElementById('modal-response-time')) document.getElementById('modal-response-time').innerText = t.resp;
     }
 
     setTimeout(translateContactModal, 500);
     document.querySelectorAll('.lang-btn, select').forEach(btn => btn.addEventListener('click', () => setTimeout(translateContactModal, 100)));
+    </script>
+    <script>
+    function translateModalSafe() {
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const t = {
+            en: { tip: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copied: "Copied!" },
+            vi: { tip: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copied: "Đã sao chép!" },
+            es: { tip: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copied: "¡Copiado!" },
+            zh: { tip: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copied: "已复制！" },
+            hi: { tip: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copied: "कॉपी किया गया!" },
+            ar: { tip: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copied: "تم النسخ!" }
+        }[lang] || t['en'];
+
+        const modal = document.getElementById('contactModal');
+        if (modal) {
+            // Translate Tip
+            const paragraphs = modal.querySelectorAll('p');
+            paragraphs.forEach(p => {
+                if (p.innerText.includes('Desktop tip')) {
+                    p.innerText = t.tip;
+                }
+            });
+
+            // Translate Copy Button text dynamically
+            const copyBtn = document.getElementById('contactCopyBtn');
+            if (copyBtn) {
+                // We change the alert message to use the translated copied text
+                const originalOnClick = copyBtn.onclick;
+                copyBtn.onclick = function() {
+                    navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+                        alert(t.copied + ' support@connectionsfinder.com');
+                    }).catch(() => alert(t.copied + ' support@connectionsfinder.com'));
+                };
+            }
+        }
+    }
+
+    // Observe the body for the modal being added
+    const observer = new MutationObserver((mutations) => {
+        if (document.getElementById('contactModal')) {
+            translateModalSafe();
+            observer.disconnect(); // Stop observing once translated
+        }
+    });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
     </script>
 </body>
 </html>
