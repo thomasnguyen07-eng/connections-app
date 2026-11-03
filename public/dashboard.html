@@ -1204,6 +1204,23 @@ setTimeout(() => {
 
 function openContactModal() {
     document.getElementById('contactModal').style.display = 'block';
+    // TRANSLATE TIP ON MODAL OPEN
+    const tipLang = localStorage.getItem('appLanguage') || 'en';
+    const tipDict = {
+        en: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.",
+        vi: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.",
+        es: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.",
+        zh: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。",
+        hi: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।",
+        ar: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك."
+    }[tipLang] || tipDict['en'];
+
+    const tipParagraphs = document.querySelectorAll('p[style*="font-size: 11px"]');
+    tipParagraphs.forEach(p => {
+        if (p.innerText.includes('Desktop tip') || p.innerText.includes('Mẹo') || p.innerText.includes('Consejo') || p.innerText.includes('桌面提示')) {
+            p.innerText = tipDict;
+        }
+    });
     document.getElementById('modalOverlay').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
@@ -1636,6 +1653,120 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.addEventListener('DOMContentLoaded', () => {
         observer.observe(document.body, { childList: true, subtree: true });
+    });
+    </script>
+    <script>
+    // OVERRIDE LANGUAGE SWITCHER
+    document.addEventListener('click', function(e) {
+        // Check if a language button was clicked
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                // 1. Instantly save to localStorage
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+                console.log('✅ Language forced to:', newLang);
+                
+                // 2. The main script will now translate the modal, but our copy button
+                // will read the NEW localStorage value.
+            }
+        }
+    }, true); // Use capture phase to run before other scripts
+
+    // Our copy function (reads localStorage at click time)
+    function copyEmailToClipboard() {
+        const email = "support@connectionsfinder.com";
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const messages = {
+            en: "Copied!",
+            vi: "Đã sao chép!",
+            es: "¡Copiado!",
+            zh: "已复制！",
+            hi: "कॉपी किया गया!",
+            ar: "تم النسخ!"
+        };
+        const msg = messages[lang] || "Copied!";
+        
+        navigator.clipboard.writeText(email).then(() => {
+            const copyBtn = document.getElementById('contactCopyBtn');
+            if (copyBtn) {
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '✅ ' + msg;
+                copyBtn.style.background = '#218838';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.style.background = '#28a745';
+                }, 2000);
+            }
+        }).catch(() => {
+            alert('Email: support@connectionsfinder.com');
+        });
+    }
+
+    // Re-bind the button to our new function
+    document.addEventListener('DOMContentLoaded', () => {
+        const copyBtn = document.getElementById('contactCopyBtn');
+        if (copyBtn) copyBtn.onclick = copyEmailToClipboard;
+    });
+    </script>
+    <script>
+    // 1. FORCE LANGUAGE UPDATE ON CLICK
+    document.addEventListener('click', function(e) {
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+                console.log('🔴 FORCED localStorage to:', newLang);
+            }
+        }
+    }, true); // Capture phase to run before main scripts
+
+    // 2. LIVE COPY FUNCTION
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.closest('#contactCopyBtn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const liveLang = localStorage.getItem('appLanguage') || 'en';
+            const msg = {
+                en: 'Copied!', vi: 'Đã sao chép!', es: '¡Copiado!', zh: '已复制！', hi: 'कॉपी किया गया!', ar: 'تم النسخ!'
+            }[liveLang] || 'Copied!';
+            
+            navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+                alert(msg + ' support@connectionsfinder.com');
+            }).catch(() => {
+                alert(msg + ' support@connectionsfinder.com');
+            });
+        }
+    }, true); // Capture phase to run before main scripts
+    </script>
+    <script>
+    // OBSERVE TIP TEXT AND CORRECT IT
+    const tipObserver = new MutationObserver((mutations) => {
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const tipDict = {
+            en: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.",
+            vi: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.",
+            es: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.",
+            zh: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。",
+            hi: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।",
+            ar: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك."
+        }[lang] || tipDict['en'];
+
+        const tipParagraphs = document.querySelectorAll('p[style*="font-size: 11px"]');
+        tipParagraphs.forEach(p => {
+            // Only update if it's inside the contact modal and currently has the wrong language
+            if (p.closest('#contactModal') && p.innerText !== tipDict) {
+                p.innerText = tipDict;
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        tipObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
     });
     </script>
 </body>

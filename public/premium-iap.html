@@ -255,7 +255,7 @@
       }
     </style>
   
-</head>
+<link rel="stylesheet" href="css/styles.css">`n</head>
   <body>
     <div class="container">
       <button id="backToMainBtn" class="back-button">
@@ -1844,6 +1844,69 @@ window.sendSupportEmail = sendSupportEmail;
     document.addEventListener('DOMContentLoaded', () => {
         observer.observe(document.body, { childList: true, subtree: true });
     });
+    </script>
+    <script>
+    // 1. FORCE localStorage UPDATE ON LANGUAGE CLICK
+    document.addEventListener('click', function(e) {
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+            }
+        }
+    }, true);
+
+    // 2. WATCH FOR MODAL AND FIX TEXT
+    const modalObserver = new MutationObserver(() => {
+        const modal = document.getElementById('contactModal');
+        if (modal && modal.style.display === 'block') {
+            // Wait 100ms for premium-iap.js to finish its work
+            setTimeout(() => {
+                const lang = localStorage.getItem('appLanguage') || 'en';
+                const dict = {
+                    en: { tip: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail." },
+                    vi: { tip: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn." },
+                    es: { tip: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail." },
+                    zh: { tip: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。" },
+                    hi: { tip: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।" },
+                    ar: { tip: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك." }
+                }[lang] || dict['en'];
+
+                // Rewrite the tip text
+                const paragraphs = modal.querySelectorAll('p');
+                paragraphs.forEach(p => {
+                    if (p.innerText.includes('Desktop tip') || p.innerText.includes('Mẹo') || p.innerText.includes('Consejo') || p.innerText.includes('桌面提示') || p.innerText.includes('डेस्कटॉप') || p.innerText.includes('نصيحة')) {
+                        p.innerText = dict.tip;
+                    }
+                });
+            }, 100);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        modalObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    });
+
+    // 3. FLAWLESS COPY POPUP (Delegation)
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.closest('#contactCopyBtn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const liveLang = localStorage.getItem('appLanguage') || 'en';
+            const msg = {
+                en: 'Copied!', vi: 'Đã sao chép!', es: '¡Copiado!', zh: '已复制！', hi: 'कॉपी किया गया!', ar: 'تم النسخ!'
+            }[liveLang] || 'Copied!';
+            
+            navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+                alert(msg + ' support@connectionsfinder.com');
+            }).catch(() => {
+                alert(msg + ' support@connectionsfinder.com');
+            });
+        }
+    }, true);
     </script>
 </body>
 </html>
