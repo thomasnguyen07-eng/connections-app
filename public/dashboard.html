@@ -1765,9 +1765,214 @@ document.addEventListener('DOMContentLoaded', function() {
     }, true);
 
     // 2. WATCH FOR MODAL AND FIX EVERYTHING (Tip + Title + Buttons)
+    
+    <script>
+    // 1. FORCE localStorage UPDATE ON LANGUAGE CLICK
+    document.addEventListener('click', function(e) {
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+            }
+        }
+    }, true);
+
+    // 2. FORCE RE-RENDER AND TRANSLATE MODAL
+    document.addEventListener('click', function(e) {
+        const openBtn = e.target.closest('button[onclick*="openContactModal"]') || e.target.closest('#contactModalBtn');
+        if (openBtn) {
+            // Wait 100ms for the modal to open, then translate
+            setTimeout(() => {
+                const modal = document.getElementById('contactModal');
+                if (!modal) return;
+
+                const lang = localStorage.getItem('appLanguage') || 'en';
+                const dict = {
+                    en: { title: "📧 Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours" },
+                    vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ" },
+                    es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas" },
+                    zh: { title: "📧 联系支持", sub: "我们随时为您提供帮助！", email: "发送电子邮件至：", send: "发送邮件", tip: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copy: "复制邮箱地址", cancel: "取消", resp: "24-48小时内回复" },
+                    hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें ईमेल करें:", send: "ईमेल भेजें", tip: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया" },
+                    ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة" }
+                }[lang] || dict['en'];
+
+                // Translate the title
+                const modalTitle = modal.querySelector('h3');
+                if (modalTitle) modalTitle.innerText = dict.title;
+
+                // Translate the subtitle
+                const modalSub = modal.querySelector('p[style*="opacity: 0.9"]');
+                if (modalSub) modalSub.innerText = dict.sub;
+
+                // Translate the email label
+                const emailLabel = modal.querySelector('p[style*="margin: 0 0 15px"]');
+                if (emailLabel) {
+                    emailLabel.innerHTML = dict.email + ' <strong style="color: #4267b2;">support@connectionsfinder.com</strong>';
+                }
+
+                // Translate the Send button
+                const sendBtn = document.getElementById('contactSendBtn');
+                if (sendBtn) sendBtn.innerHTML = '📧 ' + dict.send;
+
+                // Translate the Tip
+                const paragraphs = modal.querySelectorAll('p');
+                paragraphs.forEach(p => {
+                    if (p.innerText.includes('Desktop tip') || p.innerText.includes('Mẹo') || p.innerText.includes('Consejo') || p.innerText.includes('桌面提示') || p.innerText.includes('डेस्कटॉप') || p.innerText.includes('نصيحة')) {
+                        p.innerText = dict.tip;
+                    }
+                });
+
+                // Translate the Copy button
+                const copyBtn = document.getElementById('contactCopyBtn');
+                if (copyBtn) copyBtn.innerHTML = '📋 ' + dict.copy;
+
+                // Translate the Cancel button
+                const closeBtn = document.getElementById('contactCloseBtn');
+                if (closeBtn) closeBtn.innerHTML = '✖️ ' + dict.cancel;
+
+                // Translate the Response time
+                const respP = modal.querySelector('p[style*="font-size: 12px"]');
+                if (respP) respP.innerText = dict.resp;
+            }, 100);
+        }
+    }, true); // Capture phase to run before main scripts
+
+    // 3. FLAWLESS COPY POPUP
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.closest('#contactCopyBtn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const liveLang = localStorage.getItem('appLanguage') || 'en';
+            const msg = {
+                en: 'Copied!', vi: 'Đã sao chép!', es: '¡Copiado!', zh: '已复制！', hi: 'कॉपी किया गया!', ar: 'تم النسخ!'
+            }[liveLang] || 'Copied!';
+            
+            navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+                alert(msg + ' support@connectionsfinder.com');
+            }).catch(() => {
+                alert(msg + ' support@connectionsfinder.com');
+            });
+        }
+    }, true);
+    </script>
+    <script>
+    // 1. FORCE localStorage UPDATE ON LANGUAGE CLICK
+    document.addEventListener('click', function(e) {
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+            }
+        }
+    }, true);
+
+    // 2. WATCH FOR MODAL AND FIX EVERYTHING (Title, Buttons, Tip, Popup)
+    
+    <script>
+    // 1. FORCE localStorage UPDATE ON LANGUAGE CLICK
+    document.addEventListener('click', function(e) {
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+            }
+        }
+    }, true);
+
+    // 2. DESTROY AND RECREATE MODAL ON CLICK
+    document.addEventListener('click', function(e) {
+        const openBtn = e.target.closest('button[onclick*="openContactModal"]') || e.target.closest('#contactModalBtn');
+        if (openBtn) {
+            e.preventDefault();
+            
+            const oldModal = document.getElementById('contactModal');
+            if (oldModal) oldModal.remove();
+            const oldOverlay = document.getElementById('modalOverlay');
+            if (oldOverlay) oldOverlay.remove();
+
+            const lang = localStorage.getItem('appLanguage') || 'en';
+            const dict = {
+                en: { title: "📧 Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours", copied: "Copied!" },
+                vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ", copied: "Đã sao chép!" },
+                es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas", copied: "¡Copiado!" },
+                zh: { title: "📧 联系支持", sub: "我们随时为您提供帮助！", email: "发送电子邮件至：", send: "发送邮件", tip: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copy: "复制邮箱地址", cancel: "取消", resp: "24-48小时内回复", copied: "已复制！" },
+                hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें ईमेल करें:", send: "ईमेल भेजें", tip: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया", copied: "कॉपी किया गया!" },
+                ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة", copied: "تم النسخ!" }
+            }[lang] || dict['en'];
+
+            const overlay = document.createElement('div');
+            overlay.id = 'modalOverlay';
+            overlay.style.cssText = 'display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000;';
+            overlay.onclick = function() { overlay.remove(); modal.remove(); document.body.style.overflow = ''; };
+            
+            const modal = document.createElement('div');
+            modal.id = 'contactModal';
+            modal.style.cssText = 'display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 10001; max-width: 400px; width: 90%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;';
+            modal.innerHTML = 
+                <div style="background: linear-gradient(135deg, #4267b2, #365899); padding: 20px; border-radius: 16px 16px 0 0; color: white;">
+                    <h3 style="margin: 0; font-size: 20px;"></h3>
+                    <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;"></p>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="margin: 0 0 15px; color: #666; font-size: 14px; text-align: center;">
+                         <strong style="color: #4267b2;">support@connectionsfinder.com</strong>
+                    </p>
+                    <button id="contactSendBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #4267b2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">📧 </button>
+                    <p style="font-size: 11px; color: #666; margin: 6px 0 10px; text-align: center; line-height: 1.4;"></p>
+                    <button id="contactCopyBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">📋 </button>
+                    <button id="contactCloseBtn" style="width: 100%; margin: 8px 0; padding: 14px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">✖️ </button>
+                </div>
+                <div style="background: #f8f9fa; padding: 12px 20px; border-radius: 0 0 16px 16px; border-top: 1px solid #eee;">
+                    <p style="margin: 0; font-size: 12px; color: #999; text-align: center;"></p>
+                </div>
+            ;
+
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            document.getElementById('contactSendBtn').onclick = function() {
+                window.location.href = mailto:support@connectionsfinder.com?subject=&body=;
+                overlay.remove(); modal.remove(); document.body.style.overflow = '';
+            };
+            document.getElementById('contactCopyBtn').onclick = function() {
+                navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+                    alert(dict.copied + ' support@connectionsfinder.com');
+                }).catch(() => {
+                    alert(dict.copied + ' support@connectionsfinder.com');
+                });
+            };
+            document.getElementById('contactCloseBtn').onclick = function() {
+                overlay.remove(); modal.remove(); document.body.style.overflow = '';
+            };
+        }
+    }, true);
+    </script>
+    <script>
+    // 1. Update localStorage on language click
+    document.addEventListener('click', function(e) {
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+            }
+        }
+    }, true);
+
+    // 2. Watch for the modal to appear and translate it
     const modalObserver = new MutationObserver(() => {
         const modal = document.getElementById('contactModal');
         if (modal && modal.style.display === 'block') {
+            // Wait 100ms for reports.js to finish rendering the modal
             setTimeout(() => {
                 const lang = localStorage.getItem('appLanguage') || 'en';
                 const dict = {
@@ -1779,6 +1984,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة" }
                 }[lang] || dict['en'];
 
+                // Apply translations
                 const modalTitle = modal.querySelector('h3');
                 if (modalTitle) modalTitle.innerText = dict.title;
 
@@ -1793,8 +1999,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const sendBtn = document.getElementById('contactSendBtn');
                 if (sendBtn) sendBtn.innerHTML = '📧 ' + dict.send;
 
-                const paragraphs = modal.querySelectorAll('p');
-                paragraphs.forEach(p => {
+                const tipParagraphs = modal.querySelectorAll('p[style*="font-size: 11px"]');
+                tipParagraphs.forEach(p => {
                     if (p.innerText.includes('Desktop tip') || p.innerText.includes('Mẹo') || p.innerText.includes('Consejo') || p.innerText.includes('桌面提示') || p.innerText.includes('डेस्कटॉप') || p.innerText.includes('نصيحة')) {
                         p.innerText = dict.tip;
                     }
@@ -1816,7 +2022,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modalObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
     });
 
-    // 3. FLAWLESS COPY POPUP
+    // 3. Copy Popup
     document.addEventListener('click', function(e) {
         if (e.target && e.target.closest('#contactCopyBtn')) {
             e.preventDefault();
