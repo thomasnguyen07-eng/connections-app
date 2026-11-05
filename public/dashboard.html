@@ -1969,77 +1969,87 @@ document.addEventListener('DOMContentLoaded', function() {
     }, true);
 
     // 2. Watch for the modal to appear and translate it
-    const modalObserver = new MutationObserver(() => {
-        const modal = document.getElementById('contactModal');
-        if (modal && modal.style.display === 'block') {
-            // Wait 100ms for reports.js to finish rendering the modal
-            setTimeout(() => {
-                const lang = localStorage.getItem('appLanguage') || 'en';
-                const dict = {
-                    en: { title: "📧 Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "💡 Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours" },
-                    vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "💡 Mẹo trên máy tính: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ" },
-                    es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "💡 Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas" },
-                    zh: { title: "📧 联系支持", sub: "我们随时为您提供帮助！", email: "发送电子邮件至：", send: "发送邮件", tip: "💡 桌面提示：如果“发送邮件”未打开，请使用“复制邮件”并粘贴到您的网络邮件中。", copy: "复制邮箱地址", cancel: "取消", resp: "24-48小时内回复" },
-                    hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें ईमेल करें:", send: "ईमेल भेजें", tip: "💡 डेस्कटॉप टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया" },
-                    ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "راسلنا عبر البريد الإلكتروني على:", send: "إرسال بريد إلكتروني", tip: "💡 نصيحة لسطح المكتب: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد في غضون 24-48 ساعة" }
-                }[lang] || dict['en'];
-
-                // Apply translations
-                const modalTitle = modal.querySelector('h3');
-                if (modalTitle) modalTitle.innerText = dict.title;
-
-                const modalSub = modal.querySelector('p[style*="opacity: 0.9"]');
-                if (modalSub) modalSub.innerText = dict.sub;
-
-                const emailLabel = modal.querySelector('p[style*="margin: 0 0 15px"]');
-                if (emailLabel) {
-                    emailLabel.innerHTML = dict.email + ' <strong style="color: #4267b2;">support@connectionsfinder.com</strong>';
-                }
-
-                const sendBtn = document.getElementById('contactSendBtn');
-                if (sendBtn) sendBtn.innerHTML = '📧 ' + dict.send;
-
-                const tipParagraphs = modal.querySelectorAll('p[style*="font-size: 11px"]');
-                tipParagraphs.forEach(p => {
-                    if (p.innerText.includes('Desktop tip') || p.innerText.includes('Mẹo') || p.innerText.includes('Consejo') || p.innerText.includes('桌面提示') || p.innerText.includes('डेस्कटॉप') || p.innerText.includes('نصيحة')) {
-                        p.innerText = dict.tip;
-                    }
-                });
-
-                const copyBtn = document.getElementById('contactCopyBtn');
-                if (copyBtn) copyBtn.innerHTML = '📋 ' + dict.copy;
-
-                const closeBtn = document.getElementById('contactCloseBtn');
-                if (closeBtn) closeBtn.innerHTML = '✖️ ' + dict.cancel;
-
-                const respP = modal.querySelector('p[style*="font-size: 12px"]');
-                if (respP) respP.innerText = dict.resp;
-            }, 100);
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        modalObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
-    });
-
-    // 3. Copy Popup
+    
+    <script>
+    // 1. Update localStorage on language click
     document.addEventListener('click', function(e) {
-        if (e.target && e.target.closest('#contactCopyBtn')) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const liveLang = localStorage.getItem('appLanguage') || 'en';
-            const msg = {
-                en: 'Copied!', vi: 'Đã sao chép!', es: '¡Copiado!', zh: '已复制！', hi: 'कॉपी किया गया!', ar: 'تم النسخ!'
-            }[liveLang] || 'Copied!';
-            
-            navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
-                alert(msg + ' support@connectionsfinder.com');
-            }).catch(() => {
-                alert(msg + ' support@connectionsfinder.com');
-            });
+        const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+        if (langBtn) {
+            const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+            if (newLang) {
+                localStorage.setItem('appLanguage', newLang);
+                localStorage.setItem('userLanguage', newLang);
+            }
         }
     }, true);
-    </script>
+
+    // 2. Watch for the modal to appear and translate it
+    
+<script>
+document.addEventListener('click', function(e) {
+    const langBtn = e.target.closest('[data-lang]') || e.target.closest('.lang-btn');
+    if (langBtn) {
+        const newLang = langBtn.getAttribute('data-lang') || langBtn.getAttribute('data-language');
+        if (newLang) {
+            localStorage.setItem('appLanguage', newLang);
+            localStorage.setItem('userLanguage', newLang);
+        }
+    }
+}, true);
+
+const modalObserver = new MutationObserver(() => {
+    const modal = document.getElementById('contactModal');
+    if (modal && modal.style.display === 'block') {
+        setTimeout(() => {
+            const lang = localStorage.getItem('appLanguage') || 'en';
+            const dict = {
+                en: { title: "?? Contact Support", sub: "We're here to help!", email: "Email us at:", send: "Send Email", tip: "?? Desktop tip: If Send Email doesn't open, use Copy Email and paste into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours" },
+                vi: { title: "?? Li�n h? H? tr?", sub: "Ch�ng t�i ? d�y d? gi�p d?!", email: "G?i email cho ch�ng t�i t?i:", send: "G?i Email", tip: "?? M?o tr�n m�y t�nh: N?u G?i Email kh�ng m?, h�y s? d?ng Sao ch�p Email v� d�n v�o webmail c?a b?n.", copy: "Sao ch�p �?a ch? Email", cancel: "H?y", resp: "Ph?n h?i trong v�ng 24-48 gi?" },
+                es: { title: "?? Contactar con Soporte", sub: "�Estamos aqu� para ayudar!", email: "Env�enos un correo a:", send: "Enviar Correo", tip: "?? Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y p�guelo en su webmail.", copy: "Copiar Direcci�n de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas" },
+                zh: { title: "?? ????", sub: "??????????!", email: "???????:", send: "????", tip: "?? ????:??�????�???,???�????�????????????", copy: "??????", cancel: "??", resp: "24-48?????" },
+                hi: { title: "?? ?????? ?? ?????? ????", sub: "?? ???? ??? ?? ??? ???!", email: "???? ???? ????:", send: "???? ?????", tip: "?? ???????? ???: ??? ???? ????? ???? ????? ??, ?? ???? ???? ???? ?? ????? ???? ?? ???? ?????? ??? ????? ?????", copy: "???? ??? ???? ????", cancel: "???? ????", resp: "24-48 ????? ?? ???? ???????????" },
+                ar: { title: "?? ???? ??????", sub: "??? ??? ????????!", email: "?????? ??? ?????? ?????????? ???:", send: "????? ???? ????????", tip: "?? ????? ???? ??????: ??? ?? ???? ????? ???? ????????? ??????? ??? ?????? ?????????? ?????? ?? ???? ????? ????? ??.", copy: "??? ????? ?????? ??????????", cancel: "?????", resp: "???? ?? ???? 24-48 ????" }
+            }[lang] || dict['en'];
+
+            const modalTitle = modal.querySelector('h3');
+            if (modalTitle) modalTitle.innerText = dict.title;
+            const modalSub = modal.querySelector('p[style*="opacity: 0.9"]');
+            if (modalSub) modalSub.innerText = dict.sub;
+            const emailLabel = modal.querySelector('p[style*="margin: 0 0 15px"]');
+            if (emailLabel) emailLabel.innerHTML = dict.email + ' <strong style="color: #4267b2;">support@connectionsfinder.com</strong>';
+            const sendBtn = document.getElementById('contactSendBtn');
+            if (sendBtn) sendBtn.innerHTML = '?? ' + dict.send;
+            const tipParagraphs = modal.querySelectorAll('p[style*="font-size: 11px"]');
+            tipParagraphs.forEach(p => {
+                if (p.innerText.includes('Desktop tip') || p.innerText.includes('M?o') || p.innerText.includes('Consejo') || p.innerText.includes('????') || p.innerText.includes('????????') || p.innerText.includes('?????')) p.innerText = dict.tip;
+            });
+            const copyBtn = document.getElementById('contactCopyBtn');
+            if (copyBtn) copyBtn.innerHTML = '?? ' + dict.copy;
+            const closeBtn = document.getElementById('contactCloseBtn');
+            if (closeBtn) closeBtn.innerHTML = '?? ' + dict.cancel;
+            const respP = modal.querySelector('p[style*="font-size: 12px"]');
+            if (respP) respP.innerText = dict.resp;
+        }, 100);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    modalObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.closest('#contactCopyBtn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const liveLang = localStorage.getItem('appLanguage') || 'en';
+        const msg = { en: 'Copied!', vi: '�� sao ch�p!', es: '�Copiado!', zh: '???!', hi: '???? ???? ???!', ar: '?? ?????!' }[liveLang] || 'Copied!';
+        navigator.clipboard.writeText('support@connectionsfinder.com').then(() => {
+            alert(msg + ' support@connectionsfinder.com');
+        }).catch(() => {
+            alert(msg + ' support@connectionsfinder.com');
+        });
+    }
+}, true);
+</script>
 </body>
 </html>
