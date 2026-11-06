@@ -1650,8 +1650,18 @@ function copyEmailToClipboard() {
 
 function sendSupportEmail() {
     const email = "support@connectionsfinder.com";
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const emailBodies = {
+        en: "Hello Connections Team,\n\nI need assistance with...\n\nThank you.",
+        vi: "Xin chào Đội ngũ Connections,\n\nTôi cần hỗ trợ về...\n\nCảm ơn.",
+        es: "Hola equipo de Connections,\n\nNecesito ayuda con...\n\nGracias.",
+        zh: "你好 Connections 团队，\n\n我需要关于...的帮助。\n\n谢谢。",
+        hi: "नमस्ते Connections टीम,\n\nमुझे ... के बारे में सहायता चाहिए।\n\nधन्यवाद।",
+        ar: "مرحباً فريق Connections،\n\nأحتاج إلى مساعدة بشأن...\n\nشكراً."
+    };
+    const emailBody = emailBodies[lang] || emailBodies['en'];
     const subject = encodeURIComponent("Connections App Support Request");
-    const body = encodeURIComponent("Hello Connections Team,\n\nI need assistance with...\n\nThank you.");
+    const body = encodeURIComponent(emailBody);
     const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
     window.location.href = mailtoUrl;
     closeContactModal();

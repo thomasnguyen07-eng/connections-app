@@ -5858,3 +5858,36 @@ if (typeof createZaloSafariModal !== "undefined")
   window.createZaloSafariModal = createZaloSafariModal;
 
 window.ImageProvider = ImageProvider;
+
+// --- DYNAMIC FALLBACK POPUP TRANSLATION ---
+function translateFallbackPopup() {
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const dict = {
+        en: { title: "No email app detected", desc: "Your device doesn't have a default email app installed. Choose one of the options below to send your message:", gmail: "Open Gmail", outlook: "Open Outlook", yahoo: "Open Yahoo" },
+        vi: { title: "Không tìm thấy ứng dụng email", desc: "Thiết bị của bạn không có ứng dụng email mặc định. Chọn một trong các tùy chọn bên dưới để gửi tin nhắn:", gmail: "Mở Gmail", outlook: "Mở Outlook", yahoo: "Mở Yahoo" },
+        es: { title: "No se detectó ninguna app de correo", desc: "Su dispositivo no tiene una app de correo predeterminada. Elija una de las opciones a continuación para enviar su mensaje:", gmail: "Abrir Gmail", outlook: "Abrir Outlook", yahoo: "Abrir Yahoo" },
+        zh: { title: "未检测到电子邮件应用", desc: "您的设备没有安装默认的电子邮件应用。请选择以下选项之一发送消息：", gmail: "打开 Gmail", outlook: "打开 Outlook", yahoo: "打开 Yahoo" },
+        hi: { title: "कोई ईमेल ऐप नहीं मिला", desc: "आपके डिवाइस में कोई डिफ़ॉल्ट ईमेल ऐप इंस्टॉल नहीं है। अपना संदेश भेजने के लिए नीचे दिए गए विकल्पों में से एक चुनें:", gmail: "Gmail खोलें", outlook: "Outlook खोलें", yahoo: "Yahoo खोलें" },
+        ar: { title: "لم يتم اكتشاف تطبيق بريد إلكتروني", desc: "لا يحتوي جهازك على تطبيق بريد إلكتروني افتراضي. اختر أحد الخيارات أدناه لإرسال رسالتك:", gmail: "افتح Gmail", outlook: "افتح Outlook", yahoo: "افتح Yahoo" }
+    }[lang] || dict['en'];
+
+    const fallbackDiv = document.querySelector('div[style*="rgba(0,0,0,0.8)"]');
+    if (fallbackDiv) {
+        const h3 = fallbackDiv.querySelector('h3');
+        if (h3) h3.innerText = '📧 ' + dict.title;
+        const p = fallbackDiv.querySelector('p');
+        if (p) p.innerText = dict.desc;
+        const links = fallbackDiv.querySelectorAll('a');
+        if (links[0]) links[0].innerText = dict.gmail;
+        if (links[1]) links[1].innerText = dict.outlook;
+        if (links[2]) links[2].innerText = dict.yahoo;
+    }
+}
+
+// Hook into the click event that opens the popup
+const originalAddEventListener = document.addEventListener;
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.href && e.target.href.startsWith('mailto:')) {
+        setTimeout(translateFallbackPopup, 500);
+    }
+}, true);
