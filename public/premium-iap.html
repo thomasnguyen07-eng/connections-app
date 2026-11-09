@@ -1918,5 +1918,44 @@ window.sendSupportEmail = sendSupportEmail;
         }
     }, true);
     </script>
+
+
+<script>
+// ISOLATED ANDROID SUBSCRIPTION TEXT (SAFE & DYNAMIC)
+function updateAndroidSubscriptionText() {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    
+    if (isAndroid) {
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const googlePlayTexts = {
+            en: "Payment will be processed securely via Google Play. Subscriptions automatically renew unless canceled at least 24 hours before the end of the current period. You can manage and cancel your subscriptions in the Google Play Store after purchase.",
+            vi: "Thanh toán sẽ được xử lý an toàn qua Google Play. Đăng ký sẽ tự động gia hạn trừ khi bị hủy ít nhất 24 giờ trước khi kết thúc kỳ hiện tại. Bạn có thể quản lý và hủy đăng ký trong Cửa hàng Google Play sau khi mua.",
+            es: "El pago se procesará de forma segura a través de Google Play. Las suscripciones se renuevan automáticamente a menos que se cancelen al menos 24 horas antes del final del período actual. Puede administrar y cancelar sus suscripciones en Google Play Store después de la compra.",
+            zh: "付款将通过 Google Play 安全处理。除非在当前周期结束前至少 24 小时取消，否则订阅将自动续订。购买后，您可以在 Google Play 商店中管理和取消订阅。",
+            hi: "भुगतान Google Play के माध्यम से सुरक्षित रूप से संसाधित किया जाएगा। जब तक वर्तमान अवधि समाप्त होने से कम से कम 24 घंटे पहले रद्द नहीं किया जाता, तब तक सदस्यता स्वतः नवीनीकृत हो जाती है। खरीद के बाद आप Google Play स्टोर में अपनी सदस्यताओं को प्रबंधित और रद्द कर सकते हैं।",
+            ar: "ستتم معالجة الدفع بشكل آمن عبر Google Play. يتم تجديد الاشتراكات تلقائيًا ما لم يتم إلغاؤها قبل 24 ساعة على الأقل من نهاية الفترة الحالية. يمكنك إدارة اشتراكاتك وإلغاؤها في متجر Google Play بعد الشراء."
+        };
+        
+        const newText = googlePlayTexts[lang] || googlePlayTexts['en'];
+        
+        const allParagraphs = document.querySelectorAll('p');
+        allParagraphs.forEach(p => {
+            if (p.innerText.includes('Apple ID') || p.innerText.includes('Google Play')) {
+                p.innerText = newText;
+            }
+        });
+    }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', updateAndroidSubscriptionText);
+
+// Run when language buttons are clicked
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.lang-btn') || e.target.closest('[data-lang]')) {
+        setTimeout(updateAndroidSubscriptionText, 100); // Small delay for the main script to update first
+    }
+}, true);
+</script>
 </body>
 </html>
