@@ -170,6 +170,7 @@ console.log("🚀 App started - logging initialized");
           <button id="usersSignUpBtn" class="control-btn auth-btn">
             <i class="fas fa-user-plus"></i>
             <span>Sign Up</span>
+          <a href="#" id="forgotPasswordLink" style="font-size: 12px; color: #007bff; margin-top: 5px; display: inline-block; text-decoration: underline;">Forgot Password?</a>
           </button>
         </div>
 
@@ -1035,31 +1036,7 @@ if (lang === 'hi') {
 </script>
 
 <!-- INITIALIZATION: Actually use it -->
-<script>
-  // Initialize avatar upload when page loads
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing avatar upload...');
-    
-    // Wait a bit longer to ensure script is loaded
-    setTimeout(function() {
-      if (typeof SimpleAvatarUpload !== 'undefined') {
-        window.avatarUploader = new SimpleAvatarUpload();
-        window.avatarUploader.setup();
-        console.log('✅ Avatar upload initialized');
-      } else {
-        console.error('❌ SimpleAvatarUpload not found - will retry');
-        // Retry once after 2 seconds
-        setTimeout(function() {
-          if (typeof SimpleAvatarUpload !== 'undefined') {
-            window.avatarUploader = new SimpleAvatarUpload();
-            window.avatarUploader.setup();
-            console.log('✅ Avatar upload initialized (retry)');
-          }
-        }, 2000);
-      }
-    }, 500); // Initial wait
-  });
-</script>
+
 <!-- ISOLATED USER AUTH SYSTEM - LOADS LAST -->
 <script type="module" src="./js/firebase-config-users.js"></script>
 <script src="./js/users-auth.js"></script>
@@ -2086,6 +2063,126 @@ const logoutObserver = new MutationObserver(() => {
 
 document.addEventListener('DOMContentLoaded', () => {
     logoutObserver.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forgotLink = document.getElementById('forgotPasswordLink');
+    
+    // 1. Translate the "Forgot Password?" link based on the current language
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const linkTranslations = {
+        en: "Forgot Password?",
+        vi: "Quên mật khẩu?",
+        es: "¿Olvidaste tu contraseña?",
+        zh: "忘记密码？",
+        hi: "पासवर्ड भूल गए?",
+        ar: "هل نسيت كلمة المرور؟"
+    };
+    if (forgotLink) {
+        forgotLink.innerText = linkTranslations[lang] || linkTranslations['en'];
+    }
+
+    // 2. Handle the click event with translated prompts
+    if (forgotLink) {
+        forgotLink.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const prompts = {
+                en: { ask: "Please enter your email address to reset your password:", success: "Password reset email sent! Please check your inbox.", error: "Error: " },
+                vi: { ask: "Vui lòng nhập địa chỉ email của bạn để đặt lại mật khẩu:", success: "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư đến.", error: "Lỗi: " },
+                es: { ask: "Por favor, introduzca su correo electrónico para restablecer su contraseña:", success: "¡Correo de restablecimiento de contraseña enviado! Por favor, revise su bandeja de entrada.", error: "Error: " },
+                zh: { ask: "请输入您的电子邮件地址以重置密码：", success: "密码重置邮件已发送！请检查您的收件箱。", error: "错误：" },
+                hi: { ask: "अपना पासवर्ड रीसेट करने के लिए कृपया अपना ईमेल पता दर्ज करें:", success: "पासवर्ड रीसेट ईमेल भेज दिया गया है! कृपया अपना इनबॉक्स जांचें।", error: "त्रुटि: " },
+                ar: { ask: "يرجى إدخال عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور:", success: "تم إرسال بريد إعادة تعيين كلمة المرور! يرجى التحقق من صندوق الوارد الخاص بك.", error: "خطأ: " }
+            };
+            const currentPrompt = prompts[lang] || prompts['en'];
+            
+            const email = prompt(currentPrompt.ask);
+            if (email) {
+                try {
+                    const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js");
+                    await sendPasswordResetEmail(auth, email);
+                    alert(currentPrompt.success);
+                } catch (error) {
+                    alert(currentPrompt.error + error.message);
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+    /* Hide the original text completely so your app's translation engine cannot see it or overwrite it */
+    #forgotPasswordLink { font-size: 0 !important; }
+    
+    /* Display the correct translated text based on the language set on the HTML tag */
+    html[lang="en"] #forgotPasswordLink::after { content: "Forgot Password?"; font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer; }
+    html[lang="vi"] #forgotPasswordLink::after { content: "Quên mật khẩu?"; font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer; }
+    html[lang="es"] #forgotPasswordLink::after { content: "¿Olvidaste tu contraseña?"; font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer; }
+    html[lang="zh"] #forgotPasswordLink::after { content: "忘记密码？"; font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer; }
+    html[lang="hi"] #forgotPasswordLink::after { content: "पासवर्ड भूल गए?"; font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer; }
+    html[lang="ar"] #forgotPasswordLink::after { content: "هل نسيت كلمة المرور؟"; font-size: 12px; color: #007bff; text-decoration: underline; cursor: pointer; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- 1. FORCE ALIGNMENT ---
+    function forceAlignment() {
+        const lang = localStorage.getItem('appLanguage') || 'en';
+        const isArabic = (lang === 'ar');
+        document.documentElement.dir = isArabic ? 'rtl' : 'ltr';
+        document.body.dir = isArabic ? 'rtl' : 'ltr';
+        document.body.style.textAlign = isArabic ? 'right' : 'left';
+        
+        // Make sure the HTML lang attribute matches so the CSS trick works
+        document.documentElement.lang = lang;
+    }
+    
+    forceAlignment();
+
+    // Listen for language changes
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.tagName === 'SELECT') {
+            setTimeout(forceAlignment, 50);
+        }
+    });
+
+    // --- 2. HANDLE FORGOT PASSWORD CLICK ---
+    document.addEventListener('click', async function(e) {
+        const forgotLink = e.target.closest('#forgotPasswordLink');
+        if (forgotLink) {
+            e.preventDefault();
+            e.stopPropagation(); // Stops the Sign Up modal from opening
+            
+            const lang = localStorage.getItem('appLanguage') || 'en';
+            const prompts = {
+                en: { ask: "Please enter your email address to reset your password:", success: "Password reset email sent! Please check your inbox.", error: "Error: " },
+                vi: { ask: "Vui lòng nhập địa chỉ email của bạn để đặt lại mật khẩu:", success: "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư đến.", error: "Lỗi: " },
+                es: { ask: "Por favor, introduzca su correo electrónico para restablecer su contraseña:", success: "¡Correo de restablecimiento de contraseña enviado! Por favor, revise su bandeja de entrada.", error: "Error: " },
+                zh: { ask: "请输入您的电子邮件地址以重置密码：", success: "密码重置邮件已发送！请检查您的收件箱。", error: "错误：" },
+                hi: { ask: "अपना पासवर्ड रीसेट करने के लिए कृपया अपना ईमेल पता दर्ज करें:", success: "पासवर्ड रीसेट ईमेल भेज दिया गया है! कृपया अपना इनबॉक्स जांचें।", error: "त्रुटि: " },
+                ar: { ask: "يرجى إدخال عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور:", success: "تم إرسال بريد إعادة تعيين كلمة المرور! يرجى التحقق من صندوق الوارد الخاص بك.", error: "خطأ: " }
+            };
+            const currentPrompt = prompts[lang] || prompts['en'];
+            
+            const email = prompt(currentPrompt.ask);
+            if (email) {
+                try {
+                    const { getAuth, sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js");
+                    const { getApp } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js");
+                    const app = getApp(); 
+                    const auth = getAuth(app);
+                    
+                    await sendPasswordResetEmail(auth, email);
+                    alert(currentPrompt.success);
+                } catch (error) {
+                    alert(currentPrompt.error + error.message);
+                }
+            }
+        }
+    }, true); 
 });
 </script>
 </body>
