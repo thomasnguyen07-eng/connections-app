@@ -170,7 +170,7 @@ console.log("🚀 App started - logging initialized");
           <button id="usersSignUpBtn" class="control-btn auth-btn">
             <i class="fas fa-user-plus"></i>
             <span>Sign Up</span>
-          <a href="#" id="forgotPasswordLink" style="font-size: 12px; color: #007bff; margin-top: 5px; display: inline-block; text-decoration: underline;">Forgot Password?</a>
+          
           </button>
         </div>
 
@@ -201,22 +201,22 @@ console.log("🚀 App started - logging initialized");
     <!-- ROW 2 -->
     <div class="header-row header-row-2">
       <div class="row-2-left">
-        <select id="usersLanguageSwitcher" class="language-switcher control-btn">
+        <div style='position: relative; display: inline-block;'><select id="usersLanguageSwitcher" class="language-switcher control-btn">
           <option value="en">English</option>
           <option value="es">Español</option>
           <option value="zh">中文</option>
           <option value="vi">Tiếng Việt</option>
           <option value="hi">हिन्दी</option>
           <option value="ar">العربية</option>
-        </select>
-        <select id="language-switcher" class="language-switcher control-btn">
+        </select></div>
+        <div style='position: relative; display: inline-block;'><select id="language-switcher" class="language-switcher control-btn">
           <option value="en">English</option>
           <option value="es">Español</option>
           <option value="zh">中文</option>
           <option value="vi">Tiếng Việt</option>
           <option value="hi">हिन्दी</option>
           <option value="ar">العربية</option>
-        </select>
+        </select></div>
       </div>
 
       <div class="row-2-center">
@@ -474,12 +474,12 @@ console.log("🚀 App started - logging initialized");
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
         <input type="email" id="bulkEmail" placeholder="Organization email" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
         <input type="number" id="bulkCount" placeholder="Number of codes" min="1" max="1000" value="10" style="width: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-        <select id="bulkPlan" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        <div style='position: relative; display: inline-block;'><select id="bulkPlan" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             <option value="monthly">1 Month</option>
             <option value="three_months">3 Months</option>
             <option value="six_months">6 Months</option>
             <option value="yearly">1 Year</option>
-        </select>
+        </select></div>
         <button id="generateBulkBtn" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 4px;">Generate Bulk Codes</button>
     </div>
     <div id="bulkResult" style="margin-top: 10px; max-height: 200px; overflow-y: auto; font-size: 12px;"></div>
@@ -2185,5 +2185,109 @@ document.addEventListener('DOMContentLoaded', function() {
     }, true); 
 });
 </script>
+
+
+
+-->
+-->
+<!-- FORGOT PASSWORD FIX -->
+<style>
+    #forgotPasswordLink {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: #007bff;
+        text-decoration: underline;
+        white-space: nowrap;
+        background-color: white; /* Masks the thin border line behind it */
+        padding: 0 4px; 
+        width: fit-content;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait 500ms to let your app fully render the login/logout state
+    setTimeout(function() {
+        
+        // 1. THE FOOLPROOF CHECK: Is the "Sign In" button currently visible on screen?
+        // We look for elements containing "Sign In" or "Đăng nhập" that are actually taking up space (offsetParent !== null)
+        const signInBtn = Array.from(document.querySelectorAll('button, a, div, span')).find(el => 
+            (el.innerText.trim() === 'Sign In' || el.innerText.trim() === 'Đăng nhập') && el.offsetParent !== null
+        );
+
+        // If the "Sign In" button is NOT visible, it means the user is logged in.
+        // We stop the script immediately and DO NOT create the link.
+        if (!signInBtn) {
+            return; 
+        }
+
+        // 2. Find the language dropdown
+        const langSelect = document.getElementById('languageSwitcher') || document.querySelector('select');
+        if (!langSelect) return;
+
+        // 3. Create the link
+        const forgotLink = document.createElement('a');
+        forgotLink.href = '#';
+        forgotLink.id = 'forgotPasswordLink';
+        
+        // Insert it immediately AFTER the language dropdown's parent container
+        const parentContainer = langSelect.parentElement; 
+        parentContainer.appendChild(forgotLink);
+
+        // 4. Translation Logic
+        function updateLinkText() {
+            const lang = localStorage.getItem('appLanguage') || 'en';
+            const translations = {
+                'en': 'Forgot Password?',
+                'vi': 'Quên mật khẩu?',
+                'es': '¿Olvidaste tu contraseña?',
+                'ar': 'هل نسيت كلمة المرور؟',
+                'hi': 'पासवर्ड भूल गए?',
+                'zh': '忘记密码？'
+            };
+            forgotLink.innerText = translations[lang] || translations['en'];
+        }
+
+        updateLinkText();
+        langSelect.addEventListener('change', function() {
+            setTimeout(updateLinkText, 50);
+        });
+
+        // 5. Click Logic
+        forgotLink.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const lang = localStorage.getItem('appLanguage') || 'en';
+            const prompts = {
+                en: { ask: "Please enter your email address to reset your password:", success: "Password reset email sent! Please check your inbox.", error: "Error: " },
+                vi: { ask: "Vui lòng nhập địa chỉ email của bạn để đặt lại mật khẩu:", success: "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư đến.", error: "Lỗi: " },
+                es: { ask: "Por favor, introduzca su correo electrónico para restablecer su contraseña:", success: "¡Correo de restablecimiento de contraseña enviado! Por favor, revise su bandeja de entrada.", error: "Error: " },
+                zh: { ask: "请输入您的电子邮件地址以重置密码：", success: "密码重置邮件已发送！请检查您的收件箱。", error: "错误：" },
+                hi: { ask: "अपना पासवर्ड रीसेट करने के लिए कृपया अपना ईमेल पता दर्ज करें:", success: "पासवर्ड रीसेट ईमेल भेज दिया गया है! कृपया अपना इनबॉक्स जांचें।", error: "त्रुटि: " },
+                ar: { ask: "يرجى إدخال عنوان بريدك الإلكتروني لإعادة تعيين كلمة المرور:", success: "تم إرسال بريد إعادة تعيين كلمة المرور! يرجى التحقق من صندوق الوارد الخاص بك.", error: "خطأ: " }
+            };
+            const currentPrompt = prompts[lang] || prompts['en'];
+            
+            const email = prompt(currentPrompt.ask);
+            if (email) {
+                try {
+                    const { getAuth, sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js");
+                    const { getApp } = await import("https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js");
+                    const app = getApp(); 
+                    const auth = getAuth(app);
+                    
+                    await sendPasswordResetEmail(auth, email);
+                    alert(currentPrompt.success);
+                } catch (error) {
+                    alert(currentPrompt.error + error.message);
+                }
+            }
+        });
+    }, 500); // 500ms delay ensures your app has fully switched the UI
+});
+</script>
+<!-- END FORGOT PASSWORD FIX -->
 </body>
 </html>
