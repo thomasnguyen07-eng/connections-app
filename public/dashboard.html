@@ -2289,5 +2289,45 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <!-- END FORGOT PASSWORD FIX -->
+<!-- SUPPORT TIMING FIX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Find the support link by its label or the mailto href
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('a, span, div, button');
+        
+        // Check if the user clicked the support link
+        if (target && (target.id === 'supportLabel' || target.innerHTML.includes('support@connectionsfinder.com') || target.href?.includes('mailto:support@'))) {
+            
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 1. Get the current language safely
+            const lang = localStorage.getItem('appLanguage') || localStorage.getItem('userLanguage') || 'en';
+            
+            // 2. Define translations internally so there are no external conflicts
+            const translations = {
+                en: { subject: "Support Request - Connections", body: "Hello Support Team,\n\nI need help with the following:\n\n" },
+                vi: { subject: "Yêu cầu Hỗ trợ - Connections", body: "Chào Đội ngũ Hỗ trợ,\n\nTôi cần giúp đỡ về vấn đề sau:\n\n" },
+                es: { subject: "Solicitud de Soporte - Connections", body: "Hola Equipo de Soporte,\n\nNecesito ayuda con lo siguiente:\n\n" },
+                zh: { subject: "支持请求 - Connections", body: "支持团队您好，\n\n我需要以下方面的帮助：\n\n" },
+                hi: { subject: "सहायता अनुरोध - Connections", body: "नमस्ते सहायता टीम,\n\nमुझे निम्नलिखित में सहायता की आवश्यकता है:\n\n" },
+                ar: { subject: "طلب دعم - Connections", body: "مرحباً فريق الدعم،\n\nأحتاج إلى مساعدة بشأن ما يلي:\n\n" }
+            };
+
+            const currentLang = translations[lang] || translations['en'];
+            
+            // 3. Build the mailto link
+            const mailtoLink = mailto:support@connectionsfinder.com?subject=&body=;
+            
+            // 4. Delay slightly to ensure translations are done, then open email
+            setTimeout(() => {
+                window.location.href = mailtoLink;
+            }, 100);
+        }
+    }, true); // Use capture phase to grab the click before the old code does
+});
+</script>
+<!-- END SUPPORT TIMING FIX -->
 </body>
 </html>
