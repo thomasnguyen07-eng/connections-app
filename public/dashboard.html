@@ -2329,5 +2329,65 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <!-- END SUPPORT TIMING FIX -->
+<!-- SAFE SUPPORT INTERCEPTOR -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Watch the body for the popup to appear
+    const observer = new MutationObserver(function(mutations) {
+        // Look for the Support popup title
+        const popupTitle = document.querySelector('.support-modal-title, #supportModalTitle, [id*="supportModal"] h3, [class*="support"] h2');
+        
+        if (popupTitle && popupTitle.innerText.includes('Contact') || popupTitle.innerText.includes('Liên hệ') || popupTitle.innerText.includes('Hỗ trợ')) {
+            
+            // Grab the exact language from the dropdown, not localStorage
+            const langSelect = document.getElementById('languageSwitcher') || document.querySelector('select');
+            const currentLang = langSelect ? langSelect.value : (localStorage.getItem('appLanguage') || 'en');
+
+            // Define the internal dictionary (No external conflict!)
+            const t = {
+                en: { title: "📧 Contact Support", sub: "We are here to help!", email: "Send an email to:", send: "Send Email", tip: "PC Tip: If Send Email doesn't open, use Copy Email and paste it into your webmail.", copy: "Copy Email Address", cancel: "Cancel", resp: "Response within 24-48 hours", copied: "✅ Copied!" },
+                es: { title: "📧 Contactar con Soporte", sub: "¡Estamos aquí para ayudar!", email: "Envíenos un correo a:", send: "Enviar Correo", tip: "Consejo para PC: Si Enviar Correo no se abre, use Copiar Correo y péguelo en su webmail.", copy: "Copiar Dirección de Correo", cancel: "Cancelar", resp: "Respuesta en 24-48 horas", copied: "✅ ¡Copiado!" },
+                vi: { title: "📧 Liên hệ Hỗ trợ", sub: "Chúng tôi ở đây để giúp đỡ!", email: "Gửi email cho chúng tôi tại:", send: "Gửi Email", tip: "Mẹo cho PC: Nếu Gửi Email không mở, hãy sử dụng Sao chép Email và dán vào webmail của bạn.", copy: "Sao chép Địa chỉ Email", cancel: "Hủy", resp: "Phản hồi trong vòng 24-48 giờ", copied: "✅ Đã sao chép!" },
+                zh: { title: "📧 联系支持", sub: "我们在这里提供帮助！", email: "请发送电子邮件至：", send: "发送电子邮件", tip: "PC提示：如果发送电子邮件未打开，请使用复制电子邮件并将其粘贴到您的网络邮件中。", copy: "复制电子邮件地址", cancel: "取消", resp: "在24-48小时内回复", copied: "✅ 已复制！" },
+                hi: { title: "📧 सहायता से संपर्क करें", sub: "हम यहाँ मदद के लिए हैं!", email: "हमें एक ईमेल भेजें:", send: "ईमेल भेजें", tip: "पीसी टिप: यदि ईमेल भेजें नहीं खुलता है, तो ईमेल कॉपी करें का उपयोग करें और इसे अपने वेबमेल में पेस्ट करें।", copy: "ईमेल पता कॉपी करें", cancel: "रद्द करें", resp: "24-48 घंटों के भीतर प्रतिक्रिया", copied: "✅ कॉपी किया गया!" },
+                ar: { title: "📧 اتصل بالدعم", sub: "نحن هنا للمساعدة!", email: "أرسل بريدًا إلكترونيًا إلى:", send: "إرسال بريد إلكتروني", tip: "نصيحة للكمبيوتر: إذا لم يفتح إرسال بريد إلكتروني، فاستخدم نسخ البريد الإلكتروني والصقه في بريد الويب الخاص بك.", copy: "نسخ عنوان البريد الإلكتروني", cancel: "إلغاء", resp: "الرد خلال 24-48 ساعة", copied: "✅ تم النسخ!" }
+            };
+
+            const dict = t[currentLang] || t['en'];
+
+            // Apply the translations safely to whatever elements are inside the popup
+            const popupContainer = popupTitle.closest('div[class*="modal"], div[id*="modal"]') || popupTitle.parentElement.parentElement;
+            
+            if (popupContainer) {
+                // Safely update text nodes without breaking the DOM
+                const titleEl = popupContainer.querySelector('h2, h3, .title, [class*="title"]');
+                if (titleEl) titleEl.innerText = dict.title;
+
+                const subEl = popupContainer.querySelector('p, .sub, [class*="sub"]');
+                if (subEl) subEl.innerText = dict.sub;
+
+                const emailLabel = popupContainer.querySelector('[class*="email"], p:nth-of-type(2)');
+                if (emailLabel && emailLabel.innerText.includes('correo') || emailLabel.innerText.includes('email')) emailLabel.innerText = dict.email;
+
+                const sendBtn = popupContainer.querySelector('button, a');
+                if (sendBtn && (sendBtn.innerText.includes('Correo') || sendBtn.innerText.includes('Email'))) sendBtn.innerText = "📧 " + dict.send;
+
+                const copyBtn = popupContainer.querySelectorAll('button, a')[1];
+                if (copyBtn && (copyBtn.innerText.includes('Copiar') || copyBtn.innerText.includes('Sao chép') || copyBtn.innerText.includes('Copy'))) copyBtn.innerText = "📋 " + dict.copy;
+
+                const cancelBtn = popupContainer.querySelectorAll('button, a')[2];
+                if (cancelBtn && (cancelBtn.innerText.includes('Cancelar') || cancelBtn.innerText.includes('Hủy') || cancelBtn.innerText.includes('Cancel'))) cancelBtn.innerText = "✖ " + dict.cancel;
+
+                const respEl = popupContainer.querySelector('[class*="resp"], p:last-of-type');
+                if (respEl && (respEl.innerText.includes('Respuesta') || respEl.innerText.includes('Phản hồi'))) respEl.innerText = dict.resp;
+            }
+        }
+    });
+
+    // Start watching the DOM for the popup to appear
+    observer.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+<!-- END SAFE SUPPORT INTERCEPTOR -->
 </body>
 </html>
