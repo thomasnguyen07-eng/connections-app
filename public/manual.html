@@ -98,29 +98,15 @@
     </style>
   </head>
   <body>
-      <button onclick="window.location.href='dashboard.html'" style="
-          position: fixed;
-          top: 20px;
-          left: 20px;
-          padding: 12px 20px;
-          background: #007bff;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          z-index: 1000;
-      ">
-          ← Back to App
-      </button>
+      <button style="display: none !important;">
       <div class="container">
       <div class="lang-bar" id="langBar">
-        <button class="lang-btn" data-lang="en">English</button>
-        <button class="lang-btn" data-lang="vi">Tiếng Việt</button>
-        <button class="lang-btn" data-lang="zh">中文</button>
-        <button class="lang-btn" data-lang="es">Español</button>
-        <button class="lang-btn" data-lang="hi">हिन्दी</button>
-        <button class="lang-btn" data-lang="ar">العربية</button>
+        <button style="display: none !important;"><button class="lang-btn" data-lang="en">English</button>
+        <button style="display: none !important;"><button class="lang-btn" data-lang="vi">Tiếng Việt</button>
+        <button style="display: none !important;"><button class="lang-btn" data-lang="zh">中文</button>
+        <button style="display: none !important;"><button class="lang-btn" data-lang="es">Español</button>
+        <button style="display: none !important;"><button class="lang-btn" data-lang="hi">हिन्दी</button>
+        <button style="display: none !important;"><button class="lang-btn" data-lang="ar">العربية</button>
       </div>
       <div class="content" id="content"></div>
       <footer>
@@ -734,5 +720,55 @@
           localStorage.setItem("manualLanguage", e.target.dataset.lang);
       });
     </script>
-  </body>
+  <!-- FLOATING BACK BUTTON -->`n<button id="floatingBackBtn" onclick="window.location.href='dashboard.html';" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99999;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+">
+    ← Back to App
+</button>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const backBtn = document.getElementById('floatingBackBtn');
+    if (!backBtn) return;
+
+    // Internal dictionary
+    const backBtnTranslations = {
+        en: '← Back to App',
+        vi: '← Quay lại Ứng dụng',
+        es: '← Volver a la App',
+        zh: '← 返回应用',
+        hi: '← ऐप पर वापस जाएं',
+        ar: '← العودة إلى التطبيق'
+    };
+
+    // Listen for clicks on the language buttons on THIS page
+    const langButtons = document.querySelectorAll('.lang-btn, [data-lang]');
+    
+    langButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            // Get the exact language from the button we clicked
+            const clickedLang = btn.getAttribute('data-lang') || btn.getAttribute('data-language') || 'en';
+            
+            // Update the button text immediately
+            backBtn.innerHTML = backBtnTranslations[clickedLang] || backBtnTranslations['en'];
+        });
+    });
+
+    // Also set the initial language on page load
+    const currentLang = localStorage.getItem('appLanguage') || 'en';
+    backBtn.innerHTML = backBtnTranslations[currentLang] || backBtnTranslations['en'];
+});
+</script>
+</body>
 </html>

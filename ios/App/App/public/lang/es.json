@@ -57,9 +57,13 @@
     "submit": "Error al enviar el reporte. Por favor intenta nuevamente.",
     "load": "Fallo al cargar reportes. Por favor refresca.",
     "delete": "Fallo al eliminar reporte",
-    "clearAll": "Fallo al limpiar todos los reportes",  
+    "clearAll": "Fallo al limpiar todos los reportes",
     "location": "Error al obtener ubicación",
-    "clearAllFailed": "Error al limpiar reportes. Por favor intenta nuevamente."
+    "clearAllFailed": "Error al limpiar reportes. Por favor intenta nuevamente.",
+    "locationDenied": "Acceso a la ubicación denegado. Habilite la ubicación en la configuración del dispositivo.",
+    "locationUnavailable": "Location unavailable. Please try again.",
+    "locationTimeout": "Location request timed out. Please try again.",
+    "generic": "Something went wrong. Please try again."
   },
   "labels": {
     "yourCurrentLocation": "Tu Ubicación Actual",
@@ -95,5 +99,4 @@
   },
   "deleting": "Eliminando...",
   "clearing": "Limpiando..."
-    
 }

@@ -57,9 +57,13 @@
     "submit": "خطأ في إرسال البلاغ. يرجى المحاولة مرة أخرى.",
     "load": "فشل تحميل البلاغات. يرجى تحديث الصفحة.",
     "delete": "فشل حذف البلاغ",
-    "clearAll": "فشل مسح جميع البلاغات",  
+    "clearAll": "فشل مسح جميع البلاغات",
     "location": "خطأ في الحصول على الموقع",
-    "clearAllFailed": "فشل مسح البلاغات. يرجى المحاولة مرة أخرى."
+    "clearAllFailed": "فشل مسح البلاغات. يرجى المحاولة مرة أخرى.",
+    "locationDenied": "تم رفض الوصول إلى الموقع. يرجى تمكين الموقع في إعدادات الجهاز.",
+    "locationUnavailable": "Location unavailable. Please try again.",
+    "locationTimeout": "Location request timed out. Please try again.",
+    "generic": "Something went wrong. Please try again."
   },
   "labels": {
     "yourCurrentLocation": "موقعك الحالي",
@@ -95,5 +99,4 @@
   },
   "deleting": "جاري الحذف...",
   "clearing": "جاري المسح..."
-    
 }

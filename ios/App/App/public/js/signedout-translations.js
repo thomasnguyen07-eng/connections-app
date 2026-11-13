@@ -18,10 +18,28 @@ const SIGNOUT_TRANSLATIONS = {
       "🔒 Do NOT share sensitive info (e.g., credit cards, IDs). Violations will be removed and reported to authorities.",
     warningImages:
       "📸 Upload only relevant item photos. No explicit/offensive content. Repeat violations will ban your account.",
+    // 👇 ADD THIS 👇
+    compact_warning:
+      '⚠️ By using this app, you agree to our <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Terms</a> &amp; <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a>. No sensitive info. Reports auto-delete after 180 days.',
     savedReports: {
       title: "Your Saved Reports",
       loginPrompt: "Please sign in to view your saved reports",
       deleteAll: "Delete All",
+    },
+    reportTypes: {
+      missing_person: "Missing Person",
+      lost_item: "Lost Item",
+      found_person: "Found Person",
+      found_item: "Found Item",
+      event: "Event",
+    },
+    reportTypeLabel: "Report Type",
+    titleLabel: "Title",
+    descriptionLabel: "Description",
+    locationLabel: "Location Details",
+    contactLabel: "Your Contact",
+    buttons: {
+      showOnMap: "Show on Map",
     },
   },
   vi: {
@@ -39,10 +57,28 @@ const SIGNOUT_TRANSLATIONS = {
       "🔒 KHÔNG chia sẻ thông tin nhạy cảm. Vi phạm sẽ bị xóa và báo cáo cho cơ quan chức năng.",
     warningImages:
       "📸 Chỉ tải lên ảnh liên quan. Nội dung khiêu dâm/xúc phạm sẽ bị xóa.",
+    // 👇 ADD THIS 👇
+    compact_warning:
+      '⚠️ Khi sử dụng ứng dụng này, bạn đồng ý với <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Điều khoản</a> &amp; <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Chính sách bảo mật</a> của chúng tôi. Không chia sẻ thông tin nhạy cảm. Báo cáo tự động xóa sau 180 ngày.',
     savedReports: {
       title: "Tin Nhắn Đã Lưu Của Bạn",
       loginPrompt: "Vui lòng đăng nhập để xem tin nhắn đã lưu của bạn",
       deleteAll: "Xóa tất cả",
+    },
+    reportTypes: {
+      missing_person: "Người mất tích",
+      lost_item: "Tài sản bị mất",
+      found_person: "Tìm thấy người",
+      found_item: "Tìm thấy tài sản",
+      event: "Sự kiện",
+    },
+    reportTypeLabel: "Loại báo cáo",
+    titleLabel: "Tiêu đề",
+    descriptionLabel: "Mô tả",
+    locationLabel: "Chi tiết địa điểm",
+    contactLabel: "Thông tin liên hệ",
+    buttons: {
+      showOnMap: "Hiện trên bản đồ",
     },
   },
   zh: {
@@ -57,10 +93,28 @@ const SIGNOUT_TRANSLATIONS = {
       "⚠️ 虚假报告危害社区。故意提交虚假列表可能导致永久封禁和法律诉讼。",
     warningSensitive: "🔒 不要分享敏感信息。违规将被删除并报告给当局。",
     warningImages: "📸 仅上传相关物品照片。禁止露骨/冒犯性内容。",
+    // 👇 ADD THIS 👇
+    compact_warning:
+      '⚠️ 使用本应用即表示您同意我们的<a href="./terms.html" style="color: #4CAF50; text-decoration: none;">服务条款</a>和<a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">隐私政策</a>。请勿分享敏感信息。报告将在180天后自动删除。',
     savedReports: {
       title: "您保存的报告",
       loginPrompt: "请登录查看您保存的报告",
       deleteAll: "删除全部",
+    },
+    reportTypes: {
+      missing_person: "失踪人员",
+      lost_item: "丢失物品",
+      found_person: "找到人员",
+      found_item: "找到物品",
+      event: "活动",
+    },
+    reportTypeLabel: "报告类型",
+    titleLabel: "标题",
+    descriptionLabel: "描述",
+    locationLabel: "位置详情",
+    contactLabel: "您的联系方式",
+    buttons: {
+      showOnMap: "在地图上显示",
     },
   },
   es: {
@@ -78,10 +132,28 @@ const SIGNOUT_TRANSLATIONS = {
       "🔒 NO comparta información sensible. Las violaciones serán eliminadas.",
     warningImages:
       "📸 Suba solo fotos de artículos relevantes. Sin contenido explícito/ofensivo.",
+    // 👇 ADD THIS 👇
+    compact_warning:
+      '⚠️ Al usar esta aplicación, aceptas nuestros <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">Términos</a> y <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">Política de Privacidad</a>. No compartas información sensible. Los informes se eliminan automáticamente después de 180 días.',
     savedReports: {
       title: "Tus Informes Guardados",
       loginPrompt: "Inicia sesión para ver tus informes guardados",
       deleteAll: "Eliminar todo",
+    },
+    reportTypes: {
+      missing_person: "Persona desaparecida",
+      lost_item: "Objeto perdido",
+      found_person: "Persona encontrada",
+      found_item: "Objeto encontrado",
+      event: "Evento",
+    },
+    reportTypeLabel: "Tipo de informe",
+    titleLabel: "Título",
+    descriptionLabel: "Descripción",
+    locationLabel: "Detalles de ubicación",
+    contactLabel: "Su contacto",
+    buttons: {
+      showOnMap: "Mostrar en mapa",
     },
   },
   hi: {
@@ -96,10 +168,28 @@ const SIGNOUT_TRANSLATIONS = {
     warningFraud: "⚠️ झूठी रिपोर्ट समुदाय को नुकसान पहुँचाती हैं।",
     warningSensitive: "🔒 संवेदनशील जानकारी साझा न करें।",
     warningImages: "📸 केवल प्रासंगिक वस्तु फ़ोटो अपलोड करें।",
+    // 👇 ADD THIS 👇
+    compact_warning:
+      '⚠️ इस ऐप का उपयोग करके, आप हमारी <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">सेवा शर्तों</a> और <a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">गोपनीयता नीति</a> से सहमत होते हैं। कोई संवेदनशील जानकारी नहीं। रिपोर्ट 180 दिनों के बाद स्वचालित रूप से हटा दी जाती हैं।',
     savedReports: {
       title: "आपकी सहेजी गई रिपोर्टें",
       loginPrompt: "अपनी सहेजी गई रिपोर्टें देखने के लिए कृपया साइन इन करें",
       deleteAll: "सभी हटाएं",
+    },
+    reportTypes: {
+      missing_person: "लापता व्यक्ति",
+      lost_item: "खोई हुई वस्तु",
+      found_person: "मिला व्यक्ति",
+      found_item: "मिली वस्तु",
+      event: "कार्यक्रम",
+    },
+    reportTypeLabel: "रिपोर्ट प्रकार",
+    titleLabel: "शीर्षक",
+    descriptionLabel: "विवरण",
+    locationLabel: "स्थान विवरण",
+    contactLabel: "आपका संपर्क",
+    buttons: {
+      showOnMap: "मानचित्र पर दिखाएं",
     },
   },
   ar: {
@@ -114,17 +204,39 @@ const SIGNOUT_TRANSLATIONS = {
     warningFraud: "⚠️ التقارير الكاذبة تضر المجتمع.",
     warningSensitive: "🔒 لا تشارك معلومات حساسة.",
     warningImages: "📸 قم بتحميل صور العناصر ذات الصلة فقط.",
+    // 👇 ADD THIS 👇
+    compact_warning:
+      '⚠️ باستخدام هذا التطبيق، فإنك توافق على <a href="./terms.html" style="color: #4CAF50; text-decoration: none;">الشروط</a> و<a href="./privacy-policy.html" style="color: #4CAF50; text-decoration: none;">سياسة الخصوصية</a> الخاصة بنا. لا تشارك معلومات حساسة. يتم حذف التقارير تلقائيًا بعد 180 يومًا.',
     savedReports: {
       title: "تقاريرك المحفوظة",
       loginPrompt: "يرجى تسجيل الدخول لعرض تقاريرك المحفوظة",
       deleteAll: "حذف الكل",
     },
+    reportTypes: {
+      missing_person: "شخص مفقود",
+      lost_item: "عنصر مفقود",
+      found_person: "شخص تم العثور عليه",
+      found_item: "عنصر تم العثور عليه",
+      event: "حدث",
+    },
+    reportTypeLabel: "نوع التقرير",
+    titleLabel: "العنوان",
+    descriptionLabel: "الوصف",
+    locationLabel: "تفاصيل الموقع",
+    contactLabel: "جهة اتصالك",
+    buttons: {
+      showOnMap: "عرض على الخريطة",
+    },
   },
 };
 
 function applySignedOutTranslations() {
-  const user = window.fb?.auth?.currentUser;
-  if (user) {
+  // Check both SDK and localStorage user (SDK unreliable on iOS)
+  const sdkUser = window.fb?.auth?.currentUser;
+  let localUser = null;
+  try { localUser = JSON.parse(localStorage.getItem("user") || "null"); }
+  catch { localUser = null; }
+  if (sdkUser || localUser) {
     console.log("✅ User signed in - skipping signed-out translations");
     return;
   }
@@ -300,19 +412,55 @@ function applySignedOutTranslations() {
     },
   };
   const l = labels[lang] || labels.en;
-  const reportTypeLabel = document.querySelector('label[for="report-type"]');
+
+  // ============================================
+  // FORM LABELS - ONLY FOR SIGNED-OUT
+  // ============================================
+
+  // Try multiple ways to find the "Report Type" label
+  let reportTypeLabel = document.querySelector('label[for="report-type"]');
+  if (!reportTypeLabel) {
+    reportTypeLabel = document.getElementById("reportTypeLabel");
+  }
+  if (!reportTypeLabel) {
+    reportTypeLabel = document.querySelector('label[for="reportTypeLabel"]');
+  }
+  if (!reportTypeLabel) {
+    reportTypeLabel = document.querySelector(".report-type-label");
+  }
+  if (!reportTypeLabel) {
+    // Fallback: find any label containing "Report Type" or "Loại báo cáo"
+    const allLabels = document.querySelectorAll("label");
+    for (const label of allLabels) {
+      const text = label.textContent.trim();
+      if (
+        text.includes("Report Type") ||
+        text.includes("Loại báo cáo") ||
+        text.includes("报告类型") ||
+        text.includes("Tipo de informe") ||
+        text.includes("रिपोर्ट प्रकार") ||
+        text.includes("نوع التقرير")
+      ) {
+        reportTypeLabel = label;
+        break;
+      }
+    }
+  }
+
+  // Other labels (keep as is)
   const titleLabel = document.querySelector('label[for="report-title"]');
   const descLabel = document.querySelector('label[for="report-description"]');
   const locLabel = document.querySelector('label[for="location-text-input"]');
   const contactLabel = document.querySelector('label[for="reporter-contact"]');
   const uploadLabel = document.querySelector('label[for="report-image"]');
+
+  // Apply translations
   if (reportTypeLabel) reportTypeLabel.textContent = l.reportType;
   if (titleLabel) titleLabel.textContent = l.title;
   if (descLabel) descLabel.textContent = l.description;
   if (locLabel) locLabel.textContent = l.location;
   if (contactLabel) contactLabel.textContent = l.contact;
   if (uploadLabel) uploadLabel.textContent = l.upload;
-
   // Placeholders
   const titleInput = document.getElementById("report-title");
   const locInput = document.getElementById("location-text-input");
@@ -460,7 +608,14 @@ function applySignedOutTranslations() {
         ar: "مشاركة هذا التقرير",
       }[lang] || "Share This Report";
 
-  // Warnings
+  // 👇 UPDATE: Load compact warning 👇
+  // Find the compact warning element and update it
+  const compactWarningEl = document.querySelector("#compactWarningText");
+  if (compactWarningEl) {
+    compactWarningEl.innerHTML = t.compact_warning || t.tos;
+  }
+
+  // Warnings (keep existing for backward compatibility)
   const allWarnings = document.querySelectorAll("[data-warning]");
   if (allWarnings.length >= 1) allWarnings[0].textContent = t.warningFraud;
   if (allWarnings.length >= 2) allWarnings[1].textContent = t.warningSensitive;
@@ -591,6 +746,39 @@ function applySignedOutTranslations() {
   setTimeout(updateLoginPrompt, 200);
   setTimeout(updateLoginPrompt, 500);
   setTimeout(updateLoginPrompt, 1000);
+
+  // 👇 ADD THIS RIGHT HERE 👇 (before the final console.log)
+  // ============================================
+  // TRANSLATE ICON BUTTONS (for signed out)
+  // ============================================
+  const iconButtons = document.querySelectorAll(".type-btn");
+  if (iconButtons.length > 0) {
+    const lang = localStorage.getItem("appLanguage") || "en";
+    const translations = {
+      missing_person:
+        SIGNOUT_TRANSLATIONS[lang]?.reportTypes?.missing_person ||
+        "Missing Person",
+      lost_item:
+        SIGNOUT_TRANSLATIONS[lang]?.reportTypes?.lost_item || "Lost Item",
+      found_person:
+        SIGNOUT_TRANSLATIONS[lang]?.reportTypes?.found_person || "Found Person",
+      found_item:
+        SIGNOUT_TRANSLATIONS[lang]?.reportTypes?.found_item || "Found Item",
+      event: SIGNOUT_TRANSLATIONS[lang]?.reportTypes?.event || "Event",
+    };
+
+    iconButtons.forEach((btn) => {
+      const type = btn.dataset.type;
+      if (type && translations[type]) {
+        const label = btn.querySelector(".type-label");
+        if (label) {
+          label.textContent = translations[type];
+        }
+      }
+    });
+  }
+
+  // 👆 ADD THE ABOVE CODE HERE 👆
 
   console.log("✅ Signed-out translations applied for:", lang);
 }

@@ -57,9 +57,13 @@
     "submit": "Lỗi khi gửi báo cáo. Vui lòng thử lại.",
     "load": "Tải báo cáo thất bại. Vui lòng tải lại.",
     "delete": "Xóa báo cáo thất bại",
-    "clearAll": "Xóa tất cả báo cáo thất bại",  
+    "clearAll": "Xóa tất cả báo cáo thất bại",
     "location": "Lỗi khi tìm vị trí",
-    "clearAllFailed": "Lỗi khi xóa tất cả. Vui lòng thử lại."
+    "clearAllFailed": "Lỗi khi xóa tất cả. Vui lòng thử lại.",
+    "locationDenied": "Quyền truy cập vị trí bị từ chối. Vui lòng bật vị trí trong cài đặt thiết bị.",
+    "locationUnavailable": "Location unavailable. Please try again.",
+    "locationTimeout": "Location request timed out. Please try again.",
+    "generic": "Something went wrong. Please try again."
   },
   "labels": {
     "yourCurrentLocation": "Vị Trí Hiện Tại Của Bạn",
@@ -95,5 +99,4 @@
   },
   "deleting": "Đang xóa...",
   "clearing": "Đang xóa..."
-  
 }

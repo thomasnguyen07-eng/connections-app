@@ -57,9 +57,13 @@
     "submit": "रिपोर्ट जमा करने में त्रुटि। कृपया पुनः प्रयास करें।",
     "load": "रिपोर्ट्स लोड करने में विफल। कृपया पुनः लोड करें।",
     "delete": "रिपोर्ट हटाने में विफल",
-    "clearAll": "सभी रिपोर्ट्स साफ करने में विफल",  
+    "clearAll": "सभी रिपोर्ट्स साफ करने में विफल",
     "location": "स्थान प्राप्त करने में त्रुटि",
-    "clearAllFailed": "रिपोर्ट्स साफ करने में विफल। कृपया पुनः प्रयास करें।"
+    "clearAllFailed": "रिपोर्ट्स साफ करने में विफल। कृपया पुनः प्रयास करें।",
+    "locationDenied": "स्थान पहुँच अस्वीकृत। कृपया डिवाइस सेटिंग्स में स्थान सक्षम करें।",
+    "locationUnavailable": "Location unavailable. Please try again.",
+    "locationTimeout": "Location request timed out. Please try again.",
+    "generic": "Something went wrong. Please try again."
   },
   "labels": {
     "yourCurrentLocation": "आपका वर्तमान स्थान",
@@ -95,5 +99,4 @@
   },
   "deleting": "हटाया जा रहा है...",
   "clearing": "साफ किया जा रहा है..."
-   
 }

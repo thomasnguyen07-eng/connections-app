@@ -1,3 +1,167 @@
+
+window.MODERATION_WARNING = {
+  en: "?? Moderation is temporarily unavailable. Please ensure your image follows our guidelines against sensitive images.",
+  vi: "?? T?nh n?ng ki?m duy?t t?m th?i kh?ng kh? d?ng. Vui l?ng ??m b?o h?nh ?nh c?a b?n tu?n th? h??ng d?n c?a ch?ng t?i v? h?nh ?nh nh?y c?m.",
+  zh: "?? ???????????????????????????????",
+  es: "?? La moderaci?n no est? disponible temporalmente. Aseg?rese de que su imagen cumpla con nuestras pautas sobre im?genes sensibles.",
+  hi: "?? ??????? ??????? ??? ?? ???????? ??? ????? ????????? ???? ?? ???? ??? ????????? ?????? ?? ???? ??? ????? ????????????? ?? ???? ???? ???",
+  ar: "?? ???????? ??? ???? ??????. ???? ?????? ?? ?? ????? ???? ????????? ???? ????? ???????."
+};
+﻿// Clear any stale form-restore data on fresh load (auto-expire after 60s)
+(function clearStaleFormData() {
+  try {
+    const raw = localStorage.getItem("savedFormDataBeforeShare");
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data.timestamp || Date.now() - data.timestamp > 60000) {
+      localStorage.removeItem("savedFormDataBeforeShare");
+      console.log("🧹 Cleared stale form restore data");
+    }
+  } catch (e) {}
+})();
+
+// ============================================
+// EMAIL FROM NOTICE — self-contained translations
+// (kept here to avoid touching TRANSLATION_PATCH in reports.js)
+// ============================================
+window.EMAIL_FROM_NOTICE = {
+  en: "Your email will be sent from your phone's default email app. Recipients can reply directly to you.",
+  vi: "Email của bạn sẽ được gửi từ ứng dụng email mặc định trên điện thoại. Người nhận có thể trả lời trực tiếp cho bạn.",
+  zh: "您的电子邮件将从手机上的默认电子邮件应用发送。收件人可以直接回复您。",
+  es: "Su correo se enviará desde la aplicación de correo predeterminada de su teléfono. Los destinatarios pueden responderle directamente.",
+  hi: "आपका ईमेल आपके फ़ोन के डिफ़ॉल्ट ईमेल ऐप से भेजा जाएगा। प्राप्तकर्ता सीधे आपको जवाब दे सकते हैं।",
+  ar: "سيتم إرسال بريدك الإلكتروني من تطبيق البريد الإلكتروني الافتراضي على هاتفك. يمكن للمستلمين الرد عليك مباشرة."
+};
+
+
+// ============================================
+// DESKTOP FALLBACK: shown if mailto: fails on laptop/desktop
+// (Mobile always handles mailto: natively — this is only for desktop)
+// ============================================
+window.showNoEmailAppFallback = function (recipient, subject, body) {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) return; // Mobile never needs this fallback
+
+  // Build webmail compose URLs
+  const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1" +
+    "&to=" + encodeURIComponent(recipient || "") +
+    "&su=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+  const outlookUrl = "https://outlook.live.com/mail/0/deeplink/compose" +
+    "?to=" + encodeURIComponent(recipient || "") +
+    "&subject=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+  const yahooUrl = "https://compose.mail.yahoo.com/" +
+    "?to=" + encodeURIComponent(recipient || "") +
+    "&subject=" + encodeURIComponent(subject || "") +
+    "&body=" + encodeURIComponent(body || "");
+
+  const fallback = document.createElement("div");
+  fallback.id = "no-email-app-fallback";
+  fallback.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; justify-content: center; align-items: center;";
+
+  fallback.innerHTML = `
+    <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 480px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;">
+      <button id="fallback-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 22px; cursor: pointer; color: #666;">&times;</button>
+      <h3 style="margin-top: 0; color: #333;">📧 No email app detected</h3>
+      <p style="color: #555; font-size: 14px; line-height: 1.5;">
+        Your device doesn't have a default email app installed. Choose one of the options below to send your message:
+      </p>
+      <div style="display: flex; gap: 10px; margin: 15px 0;">
+        <a href="${gmailUrl}" target="_blank" style="flex:1; padding: 12px; background: #D44638; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Gmail</a>
+        <a href="${outlookUrl}" target="_blank" style="flex:1; padding: 12px; background: #0072C6; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Outlook</a>
+        <a href="${yahooUrl}" target="_blank" style="flex:1; padding: 12px; background: #720E9E; color: white; text-align: center; text-decoration: none; border-radius: 4px; font-weight: 600;">Open Yahoo</a>
+      </div>
+      <div style="border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px;">
+        <p style="color: #888; font-size: 12px; margin-bottom: 10px;">Or copy the message and paste it into any email app:</p>
+        <button id="fallback-copy" style="width: 100%; padding: 10px; background: #198754; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">📋 Copy Message</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(fallback);
+
+  document.getElementById("fallback-close").onclick = function () {
+    fallback.remove();
+  };
+
+  fallback.addEventListener("click", function (e) {
+    if (e.target === fallback) fallback.remove();
+  });
+
+  document.getElementById("fallback-copy").onclick = function () {
+    const textToCopy = "To: " + (recipient || "") + "\\nSubject: " + (subject || "") + "\\n\\n" + (body || "");
+    navigator.clipboard.writeText(textToCopy).then(function () {
+      const btn = document.getElementById("fallback-copy");
+      btn.textContent = "✅ Copied!";
+      btn.style.background = "#0d6efd";
+      setTimeout(function() { btn.textContent = "📋 Copy Message"; btn.style.background = "#198754"; }, 2000);
+    }).catch(function () {
+      alert("Copy failed. Please select the text manually.");
+    });
+  };
+};
+// ============================================
+// SHARE URL FIX — use HTTPS, not capacitor://
+// On iOS, window.location.href is capacitor://localhost/... which
+// recipients cannot open. This helper always returns the public URL.
+// ============================================
+window.SHARE_URL = "https://connectionsfinder.com/dashboard.html";
+window.getShareUrl = function() {
+  return window.SHARE_URL;
+};
+
+// ============================================
+// iOS WebView POPUP FIX
+// window.open is blocked by WKWebView on iOS.
+// Wrap it so we fall back to location.href when blocked.
+// ============================================
+(function() {
+  if (window._openPatched) return;
+  window._openPatched = true;
+
+  const nativeOpen = window.open.bind(window);
+
+  window.open = function(url, target, features) {
+    // Pass through empty/blank window requests untouched
+    if (!url || url === "" || url === "about:blank") {
+      return nativeOpen(url, target, features);
+    }
+
+    let w = null;
+    try {
+      w = nativeOpen(url, target, features);
+    } catch (e) {
+      w = null;
+    }
+
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (!w) {
+      // Native blocked it — fall back to in-place navigation
+      console.log("⚠️ window.open blocked → using location.href:", url);
+      try {
+        window.location.href = url;
+      } catch (e) {
+        console.error("location.href fallback failed:", e);
+      }
+    }
+
+    return w;
+  };
+
+  console.log("🔧 window.open patched for iOS WebView");
+})();
+
+function getCurrentUser() {
+    try {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
 // ============================================
 // VIOLATION CHECKER FOR RESHARE (Self-contained)
 // ============================================
@@ -333,7 +497,7 @@ function shareToWhatsApp(message, reportTitle = "") {
       // Emergency truncation - use current language
       const lang = localStorage.getItem("userLanguage") || "en";
       const t = TRANSLATION_PATCH;
-      const emergencyMessage = `*${reportTitle}*\n\n${t.reportSharedVia[lang]} ${window.location.href}`;
+      const emergencyMessage = `*${reportTitle}*\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`;
       window.open(
         `https://api.whatsapp.com/send?text=${encodeURIComponent(
           emergencyMessage,
@@ -384,7 +548,7 @@ function shortenMessageForWhatsApp(fullMessage, reportTitle) {
       )}`, // Keep some description
       imagePart,
       `\n\n${t.closingLines.thank_you[lang]}`,
-      `\n${t.reportSharedVia[lang]} ${window.location.hostname}`,
+      `\n${t.reportSharedVia[lang]} ${"connectionsfinder.com"}`,
     ]
       .filter(Boolean)
       .join("");
@@ -410,7 +574,7 @@ function shortenMessageForWhatsApp(fullMessage, reportTitle) {
     `${t.greetings[lang]}`,
     `\n\n*${reportTitle}*`,
     imagePart, // ← THIS IS CRITICAL - KEEP THE IMAGE LINK
-    `\n${t.reportSharedVia[lang]} ${window.location.href}`,
+    `\n${t.reportSharedVia[lang]} ${getShareUrl()}`,
   ]
     .filter(Boolean)
     .join("");
@@ -423,7 +587,7 @@ function shortenMessageForWhatsApp(fullMessage, reportTitle) {
     const ultraShort = [
       `*${reportTitle}*`,
       imagePart, // STILL KEEP THE IMAGE LINK
-      `\n${t.reportSharedVia[lang]} ${window.location.hostname}`,
+      `\n${t.reportSharedVia[lang]} ${"connectionsfinder.com"}`,
     ].join("");
 
     console.log(`🚨 ULTRA Short message length: ${ultraShort.length}`);
@@ -469,81 +633,95 @@ function t(key, lang = localStorage.getItem("userLanguage") || "en") {
 // ===== UNIVERSAL IMAGE PROVIDER (NEW - SAFE ADDITION) =====
 // ===== IMAGE PROVIDER USING WINDOW.FB =====
 class ImageProvider {
-  static async getImagesForPlatform(imageUrls, platform) {
-    // 🔍 ADD DIAGNOSTIC LOG
-    console.log(`🔍 getImagesForPlatform CALLED for ${platform}:`, {
-      receivedUrlsCount: imageUrls?.length,
-      firstUrl: imageUrls?.[0]?.substring(0, 100),
-    });
-    console.log(`🔍 Full array:`, imageUrls);
+    static async getImagesForPlatform(imageUrls, platform) {
+      console.log(`🔍 getImagesForPlatform CALLED for ${platform}:`, {
+        receivedUrlsCount: imageUrls?.length,
+        firstUrl: imageUrls?.[0]?.substring(0, 100),
+      });
 
-    console.log(`🖼️ Getting images for ${platform}:`, imageUrls?.length);
+      if (!imageUrls || imageUrls.length === 0) {
+        return { type: "none" };
+      }
 
-    if (!imageUrls || imageUrls.length === 0) {
-      return { type: "none" };
-    }
+      // 🔧 FIX: timeout helper — if Firestore hangs, fall back to raw URLs
+      const withTimeout = (promise, ms) =>
+        Promise.race([
+          promise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`ImagePackage timeout (${ms}ms)`)), ms)
+          ),
+        ]).catch((err) => {
+          console.warn("⚠️ ImagePackage failed/timed out:", err.message);
+          return null;
+        });
 
-    // ===== CRITICAL FIX FOR FACEBOOK =====
-    // ===== UPDATED LOGIC FOR FACEBOOK =====
-    if (platform === "facebook") {
-      console.log("📱 Facebook: Creating a package for the clickable link.");
-      // For Facebook, ALSO create a package so the click opens multiple images.
-      try {
+      // Facebook
+      if (platform === "facebook") {
+        console.log("📱 Facebook: Creating a package for the clickable link.");
         if (imageUrls.length === 1) {
-          // If only one image, just use it directly
           return { type: "single", url: imageUrls[0] };
-        } else {
-          // For multiple images, create a package
-          const packageUrl = await this.createPackageWithFirestore(imageUrls);
-          return { type: "package", url: packageUrl, count: imageUrls.length };
         }
-      } catch (error) {
-        console.error(`❌ Facebook package failed, fallback to single:`, error);
-        // Fallback to first image if package fails
-        return { type: "single", url: imageUrls[0] };
-      }
-    }
-
-    if (platform === "telegram") {
-      console.log("📱 Telegram detected, handling", imageUrls.length, "images");
-
-      if (imageUrls.length === 1) {
-        return {
-          type: "single",
-          url: imageUrls[0],
-        };
-      } else {
-        // ✅ FIX: Use the correct function name
-        const packageUrl = await this.createPackageWithFirestore(imageUrls);
-        console.log("📦 Telegram package created:", packageUrl);
-
-        // Extract packageId from URL for logging
-        const packageId = packageUrl.match(/id=([^&]+)/)?.[1];
-        console.log("📦 Package ID:", packageId);
-
-        return {
-          type: "package",
-          url: packageUrl,
-          count: imageUrls.length,
-        };
-      }
-    }
-    // ===== END UPDATE =====
-
-    // UPDATED: Create packages for ALL platforms including Facebook and Email
-    try {
-      if (imageUrls.length === 1) {
-        return { type: "single", url: imageUrls[0] };
-      } else {
-        const packageUrl = await this.createPackageWithFirestore(imageUrls);
+        const packageUrl = await withTimeout(
+          this.createPackageWithFirestore(imageUrls),
+          2500
+        );
+        if (!packageUrl) {
+          const existingId = window.currentPackageId;
+          if (existingId) {
+            const link = `https://connectionsfinder.com/image-package.html?id=${existingId}&forceFirestore=true`;
+            console.warn("⚠️ Facebook timeout → using package ID:", existingId);
+            return { type: "package", url: link, count: imageUrls.length };
+          }
+          console.warn("⚠️ Facebook package fallback → single image");
+          return { type: "single", url: imageUrls[0] };
+        }
         return { type: "package", url: packageUrl, count: imageUrls.length };
       }
-    } catch (error) {
-      console.error(`❌ ImageProvider failed:`, error);
-      return { type: "single", url: imageUrls[0] };
-    }
-  }
 
+      // Telegram
+      if (platform === "telegram") {
+        console.log("📱 Telegram detected, handling", imageUrls.length, "images");
+        if (imageUrls.length === 1) {
+          return { type: "single", url: imageUrls[0] };
+        }
+        const packageUrl = await withTimeout(
+          this.createPackageWithFirestore(imageUrls),
+          2500
+        );
+        if (!packageUrl) {
+          const existingId = window.currentPackageId;
+          if (existingId) {
+            const link = `https://connectionsfinder.com/image-package.html?id=${existingId}&forceFirestore=true`;
+            console.warn("⚠️ Telegram timeout → using package ID:", existingId);
+            return { type: "package", url: link, count: imageUrls.length };
+          }
+          console.warn("⚠️ Telegram package fallback → single image");
+          return { type: "single", url: imageUrls[0] };
+        }
+        return { type: "package", url: packageUrl, count: imageUrls.length };
+      }
+
+      // All other platforms
+      if (imageUrls.length === 1) {
+        return { type: "single", url: imageUrls[0] };
+      }
+      const packageUrl = await withTimeout(
+        this.createPackageWithFirestore(imageUrls),
+        2500
+      );
+      if (!packageUrl) {
+        const existingId = window.currentPackageId;
+        if (existingId) {
+          const link = `https://connectionsfinder.com/image-package.html?id=${existingId}&forceFirestore=true`;
+          console.warn(`⚠️ ${platform} timeout → using package ID:`, existingId);
+          return { type: "package", url: link, count: imageUrls.length };
+        }
+        console.warn(`⚠️ ${platform} package fallback → single image`);
+        return { type: "single", url: imageUrls[0] };
+      }
+      return { type: "package", url: packageUrl, count: imageUrls.length };
+    }
+    
   static async createPackageWithFirestore(imageUrls) {
     const packageId =
       "img_" +
@@ -558,7 +736,7 @@ class ImageProvider {
     this.storeInMultipleLocations(packageId, imageUrls);
 
     // ✅ CLEAN, SHORT URL
-    const packageUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}&forceFirestore=true`;
+    const packageUrl = "https://connectionsfinder.com/image-package.html?id=" + packageId + "&forceFirestore=true";
 
     console.log(`✅ Package created: ${packageUrl}`);
     console.log(`📊 Firestore storage: ${firestoreSuccess ? "✅" : "❌"}`);
@@ -577,42 +755,79 @@ class ImageProvider {
       }
 
       const userId = this.getUserId();
-      const packageData = {
-        images: imageUrls,
-        userId: userId,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 DAYS
-        isPublic: true,
-        imageCount: imageUrls.length,
-        createdFrom: window.location.origin,
-        // REMOVED: No 'id' field - packageId IS the document ID
-      };
+      const now = new Date();
+      const expires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
-      // CRITICAL FIX: Use .doc(packageId).set() to create document with YOUR ID
-      // Check which method exists in your window.fb.firestore
-      if (window.fb.firestore.collection("imagePackages").doc) {
-        // Method 1: .doc().set() - PREFERRED
-        await window.fb.firestore
-          .collection("imagePackages")
-          .doc(packageId) // Your img_ ID becomes the document ID
-          .set(packageData);
-        console.log("✅ SUCCESS: Used .doc().set() method");
-      } else if (window.fb.firestore.setDoc) {
-        // Method 2: setDoc() alternative
-        await window.fb.firestore.setDoc(
-          window.fb.firestore.doc(`imagePackages/${packageId}`),
-          packageData,
-        );
-        console.log("✅ SUCCESS: Used setDoc() method");
-      } else {
-        // Method 3: Fallback to old way
-        await window.fb.firestore.addDoc(
-          window.fb.firestore.collection("imagePackages"),
-          { ...packageData, id: packageId },
-        );
-        console.log("🔄 Used addDoc fallback (will still have the problem)");
+      // 🔧 REST write — SDK hangs on iOS, REST works
+      let token = null;
+      const sdkUser = window.fb?.auth?.currentUser;
+      if (sdkUser) {
+        try { token = await sdkUser.getIdToken(true); } catch (e) { /* fall through */ }
+      }
+      if (!token) {
+        try {
+          const stored = JSON.parse(localStorage.getItem("user") || "{}");
+          if (stored.refreshToken) {
+            const API_KEY = "AIzaSyB3Kpbz7CWUP1Vj3bUHa6Uxv6kWqi2ouH0";
+            const r = await fetch(
+              `https://securetoken.googleapis.com/v1/token?key=${API_KEY}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(stored.refreshToken)}`,
+              },
+            );
+            if (r.ok) {
+              const d = await r.json();
+              token = d.id_token;
+            }
+          }
+        } catch (e) {
+          console.warn("Token refresh failed:", e);
+        }
+      }
+      if (!token) {
+        console.warn("❌ No auth token for package write");
+        return false;
       }
 
+      const projectId = "connectionsfinder-app";
+      const body = {
+        fields: {
+          images: {
+            arrayValue: {
+              values: imageUrls.map((u) => ({ stringValue: u })),
+            },
+          },
+          userId: { stringValue: userId },
+          createdAt: { timestampValue: now.toISOString() },
+          expiresAt: { timestampValue: expires.toISOString() },
+          isPublic: { booleanValue: true },
+          imageCount: { integerValue: String(imageUrls.length) },
+          createdFrom: { stringValue: window.location.origin },
+        },
+      };
+
+      // PATCH creates-or-updates; POST ?documentId fails with 409 on duplicates.
+      const restUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/imagePackages/${encodeURIComponent(packageId)}`;
+
+      console.log("📤 REST write (PATCH) to imagePackages:", packageId);
+      const resp = await fetch(restUrl, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.text();
+        console.error("❌ REST write failed:", resp.status, err);
+        return false;
+      }
+
+      console.log("✅ REST write succeeded:", packageId);
       return true;
     } catch (error) {
       console.error("❌ Firestore storage failed:", error);
@@ -784,6 +999,13 @@ async function ensureImagePackageStorage(imageUrls) {
 
   // 1. CRITICAL: ALWAYS STORE IN FIRESTORE FOR MOBILE
   let firestoreSuccess = false;
+  // ? Wait up to 5 seconds for Firebase to initialize (fixes mobile race condition)
+  console.log("? Waiting for Firebase to initialize...");
+  for (let waitAttempt = 0; waitAttempt < 50; waitAttempt++) {
+    if (window.fb && window.fb.firestore) break;
+    await new Promise(function(resolve) { setTimeout(resolve, 100); });
+  }
+
   if (window.fb && window.fb.firestore) {
     console.log("🔥 Firestore is available - attempting storage...");
 
@@ -803,11 +1025,14 @@ async function ensureImagePackageStorage(imageUrls) {
 
       console.log("🔥 Firestore data prepared:", firestoreData);
 
-      // Use the EXACT same method as WhatsApp/Twitter
-      const docRef = await window.fb.firestore.addDoc(
-        window.fb.firestore.collection("imagePackages"),
-        firestoreData,
+      // Use setDoc with our custom packageId as the document ID
+      // This ensures the URL ?id=img_XXX matches the Firestore document ID
+      const docRef = window.fb.firestore.doc(
+        window.fb.firestore.db,
+        "imagePackages",
+        packageId,
       );
+      await window.fb.firestore.setDoc(docRef, firestoreData);
 
       console.log(
         "🔥 SUCCESS: Firestore document created with ID:",
@@ -825,6 +1050,39 @@ async function ensureImagePackageStorage(imageUrls) {
       console.log("🔥 Error name:", error.name);
 
       // Try alternative Firestore method
+
+      // ? REST API FALLBACK: Save directly to Firestore (bypasses broken SDK)
+      try {
+        console.log("?? REST fallback (catch block): attempting direct save...");
+        var restUrlCatch = "https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/imagePackages/" + packageId;
+        var restBodyCatch = {
+          fields: {
+            images: { arrayValue: { values: imageUrls.map(function(u) { return { stringValue: u }; }) } },
+            imageCount: { integerValue: String(imageUrls.length) },
+            isPublic: { booleanValue: true },
+            createdAt: { timestampValue: new Date().toISOString() },
+            expiresAt: { timestampValue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() },
+            userId: { stringValue: "rest_fallback_catch" }
+          }
+        };
+        var restResponseCatch = await fetch(restUrlCatch, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + (JSON.parse(localStorage.getItem("user") || "{}").idToken || "")
+          },
+          body: JSON.stringify(restBodyCatch)
+        });
+        if (restResponseCatch.ok) {
+          console.log("? REST fallback (catch): package saved!");
+          firestoreSuccess = true;
+        } else {
+          console.log("? REST fallback (catch) failed - HTTP:", restResponseCatch.status);
+        }
+      } catch (restErrCatch) {
+        console.log("? REST fallback (catch) error:", restErrCatch.message);
+      }
+
       try {
         console.log("🔥 Attempting alternative Firestore method...");
         // Some Firebase versions use different methods
@@ -844,6 +1102,39 @@ async function ensureImagePackageStorage(imageUrls) {
     }
   } else {
     console.log("❌ FIREBASE NOT AVAILABLE - window.fb.firestore is missing");
+
+    // ? REST API FALLBACK: Save to Firestore directly via HTTP
+    // This runs when window.fb.firestore is not available (e.g., iPhone Zalo WebView)
+    try {
+      console.log("?? REST fallback: attempting direct save...");
+      var restUrl = "https://firestore.googleapis.com/v1/projects/connectionsfinder-app/databases/(default)/documents/imagePackages/" + packageId;
+      var restBody = {
+        fields: {
+          images: { arrayValue: { values: imageUrls.map(function(u) { return { stringValue: u }; }) } },
+          imageCount: { integerValue: String(imageUrls.length) },
+          isPublic: { booleanValue: true },
+          createdAt: { timestampValue: new Date().toISOString() },
+          expiresAt: { timestampValue: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() },
+          userId: { stringValue: "rest_fallback" }
+        }
+      };
+      var restResponse = await fetch(restUrl, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + (JSON.parse(localStorage.getItem("user") || "{}").idToken || "")
+        },
+        body: JSON.stringify(restBody)
+      });
+      if (restResponse.ok) {
+        console.log("? REST fallback: package saved to Firestore!");
+        firestoreSuccess = true;
+      } else {
+        console.log("? REST fallback failed - HTTP:", restResponse.status);
+      }
+    } catch (restErr) {
+      console.log("? REST fallback error:", restErr.message);
+    }
     console.log("❌ Available window.fb:", window.fb);
   }
 
@@ -868,7 +1159,7 @@ async function ensureImagePackageStorage(imageUrls) {
   }
 
   // 3. Final package URL
-  const packageUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}`;
+  const packageUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}&forceFirestore=true`;
 
   console.log("📦 FINAL PACKAGE SUMMARY:");
   console.log("📦 Package URL:", packageUrl);
@@ -997,7 +1288,15 @@ function openGmail(subject, body, recipient = "") {
 
     const gmailUrl = `https://mail.google.com/mail/?view=cm&${params.toString()}`;
     console.log("Using Gmail web with emojis:", gmailUrl);
-    window.open(gmailUrl, "_blank");
+
+    // 📱 On mobile (Capacitor WebView), window.open is blocked.
+    //    Use location.href instead — it opens the Gmail app or browser.
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(cleanBody)}`;
+    } else {
+      window.open(gmailUrl, "_blank");
+    }
   }
 }
 
@@ -1092,21 +1391,12 @@ function showEmailShareModal(params = {}) {
                       readonly>${enhancedBody}</textarea>  <!-- USE enhancedBody HERE -->
         </div>
 
-        <!-- ✅ YAHOO TIP - WITH TRANSLATIONS (this stays as is) -->
-<div style="margin-bottom: 15px; padding: 8px; background: #f8f9fa; border-left: 4px solid #720E9E; font-size: 12px;">
-    <strong>📧 Yahoo Users:</strong> 
-    <span>${TRANSLATION_PATCH?.yahooDuplicateTip?.[lang] || "After sending, look for the 'Show images' button in your Yahoo inbox to view photos. If you receive duplicate emails, it's a Yahoo feature - you can safely ignore the extra copy."}</span>
-</div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <button class="email-provider-btn" data-provider="gmail" style="flex: 1; padding: 10px; background: #D44638; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Gmail
-            </button>
-            <button class="email-provider-btn" data-provider="outlook" style="flex: 1; padding: 10px; background: #0072C6; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 0 10px;">
-                Outlook
-            </button>
-            <button class="email-provider-btn" data-provider="yahoo" style="flex: 1; padding: 10px; background: #720E9E; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Yahoo ⓘ
+        <div style="margin-bottom: 10px; padding: 8px; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px; font-size: 12px; color: #333;">
+            📧 ${window.EMAIL_FROM_NOTICE?.[lang] || window.EMAIL_FROM_NOTICE?.en}
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="email-provider-btn" data-provider="send" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">
+                ✉️ Send Email
             </button>
         </div>
     </div>
@@ -1115,13 +1405,47 @@ function showEmailShareModal(params = {}) {
   // 5. Add to DOM
   document.body.appendChild(modal);
 
-  // 6. Close button handler (NEW)
-  document.getElementById("email-modal-close").addEventListener("click", () => {
-    document.body.removeChild(modal);
+  // 6. Force the recipient-email field to start empty (no pre-fill from previous sessions).
+  //    The caller can still pass `recipientEmail` explicitly, which is baked into the HTML above.
+  try {
+    const recInput = document.getElementById("recipient-email");
+    if (recInput) {
+      // Only pre-fill if the caller explicitly passed a non-empty recipient (reshare case).
+      const callerPassedRecipient = (typeof recipient !== "undefined" && recipient && recipient.length > 0);
+      if (!callerPassedRecipient) {
+        recInput.value = "";
+      }
+    }
+  } catch (e) {}
+
+  // 6b. Close button handler (robust, ID-based)
+  // 🧹 Does NOT save the recipient to localStorage — this prevents it from persisting across reports.
+  const _closeEmailModal = () => {
+    const m = document.getElementById("email-share-modal") || modal;
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+  };
+
+  // Attach to the ✕ button — use onclick so nothing else can override it
+  const closeBtnEl = document.getElementById("email-modal-close");
+  if (closeBtnEl) {
+    closeBtnEl.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      _closeEmailModal();
+    };
+  }
+
+  // Also allow tapping the dark backdrop to close
+  modal.addEventListener("click", function(e) {
+    if (e.target === modal) _closeEmailModal();
   });
 
+  // 🚫 REMOVED: no longer persisting recipient on input.
+  //    The user types it fresh for each report, preventing cross-report leakage.
+    
   // 7. Email provider handlers
   // === REPLACE THE EMAIL BUTTON HANDLER CODE ===
+  // 7. Email button handler — single Send Email button (uses mailto:)
   function setupEmailButtonHandlers() {
     document.querySelectorAll(".email-provider-btn").forEach((btn) => {
       btn.addEventListener("click", function () {
@@ -1130,64 +1454,16 @@ function showEmailShareModal(params = {}) {
         const { value: body } = getElement("email-body");
         const { value: recipient } = getElement("recipient-email");
 
-        if (this.dataset.provider === "gmail") {
-          openGmail(subject, body, recipient);
-        } else if (this.dataset.provider === "outlook") {
-          let finalBody = body;
-          const recipient =
-            document.getElementById("recipient-email")?.value || "";
-          const subject = document.getElementById("email-subject")?.value || "";
-          const lang = localStorage.getItem("userLanguage") || "en";
+        // Single mailto: — opens the OS email picker (Gmail, Outlook, Yahoo, etc.)
+        const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
 
-          // ✅ FIXED MOBILE DETECTION
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(
-            navigator.userAgent,
-          );
-
-          if (isMobile) {
-            console.log("📱 Mobile Outlook - using Outlook deep link");
-
-            // Try Outlook deep link first
-            const outlookDeepLink = `ms-outlook://compose?to=${encodeURIComponent(recipient)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}`;
-
-            // Fallback to mailto if Outlook not installed
-            window.location.href = outlookDeepLink;
-
-            // If Outlook not installed, this will fail silently, so also open mailto
-            setTimeout(() => {
-              const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}`;
-              window.location.href = mailtoLink;
-            }, 500);
-          } else {
-            console.log("💻 Desktop Outlook - using web interface");
-            const outlookLink = `https://outlook.live.com/mail/0/deeplink/compose?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(finalBody)}${recipient ? "&to=" + encodeURIComponent(recipient) : ""}`;
-            window.open(outlookLink, "_blank", "width=800,height=600");
+        // Desktop fallback: if no email app opened, show fallback modal
+        setTimeout(() => {
+          if (document.hasFocus() && !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            window.showNoEmailAppFallback(recipient, subject, body);
           }
-        } else if (this.dataset.provider === "yahoo") {
-          // Get values
-          let subject = document.getElementById("email-subject")?.value || "";
-          let body = document.getElementById("email-body")?.value || "";
-          // Add right after getting the body
-          console.log("📝 Original body length:", body.length);
-          console.log("📝 Body preview:", body.substring(0, 100) + "...");
-
-          const recipient =
-            document.getElementById("recipient-email")?.value || "";
-          const lang = localStorage.getItem("userLanguage") || "en";
-
-          // Create Yahoo mail URL
-          const params = new URLSearchParams();
-          params.set("subject", subject);
-          params.set("body", body);
-          if (recipient) params.set("to", recipient);
-
-          // Open Yahoo mail
-          window.open(
-            `https://compose.mail.yahoo.com/?${params.toString()}`,
-            "_blank",
-            "width=800,height=600",
-          );
-        }
+        }, 800);
       });
     });
   }
@@ -1277,11 +1553,16 @@ function showEmailShareModal(params = {}) {
         params.set("body", body);
         if (recipient) params.set("to", recipient);
 
-        const yahooWindow = window.open(
-          `https://compose.mail.yahoo.com/?${params.toString()}`,
-          "_blank",
-          "width=800,height=600",
-        );
+        const isMobileReshare = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobileReshare) {
+          window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        } else {
+          const yahooWindow = window.open(
+            `https://compose.mail.yahoo.com/?${params.toString()}`,
+            "_blank",
+            "width=800,height=600",
+          );
+        }
 
         // Reset flag when window closes or after timeout
         const checkWindow = setInterval(() => {
@@ -1444,9 +1725,9 @@ function getTranslatedShareText(report, platform) {
 
   switch (platform) {
     case "twitter":
-      return `${baseText}\n${window.location.href}`;
+      return `${baseText}\n${getShareUrl()}`;
     case "facebook":
-      return `${baseText}\n\n${t.reportSharedVia[lang]} ${window.location.href}`;
+      return `${baseText}\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`;
     case "email":
       return `${baseText}\n\n--\n${t.reportSharedVia[lang]} MissingLostAndFoundApp`;
     default:
@@ -1456,8 +1737,8 @@ function getTranslatedShareText(report, platform) {
 
 // Helper function to get user-specific storage key
 function getUserReportsKey() {
-  const user = window.fb.auth?.currentUser;
-  const userId = user ? user.uid : null;
+    const user = getCurrentUser();
+    const userId = user ? user.uid : null;
   if (!userId) {
     console.log("No authenticated user");
     return null;
@@ -1490,8 +1771,8 @@ console.log("[1] sharing.js loaded");
         return;
       }
 
-      const user = window.fb.auth?.currentUser;
-      if (!user) {
+        const user = getCurrentUser();
+        if (!user) {
         container.innerHTML = `<p class="no-reports">Please sign in to view your saved reports</p>`;
         return;
       }
@@ -1681,9 +1962,9 @@ console.log("[1] sharing.js loaded");
     container.addEventListener("click", handler);
   }
 
-  function openImagesFromSaved(index) {
-    const user = window.fb.auth?.currentUser;
-    if (!user) {
+  async function openImagesFromSaved(index) {
+      const user = getCurrentUser();
+      if (!user) {
       alert("Please sign in to view images");
       return;
     }
@@ -1707,128 +1988,58 @@ console.log("[1] sharing.js loaded");
       return;
     }
 
-    if (imageUrls.length === 1) {
-      window.open(imageUrls[0], "_blank");
+    // 🔧 FIX: always create a FRESH package for saved-report views
+    // (never reuse window.currentPackageId — it can be stale)
+    const reportId = report.id || report.reportId;
+
+    let targetUrl = null;
+
+    if (reportId) {
+      targetUrl = `https://connectionsfinder.com/image-package.html?reportId=${reportId}`;
     } else {
-      // Create a simple HTML gallery
-      showImageGallery(imageUrls);
+      // Create a fresh package on demand using REST
+      try {
+        console.log("📦 Creating fresh package for saved report...");
+        const pkgId = "img_" + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        const ok = await window.ImageProvider.storeInFirestore(pkgId, imageUrls);
+        if (ok) {
+          targetUrl = `https://connectionsfinder.com/image-package.html?id=${pkgId}&forceFirestore=true`;
+          console.log("✅ Fresh package created:", pkgId);
+          // Firestore REST is eventually consistent — wait briefly so the
+          // recipient's first read attempt finds the package.
+          console.log("⏳ Waiting 1.5s for Firestore propagation...");
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        }
+      } catch (e) {
+        console.warn("⚠️ Fresh package creation failed:", e);
+      }
+
+      if (!targetUrl) {
+        targetUrl = (imageUrls && imageUrls[0]) || "https://connectionsfinder.com/dashboard.html";
+      }
     }
+
+    console.log("🖼️ Opening image gallery (in-place):", targetUrl);
+    window.location.href = targetUrl;
+    return;
   }
 
-  function showImageGallery(imageUrls) {
-    const lang = localStorage.getItem("userLanguage") || "en";
+  function showImageGallery(imageUrls, report) {
+    // 🔧 FIX: same fallback chain as above
+    const reportId = report && (report.id || report.reportId);
+    const packageId = window.currentPackageId;
 
-    // Translations for gallery
-    const translations = {
-      title: {
-        en: "Images",
-        vi: "Hình ảnh",
-        zh: "图片",
-        es: "Imágenes",
-        hi: "छवियाँ",
-        ar: "الصور",
-      },
-      tip: {
-        en: "Tip: Right-click on any image to save it",
-        vi: "Mẹo: Nhấp chuột phải vào bất kỳ hình ảnh nào để lưu",
-        zh: "提示：右键单击任何图像以保存",
-        es: "Consejo: Haga clic derecho en cualquier imagen para guardarla",
-        hi: "टिप: किसी भी छवि को सहेजने के लिए उस पर राइट-क्लिक करें",
-        ar: "تلميح: انقر بزر الماوس الأيمن على أي صورة لحفظها",
-      },
-      openInNewTab: {
-        en: "Open Image",
-        vi: "Mở hình ảnh",
-        zh: "打开图片",
-        es: "Abrir imagen",
-        hi: "छवि खोलें",
-        ar: "فتح الصورة",
-      },
-    };
-
-    const titleText = translations.title[lang] || translations.title.en;
-    const tipText = translations.tip[lang] || translations.tip.en;
-    const openText =
-      translations.openInNewTab[lang] || translations.openInNewTab.en;
-
-    const galleryWindow = window.open("", "_blank");
-    if (!galleryWindow) {
-      alert("Please allow popups to view images");
-      return;
+    let targetUrl;
+    if (reportId) {
+      targetUrl = `https://connectionsfinder.com/image-package.html?reportId=${reportId}`;
+    } else if (packageId) {
+      targetUrl = `https://connectionsfinder.com/image-package.html?id=${packageId}&forceFirestore=true`;
+    } else {
+      targetUrl = (imageUrls && imageUrls[0]) || "https://connectionsfinder.com/dashboard.html";
     }
 
-    const imagesHtml = imageUrls
-      .map(
-        (url, i) => `
-        <div style="margin-bottom: 25px; text-align: center;">
-            <img src="${url}" style="max-width: 100%; max-height: 450px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <p style="margin-top: 10px;">
-                <a href="${url}" target="_blank" style="color: #4267B2; text-decoration: none;">
-                    📸 ${openText} ${i + 1}
-                </a>
-            </p>
-        </div>
-    `,
-      )
-      .join("");
-
-    galleryWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>${titleText} (${imageUrls.length})</title>
-            <meta charset="UTF-8">
-            <style>
-                body { 
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-                    padding: 20px; 
-                    max-width: 900px; 
-                    margin: 0 auto; 
-                    background: #f5f5f5;
-                }
-                h1 { 
-                    color: #333; 
-                    text-align: center;
-                    margin-bottom: 20px;
-                }
-                .images-container { 
-                    background: white; 
-                    border-radius: 12px; 
-                    padding: 20px; 
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-                }
-                img { 
-                    border-radius: 8px; 
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                }
-                a { 
-                    color: #4267B2; 
-                    text-decoration: none;
-                    font-weight: 500;
-                }
-                a:hover { 
-                    text-decoration: underline;
-                }
-                .tip {
-                    text-align: center;
-                    margin-top: 20px;
-                    color: #666;
-                    font-size: 13px;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>📸 ${titleText} (${imageUrls.length})</h1>
-            <div class="images-container">
-                ${imagesHtml}
-            </div>
-            <div class="tip">
-                💡 ${tipText}
-            </div>
-        </body>
-        </html>
-    `);
-    galleryWindow.document.close();
+    console.log("🖼️ showImageGallery → navigating to:", targetUrl);
+    window.location.href = targetUrl;
   }
 
   // ============================================
@@ -1956,7 +2167,7 @@ console.log("[1] sharing.js loaded");
       imagePart,
       `\n\n${t.closingLines?.[report.type]?.[lang] || "Thank you for your help"}`,
       `\n❤️ ${t.closingLines?.thank_you?.[lang] || "Thank you"}`,
-      `\n\n${t.reportSharedVia?.[lang] || "Report shared via"} ${window.location.href}`,
+      `\n\n${t.reportSharedVia?.[lang] || "Report shared via"} ${getShareUrl()}`,
     ]
       .filter(Boolean)
       .join("");
@@ -2145,7 +2356,7 @@ console.log("[1] sharing.js loaded");
     // Add this div right before the button group (around line where buttons are)
     modal.innerHTML = `
     <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; width: 500px; max-height: 90vh; overflow: auto; position: relative;">
-        <button id="email-modal-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+                <button id="email-modal-close-saved" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
         <h3 style="margin-top: 0;">${TRANSLATION_PATCH?.emailShareTitle?.[lang] || "Share via Email"}</h3>
         <div style="margin-bottom: 15px;">
             <label>${TRANSLATION_PATCH?.fieldLabels?.emailAddress?.[lang] || "Recipient Email:"}</label>
@@ -2160,16 +2371,11 @@ console.log("[1] sharing.js loaded");
             <textarea id="email-body" style="width: 100%; height: 200px; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">${escapeHtml(enhancedBody)}</textarea>
         </div>
         
-        <!-- ✅ ADD THE YAHOO TIP HERE -->
-        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #720E9E; border-radius: 4px; font-size: 13px;">
-            <strong>📧 ${getYahooTipTitle(lang)}</strong>
-            <span>${getYahooTipMessage(lang)}</span>
+        <div style="margin-bottom: 10px; padding: 8px; background: #e7f3ff; border-left: 4px solid #0d6efd; border-radius: 4px; font-size: 12px; color: #333;">
+            📧 ${window.EMAIL_FROM_NOTICE?.[lang] || window.EMAIL_FROM_NOTICE?.en}
         </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button id="email-send-gmail" style="flex:1; padding: 10px; background: #D44638; color: white; border: none; border-radius: 4px; cursor: pointer;">Gmail</button>
-            <button id="email-send-outlook" style="flex:1; padding: 10px; background: #0072C6; color: white; border: none; border-radius: 4px; cursor: pointer;">Outlook</button>
-            <button id="email-send-yahoo" style="flex:1; padding: 10px; background: #720E9E; color: white; border: none; border-radius: 4px; cursor: pointer;">Yahoo</button>
+        <div style="margin-top: 20px;">
+            <button id="email-send-btn" style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 600;">✉️ Send Email</button>
         </div>
         <button id="email-cancel" style="width: 100%; padding: 10px; margin-top: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">${TRANSLATION_PATCH?.buttons?.close?.[lang] || "Close"}</button>
     </div>
@@ -2189,69 +2395,28 @@ console.log("[1] sharing.js loaded");
     });
 
     // Close buttons
+      // Close buttons — use unique ID to avoid conflict with the other modal
+      document
+        .getElementById("email-modal-close-saved")
+        ?.addEventListener("click", closeModal);
+      document
+        .getElementById("email-cancel")
+        ?.addEventListener("click", closeModal);
+      
+    // Send Email button — single mailto: (opens the OS email picker)
     document
-      .getElementById("email-modal-close")
-      ?.addEventListener("click", closeModal);
-    document
-      .getElementById("email-cancel")
-      ?.addEventListener("click", closeModal);
-
-    // Gmail button - mobile friendly
-    document
-      .getElementById("email-send-gmail")
+      .getElementById("email-send-btn")
       ?.addEventListener("click", () => {
         const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const mailtoLink = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
 
-        if (isMobile) {
-          window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        } else {
-          window.open(
-            `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
-      });
-
-    // Outlook button - with Outlook deep link for mobile
-    const outlookBtn = document.getElementById("email-send-outlook");
-    if (outlookBtn) {
-      outlookBtn.addEventListener("click", () => {
-        const { to, subject, body } = getCurrentValues();
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        if (isMobile) {
-          // Use Outlook deep link protocol
-          const outlookDeepLink = `ms-outlook://compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          console.log("Opening Outlook deep link:", outlookDeepLink);
-          window.location.href = outlookDeepLink;
-
-          // Fallback to mailto if Outlook not installed
-          setTimeout(() => {
-            if (document.hasFocus()) {
-              console.log("Outlook not installed, falling back to mailto");
-              window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            }
-          }, 500);
-        } else {
-          // Desktop: open Outlook web
-          window.open(
-            `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-            "_blank",
-          );
-        }
-      });
-    }
-
-    // Yahoo button
-    document
-      .getElementById("email-send-yahoo")
-      ?.addEventListener("click", () => {
-        const { to, subject, body } = getCurrentValues();
-        window.open(
-          `https://compose.mail.yahoo.com/?to=${encodeURIComponent(to)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-          "_blank",
-        );
+        // Desktop fallback: if no email app opened, show fallback modal
+        setTimeout(() => {
+          if (document.hasFocus() && !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            window.showNoEmailAppFallback(to, subject, body);
+          }
+        }, 800);
       });
   }
 
@@ -2303,7 +2468,7 @@ console.log("[1] sharing.js loaded");
       imagePart,
       `\n\n${t.closingLines?.[report.type]?.[lang] || "Thank you for your help"}\n`,
       `❤️ ${t.closingLines?.thank_you?.[lang] || "Thank you"}\n\n`,
-      `${t.reportSharedVia?.[lang] || "Report shared via"} ${window.location.href}`,
+      `${t.reportSharedVia?.[lang] || "Report shared via"} ${getShareUrl()}`,
     ]
       .filter(Boolean)
       .join("");
@@ -2455,8 +2620,8 @@ console.log("[1] sharing.js loaded");
         return;
       }
 
-      const user = window.fb.auth?.currentUser;
-      if (!user) {
+        const user = getCurrentUser();
+        if (!user) {
         alert("Please sign in to reshare");
         window._resharingInProgress = false;
         return;
@@ -2629,7 +2794,7 @@ console.log("[1] sharing.js loaded");
               `\n_${t.closingLines?.thank_you?.[lang] || "Thank you"}_`,
             );
             whatsappParts.push(
-              `\n\n_${t.reportSharedVia?.[lang] || "Shared via"} ${window.location.href}_`,
+              `\n\n_${t.reportSharedVia?.[lang] || "Shared via"} ${getShareUrl()}_`,
             );
           }
           let whatsappMsg = whatsappParts.filter(Boolean).join("");
@@ -2676,11 +2841,11 @@ console.log("[1] sharing.js loaded");
           }
           const twitterMsg = [
             report.title,
+            "connectionsfinder.com",
             twitterImageLink,
             report.contact ? `Contact: ${report.contact}` : "",
             `🙏 ${t.closingLines?.thank_you?.[lang] || "Thank you"}`,
-            `via ${window.location.hostname}`,
-          ]
+                ]
             .filter(Boolean)
             .join(" • ")
             .substring(0, 280);
@@ -2721,7 +2886,7 @@ console.log("[1] sharing.js loaded");
           const zaloMsg = await buildZaloMessage(report, lang);
           createZaloModalForSaved(
             zaloMsg,
-            window.location.href,
+            getShareUrl(),
             report.title,
             lang,
           );
@@ -2744,7 +2909,7 @@ console.log("[1] sharing.js loaded");
           }
 
           // ✅ Add cache-busting parameter to URL
-          const shareUrl = window.location.href.split("?")[0] + "?v=5";
+          const shareUrl = getShareUrl();
 
           const telegramMsg = [
             `${t.greetings?.[lang] || "Hello"}`,
@@ -2823,7 +2988,7 @@ console.log("[1] sharing.js loaded");
       imagePart,
       `\n\n${t.closingLines?.[report.type]?.[lang] || "Thank you for your help"}`,
       `\n${t.closingLines?.thank_you?.[lang] || "Thank you"}`,
-      `\n\n${t.reportSharedVia?.[lang] || "Report shared via"} ${window.location.href}`,
+      `\n\n${t.reportSharedVia?.[lang] || "Report shared via"} ${getShareUrl()}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -2835,8 +3000,8 @@ console.log("[1] sharing.js loaded");
 
   function handleDelete(e) {
     const index = e.target.dataset.index;
-    const user = window.fb.auth?.currentUser;
-    if (!user) return;
+      const user = getCurrentUser();
+      if (!user) return;
 
     const lang = localStorage.getItem("appLanguage") || "en";
     const confirmText =
@@ -2932,7 +3097,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Multiple image support
       imageUrls: imageUrls,
       imageCount: imageCount,
-      pageUrl: window.location.href,
+      pageUrl: getShareUrl(),
       type: document.getElementById("report-type")?.value || "other",
       timestamp: Date.now(),
     };
@@ -3009,8 +3174,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Check if user is signed in
-    const user = window.fb.auth?.currentUser;
-    if (!user) {
+      const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+      if (!user) {
       console.log("No user signed in, cannot save report");
       const lang = localStorage.getItem("userLanguage") || "en";
       const messages = {
@@ -3178,8 +3343,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Original clearAllReports (inside DOMContentLoaded)
   function clearAllReports() {
-    const user = window.fb.auth?.currentUser;
-    if (!user) {
+      const user = getCurrentUser();
+      if (!user) {
       const lang = localStorage.getItem("appLanguage") || "en";
       alert("Please sign in to clear reports");
       return;
@@ -3251,8 +3416,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
           // ✅ Get current user
-          const user = window.fb.auth?.currentUser;
-
+            const user = getCurrentUser();
+            
           // Get the ID or index from the event
           const reportId = e.target.dataset.id;
           const reportIndex = e.target.dataset.index;
@@ -3477,7 +3642,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
                 whatsappParts.push(`\n_${t("closingLines.thank_you", lang)}_`);
                 whatsappParts.push(
-                  `\n\n_${t("reportSharedVia", lang)} ${window.location.href}_`,
+                  `\n\n_${t("reportSharedVia", lang)} ${getShareUrl()}_`,
                 );
               }
 
@@ -3511,10 +3676,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     // TWITTER-OPTIMIZED MESSAGE (keep your existing format)
                     const twitterMsg = [
                       report.title,
+                      "connectionsfinder.com",
                       imageLink,
                       report.contact ? `Contact: ${report.contact}` : "",
                       `🙏 ${t.closingLines.thank_you[lang]}`,
-                      `via ${window.location.hostname}`,
                     ]
                       .filter((part) => part && part.trim())
                       .join(" • ")
@@ -3535,7 +3700,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Fallback without images
                     const fallbackMsg = [
                       report.title,
-                      `via ${window.location.hostname}`,
+                      "connectionsfinder.com",
                     ]
                       .filter(Boolean)
                       .join(" • ");
@@ -3620,7 +3785,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   imagePart,
                   `\n\n${t.closingLines[cleanReport.type][lang]}`,
                   `\n❤️ ${t.closingLines.thank_you[lang]}`,
-                  `\n\n${t.reportSharedVia[lang]} ${window.location.href}`,
+                  `\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`,
                 ]
                   .filter(Boolean)
                   .join("");
@@ -3684,7 +3849,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   imagePart,
                   `\n${t.closingLines[report.type][lang]}\n`,
                   `❤️${t.closingLines.thank_you[lang]}\n`,
-                  `${t.reportSharedVia[lang]} ${window.location.href}`,
+                  `${t.reportSharedVia[lang]} ${getShareUrl()}`,
                 ]
                   .filter(Boolean)
                   .join("");
@@ -3741,7 +3906,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     imagePart,
                     `\n\n${t.closingLines[report.type][lang]}`,
                     `\n${t.closingLines.thank_you[lang]}`,
-                    `\n\n${t.reportSharedVia[lang]} ${window.location.href}`,
+                    `\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`,
                   ]
                     .filter(Boolean)
                     .join("\n");
@@ -3751,7 +3916,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   );
                   createZaloSafariModal(
                     zaloMsg,
-                    window.location.href,
+                    (report.imageUrls && report.imageUrls[0]) || getShareUrl(),
                     report.title,
                     lang,
                   );
@@ -3770,14 +3935,14 @@ document.addEventListener("DOMContentLoaded", function () {
                       `\n${t.fieldLabels.contact[lang]}: ${report.contact}`,
                     `\n\n${t.closingLines[report.type][lang]}`,
                     `\n${t.closingLines.thank_you[lang]}`,
-                    `\n\n${t.reportSharedVia[lang]} ${window.location.href}`,
+                    `\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`,
                   ]
                     .filter(Boolean)
                     .join("\n");
 
                   createZaloSafariModal(
                     fallbackMsg,
-                    window.location.href,
+                    (report.imageUrls && report.imageUrls[0]) || getShareUrl(),
                     report.title,
                     lang,
                   );
@@ -3907,7 +4072,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   // Add "Shared via" text and URL at the bottom
                   const fullMessage =
                     message +
-                    `\n\n${t.reportSharedVia[lang]} ${window.location.href}`;
+                    `\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`;
 
                   // Put FULL message in url parameter, leave text empty
                   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(fullMessage)}&text=`;
@@ -4244,6 +4409,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // Focus on title field when switching to new report
     if (tabId === "new-report") {
       document.getElementById("report-title").focus();
+
+      // 🧹 Always clear cached email recipient when entering New Report tab
+      // (avoids previous report's recipient showing in the next report's share modal)
+      try {
+        localStorage.removeItem("lastEmailRecipient");
+        console.log("🧹 Cleared lastEmailRecipient (entered New Report tab)");
+      } catch (e) {}
     }
 
     // 🔥 FIX: Load saved reports from localStorage, not Firestore
@@ -4299,7 +4471,7 @@ document.addEventListener("DOMContentLoaded", function () {
       `*Contact:* ${report.contact}`,
       report.imageUrl ? `*Image:* ${report.imageUrl}` : "",
       `${contextLine}\n❤️ Thank you for your assistance`,
-      `\n\n_Report generated via MissingLostAndFoundApp: ${window.location.href}_`, // App link
+      `\n\n_Report generated via MissingLostAndFoundApp: ${getShareUrl()}_`, // App link
     ]
       .filter(Boolean)
       .join("\n");
@@ -4407,7 +4579,11 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("twitter-share").onclick;
     document.getElementById("twitter-share").onclick = async function (e) {
       e.preventDefault();
-
+        console.log("🐦 TWITTER HANDLER FIRED");
+        
+        // 🔧 FIX: define `t` (was missing → caused ReferenceError)
+             const t = TRANSLATION_PATCH;
+        
       // 1. GET REPORT DATA
       let report;
       try {
@@ -4443,15 +4619,15 @@ document.addEventListener("DOMContentLoaded", function () {
       // 3. TWITTER-OPTIMIZED MESSAGE (MINIMAL FIELDS)
       const lang = localStorage.getItem("userLanguage") || "en";
       const tweetContent = [
-        report.title || t("defaultTitle", lang),
-        imageLink, // SHORT IMAGE PACKAGE LINK
-        report.contact ? `Contact: ${report.contact}` : "", // OPTIONAL CONTACT
-        `🙏 ${t("closingLines.thank_you", lang)}`,
-        `via ${window.location.hostname}`,
+          report.title || (t.defaultTitle && t.defaultTitle[lang]) || "Report",
+          "connectionsfinder.com",
+          imageLink,
+          report.contact ? `Contact: ${report.contact}` : "",
+          `🙏 ${(t.closingLines && t.closingLines.thank_you && t.closingLines.thank_you[lang]) || "Thank you"}`,
       ]
-        .filter((part) => part && part.trim()) // Remove empty parts
-        .join(" • ") // Twitter-friendly separator
-        .substring(0, 280); // Hard Twitter limit
+        .filter((part) => part && part.trim())
+        .join(" • ")
+        .substring(0, 280);
 
       console.log("🐦 TWITTER-OPTIMIZED TWEET:", tweetContent);
       console.log("🐦 Tweet length:", tweetContent.length);
@@ -4471,8 +4647,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document
       .getElementById("facebook-share")
       ?.addEventListener("click", async function (e) {
-        e.preventDefault();
-        console.log("🐛 DEBUG: Facebook share clicked");
+        e.preventDefault()
+          console.log("📘 FACEBOOK HANDLER FIRED");
+          console.log("🐛 DEBUG: Facebook share clicked");
 
         // ADD THIS LINE RIGHT HERE, after the console.log:
         showNoticeBeforeFacebookShare(); // ← ADD THIS LINE
@@ -4641,7 +4818,8 @@ document.addEventListener("DOMContentLoaded", function () {
       .getElementById("email-share")
       ?.addEventListener("click", async function (e) {
         e.preventDefault();
-        console.log("🐛 DEBUG: Email share clicked");
+          console.log("📧 EMAIL HANDLER FIRED");
+          console.log("🐛 DEBUG: Email share clicked");
 
         const lang = localStorage.getItem("userLanguage") || "en";
         const t = TRANSLATION_PATCH;
@@ -4717,7 +4895,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 `${t.greetings[lang]}\n\n`,
                 `${t.closingLines.thank_you[lang]}\n\n`,
                 `${t.reportSharedVia[lang]} ${
-                  report.pageUrl || window.location.href
+                  report.pageUrl || getShareUrl()
                 }`,
               ]
                 .filter(Boolean)
@@ -4737,7 +4915,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 `${t.closingLines[report.type][lang]}\n\n`,
                 `❤️ ${t.closingLines.thank_you[lang]}\n\n`,
                 `${t.reportSharedVia[lang]} ${
-                  report.pageUrl || window.location.href
+                  report.pageUrl || getShareUrl()
                 }`,
               ]
                 .filter(Boolean)
@@ -4800,7 +4978,8 @@ document.addEventListener("DOMContentLoaded", function () {
       .getElementById("telegram-share")
       ?.addEventListener("click", async function (e) {
         e.preventDefault();
-
+          console.log("📨 TELEGRAM HANDLER FIRED");
+          
         // ============================================
         // LOCK MECHANISM
         // ============================================
@@ -4810,7 +4989,10 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
         window._telegramShareActive = Date.now();
-
+          
+          // 🔧 FIX: auto-release the lock so it never gets stuck
+                 setTimeout(() => { window._telegramShareActive = null; }, 8000);
+          
         try {
           console.log(`📱 TELEGRAM SHARE STARTED ${lockId}`);
 
@@ -4892,7 +5074,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 "telegram",
               );
 
-              if (imageResult.type === "package") {
+              if (imageResult.type === "single" && imageResult.url) {
+                imagePart = `\n🖼️ ${t.fieldLabels.image[lang]}: ${imageResult.url}`;
+                console.log("✅ Telegram single image:", imageResult.url);
+              } else if (imageResult.type === "package" && imageResult.url) {
                 imagePart = `\n🖼️ ${t.fieldLabels.images[lang]} (${imageResult.count}): ${imageResult.url}`;
                 console.log("✅ Image package created:", imageResult.url);
               }
@@ -4931,7 +5116,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // Add "Shared via" text and URL at the bottom
           const fullMessage =
-            message + `\n\n${t.reportSharedVia[lang]} ${window.location.href}`;
+            message + `\n\n${t.reportSharedVia[lang]} ${getShareUrl()}`;
 
           // Put FULL message in url parameter, leave text empty
           const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(fullMessage)}&text=`;
@@ -5279,6 +5464,32 @@ document.addEventListener("DOMContentLoaded", function () {
         .getElementById("safari-btn")
         .addEventListener("click", function () {
           const urlToOpen = imagePackageUrl || url;
+
+          // 🔧 Save form state before navigating away (iOS WebView loses state)
+          try {
+            const formDataBeforeShare = {
+              title: document.getElementById("report-title")?.value || "",
+              description:
+                document.getElementById("report-description")?.value || "",
+              location:
+                document.getElementById("location-text-input")?.value || "",
+              coordinates:
+                document.getElementById("selected-coordinates")?.value || "",
+              contact: document.getElementById("reporter-contact")?.value || "",
+              type: document.getElementById("report-type")?.value || "",
+              imageUrls: window.lastUploadedImages || [],
+              imageCount: window.lastUploadedImages?.length || 0,
+              timestamp: Date.now(),
+            };
+            localStorage.setItem(
+              "savedFormDataBeforeShare",
+              JSON.stringify(formDataBeforeShare),
+            );
+            console.log("💾 Form saved before Safari navigation");
+          } catch (e) {
+            console.warn("⚠️ Could not save form state:", e);
+          }
+
           console.log("🌐 Opening URL:", urlToOpen);
           window.open(urlToOpen, "_blank");
           document.getElementById("zalo-safari-modal").remove();
@@ -5322,7 +5533,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       zaloBtn.addEventListener("click", async function (e) {
         e.preventDefault();
-        const lang = localStorage.getItem("userLanguage") || "en";
+          console.log("🔵 ZALO HANDLER FIRED");
+          const lang = localStorage.getItem("userLanguage") || "en";
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         console.log("📱 Device detection:", {
@@ -5352,11 +5564,17 @@ document.addEventListener("DOMContentLoaded", function () {
         // USE THE EXISTING IMAGEPROVIDER THAT WORKS FOR WHATSAPP/TWITTER
         // USE ENHANCED STORAGE FOR MOBILE COMPATIBILITY
         // In setupZaloShare, update the image package part:
-        let imagePart = "";
-        try {
-          console.log("💙 Creating image package with enhanced storage...");
-          const packageUrl = await ensureImagePackageStorage(report.imageUrls);
-
+          let imagePart = "";
+          try {
+            console.log("💙 Creating image package with enhanced storage...");
+            // 🔧 FIX: race the package creation against a 2.5s timeout
+            const packageUrl = await Promise.race([
+              ensureImagePackageStorage(report.imageUrls),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Zalo package timeout (15000ms)")), 15000)
+              ),
+            ]);
+              
           if (packageUrl) {
             imagePart = `\n${getSharingTranslation(
               "fieldLabels.images",
@@ -5382,12 +5600,18 @@ document.addEventListener("DOMContentLoaded", function () {
               report.imageUrls,
               "zalo",
             );
-            if (imageResult.type === "package" && imageResult.url) {
+            if (imageResult.type === "single" && imageResult.url) {
+              imagePart = `\n${getSharingTranslation(
+                "fieldLabels.image",
+                lang,
+              )}: ${imageResult.url}`;
+              console.log("🔄 Using ImageProvider fallback (single)");
+            } else if (imageResult.type === "package" && imageResult.url) {
               imagePart = `\n${getSharingTranslation(
                 "fieldLabels.images",
                 lang,
               )} (${imageResult.count}): ${imageResult.url}`;
-              console.log("🔄 Using ImageProvider fallback");
+              console.log("🔄 Using ImageProvider fallback (package)");
             }
           } catch (fallbackError) {
             console.log(
@@ -5418,7 +5642,7 @@ document.addEventListener("DOMContentLoaded", function () {
           `\n\n${getSharingTranslation(`closingLines.${report.type}`, lang)}`,
           `\n${getSharingTranslation("closingLines.thank_you", lang)}`,
           `\n\n${getSharingTranslation("reportSharedVia", lang)} ${
-            window.location.href
+            getShareUrl()
           }`,
         ]
           .filter(Boolean)
@@ -5427,7 +5651,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("🎯 Final message for Zalo:", message);
         createZaloSafariModal(
           message,
-          window.location.href,
+          (report.imageUrls && report.imageUrls[0]) || getShareUrl(),
           report.title,
           lang,
         );
@@ -5632,3 +5856,38 @@ if (typeof closeZaloModal !== "undefined")
   window.closeZaloModal = closeZaloModal;
 if (typeof createZaloSafariModal !== "undefined")
   window.createZaloSafariModal = createZaloSafariModal;
+
+window.ImageProvider = ImageProvider;
+
+// --- DYNAMIC FALLBACK POPUP TRANSLATION ---
+function translateFallbackPopup() {
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    const dict = {
+        en: { title: "No email app detected", desc: "Your device doesn't have a default email app installed. Choose one of the options below to send your message:", gmail: "Open Gmail", outlook: "Open Outlook", yahoo: "Open Yahoo" },
+        vi: { title: "Không tìm thấy ứng dụng email", desc: "Thiết bị của bạn không có ứng dụng email mặc định. Chọn một trong các tùy chọn bên dưới để gửi tin nhắn:", gmail: "Mở Gmail", outlook: "Mở Outlook", yahoo: "Mở Yahoo" },
+        es: { title: "No se detectó ninguna app de correo", desc: "Su dispositivo no tiene una app de correo predeterminada. Elija una de las opciones a continuación para enviar su mensaje:", gmail: "Abrir Gmail", outlook: "Abrir Outlook", yahoo: "Abrir Yahoo" },
+        zh: { title: "未检测到电子邮件应用", desc: "您的设备没有安装默认的电子邮件应用。请选择以下选项之一发送消息：", gmail: "打开 Gmail", outlook: "打开 Outlook", yahoo: "打开 Yahoo" },
+        hi: { title: "कोई ईमेल ऐप नहीं मिला", desc: "आपके डिवाइस में कोई डिफ़ॉल्ट ईमेल ऐप इंस्टॉल नहीं है। अपना संदेश भेजने के लिए नीचे दिए गए विकल्पों में से एक चुनें:", gmail: "Gmail खोलें", outlook: "Outlook खोलें", yahoo: "Yahoo खोलें" },
+        ar: { title: "لم يتم اكتشاف تطبيق بريد إلكتروني", desc: "لا يحتوي جهازك على تطبيق بريد إلكتروني افتراضي. اختر أحد الخيارات أدناه لإرسال رسالتك:", gmail: "افتح Gmail", outlook: "افتح Outlook", yahoo: "افتح Yahoo" }
+    }[lang] || dict['en'];
+
+    const fallbackDiv = document.querySelector('div[style*="rgba(0,0,0,0.8)"]');
+    if (fallbackDiv) {
+        const h3 = fallbackDiv.querySelector('h3');
+        if (h3) h3.innerText = '📧 ' + dict.title;
+        const p = fallbackDiv.querySelector('p');
+        if (p) p.innerText = dict.desc;
+        const links = fallbackDiv.querySelectorAll('a');
+        if (links[0]) links[0].innerText = dict.gmail;
+        if (links[1]) links[1].innerText = dict.outlook;
+        if (links[2]) links[2].innerText = dict.yahoo;
+    }
+}
+
+// Hook into the click event that opens the popup
+const originalAddEventListener = document.addEventListener;
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.href && e.target.href.startsWith('mailto:')) {
+        setTimeout(translateFallbackPopup, 500);
+    }
+}, true);
