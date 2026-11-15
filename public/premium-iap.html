@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -495,13 +495,9 @@
   <span id="youSave">$0</span>
 </p>
           </div>
-          <button
-            id="bulkContactBtn"
-            class="contact-sales-btn"
-            style="background: #4caf50"
-          >
-            Request Bulk Quote
-          </button>
+          <button id="newBulkContactBtn" class="contact-sales-btn" style="background: #4caf50; position: relative; z-index: 9999;">
+    Send Email Request
+</button>
         </div>
 
         <ul style="display: inline-block; text-align: left; margin: 20px 0">
@@ -1970,5 +1966,98 @@ document.addEventListener('click', function(e) {
     }
 }, true);
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- BULK QUOTE NEW BUTTON SCRIPT -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Watch the page for the modal to open and our button to appear
+    const observer = new MutationObserver(function() {
+        const newBtn = document.getElementById('newBulkContactBtn');
+        
+        // If the button is on screen and we haven't attached our logic yet
+        if (newBtn && !newBtn.dataset.ready) {
+            newBtn.dataset.ready = "true";
+            
+            // 1. Translate the button text based on the active language
+            function updateButtonText() {
+                let lang = 'en';
+                const activeBtn = document.querySelector('.lang-btn.active, .lang-btn.selected, .lang-btn[style*="green"]');
+                if (activeBtn) {
+                    lang = activeBtn.getAttribute('data-lang') || lang;
+                } else if (document.documentElement.lang) {
+                    lang = document.documentElement.lang;
+                } else {
+                    lang = localStorage.getItem('appLanguage') || 'en';
+                }
+
+                const btnTexts = {
+                    en: 'Send Email Request',
+                    vi: 'Gửi Email Yêu cầu',
+                    es: 'Enviar solicitud de correo',
+                    zh: '发送邮件请求',
+                    hi: 'ईमेल अनुरोध भेजें',
+                    ar: 'إرسال طلب البريد الإلكتروني'
+                };
+                newBtn.innerText = btnTexts[lang] || btnTexts['en'];
+            }
+
+            // Translate immediately
+            updateButtonText();
+            
+            // Update if user changes language while modal is open
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => setTimeout(updateButtonText, 50));
+            });
+
+            // 2. Add the click listener for the email
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                let lang = 'en';
+                const activeBtn = document.querySelector('.lang-btn.active, .lang-btn.selected, .lang-btn[style*="green"]');
+                if (activeBtn) {
+                    lang = activeBtn.getAttribute('data-lang') || lang;
+                } else if (document.documentElement.lang) {
+                    lang = document.documentElement.lang;
+                } else {
+                    lang = localStorage.getItem('appLanguage') || 'en';
+                }
+
+                const t = {
+                    en: { subject: "Bulk Subscription Quote Request", body: "Hello,\n\nI would like to request a bulk quote.\n\nNumber of users: \nPlan type (Monthly/3 Months/6 Months/Yearly): \nOrganization name: \nContact email: \n\nThank you." },
+                    vi: { subject: "Yêu cầu báo giá đăng ký số lượng lớn", body: "Chào bạn,\n\nTôi muốn yêu cầu báo giá cho số lượng lớn.\n\nSố lượng người dùng: \nLoại gói (Hàng tháng/3 Tháng/6 Tháng/Hàng năm): \nTên tổ chức: \nEmail liên hệ: \n\nCảm ơn bạn." },
+                    es: { subject: "Solicitud de cotización de suscripción por volumen", body: "Hola,\n\nMe gustaría solicitar una cotización por volumen.\n\nNúmero de usuarios: \nTipo de plan (Mensual/3 Meses/6 Meses/Anual): \nNombre de la organización: \nCorreo electrónico de contacto: \n\nGracias." },
+                    zh: { subject: "批量订阅报价请求", body: "你好，\n\n我想申请批量报价。\n\n用户数量：\n套餐类型（月度/3个月/6个月/年度）：\n组织名称：\n联系邮箱：\n\n谢谢。" },
+                    hi: { subject: "बल्क सदस्यता कोटेशन अनुरोध", body: "नमस्ते,\n\nमैं बल्क कोटेशन का अनुरोध करना चाहता हूं।\n\nउपयोगकर्ताओं की संख्या: \nयोजना प्रकार (मासिक/3 महीने/6 महीने/वार्षिक): \nसंगठन का नाम: \nसंपर्क ईमेल: \n\nधन्यवाद।" },
+                    ar: { subject: "طلب عرض سعر لاشتراك بالجملة", body: "مرحبًا،\n\nأود طلب عرض سعر بالجملة.\n\nعدد المستخدمين: \nنوع الخطة (شهري/3 أشهر/6 أشهر/سنوي): \nاسم المؤسسة: \nالبريد الإلكتروني للتواصل: \n\nشكرًا لك." }
+                };
+
+                const dict = t[lang] || t['en'];
+                const mailtoLink = `mailto:support@connectionsfinder.com?subject=${encodeURIComponent(dict.subject)}&body=${encodeURIComponent(dict.body)}`;
+                window.location.href = mailtoLink;
+            });
+        }
+    });
+
+    // Start watching the page for the button to appear
+    observer.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+<!-- END BULK QUOTE NEW BUTTON SCRIPT -->
 </body>
 </html>
