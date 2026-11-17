@@ -94,7 +94,19 @@
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       }
     </style>
-  </head>
+  <script>
+// FORCE URL LANGUAGE
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    if (urlLang) {
+        // Save the URL language to localStorage so the page's translation engine picks it up
+        localStorage.setItem('appLanguage', urlLang);
+        document.documentElement.lang = urlLang;
+    }
+})();
+</script>
+</head>
   <body>
     <a href="./dashboard.html" class="back-btn">← Back to Main Page</a>
 

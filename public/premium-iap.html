@@ -2059,5 +2059,29 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <!-- END BULK QUOTE NEW BUTTON SCRIPT -->
+<!-- FIX BUTTON CLICK -->
+<script>
+window.addEventListener('load', function() {
+    // Wait for the page to render
+    setTimeout(function() {
+        const btn = document.getElementById('newBulkContactBtn');
+        if (btn) {
+            // Attach the click event
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Get the current language
+                const activeBtn = document.querySelector('.lang-btn.active, .lang-btn.selected, .lang-btn[style*="green"]');
+                let lang = activeBtn ? activeBtn.getAttribute('data-lang') : (localStorage.getItem('appLanguage') || 'en');
+                
+                // Open the organization-quote.html page with the language passed in the URL
+                window.open("https://connectionsfinder.com/organization-quote.html?lang=" + lang, "_blank");
+            };
+        }
+    }, 500); // 500ms delay to ensure everything is loaded
+});
+</script>
+<!-- END FIX BUTTON CLICK -->
 </body>
 </html>
