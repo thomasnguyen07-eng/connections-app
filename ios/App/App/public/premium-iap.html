@@ -298,7 +298,39 @@
 
       <!-- Individual Plans Section -->
       <div class="section-header">
-        <h2 id="individualTitle">Individual Subscription Plans</h2>
+        <!-- BILLING NOTICE -->
+<div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; margin: 15px 0; border-radius: 4px; text-align: left; font-size: 13px;">
+    <p style="margin: 0; line-height: 1.4;" id="billingNoticeText">
+        <strong>Note:</strong> Individual subscriptions are processed by Apple or Google. Bulk purchases (organizations, families) are handled directly by Connections via invoice and bank transfer.
+    </p>
+</div>
+<script>
+// Translate the notice based on the selected language
+window.addEventListener('load', function() {
+    const noticeEl = document.getElementById('billingNoticeText');
+    if (!noticeEl) return;
+    
+    function translateNotice() {
+        const activeBtn = document.querySelector('.lang-btn.active, .lang-btn.selected, .lang-btn[style*="green"]');
+        let lang = activeBtn ? activeBtn.getAttribute('data-lang') : (localStorage.getItem('appLanguage') || 'en');
+        
+        const notices = {
+            en: '<strong>Note:</strong> Individual subscriptions are processed by Apple or Google. Bulk purchases (organizations, families) are handled directly by Connections via invoice and bank transfer.',
+            vi: '<strong>Lưu ý:</strong> Đăng ký cá nhân được xử lý bởi Apple hoặc Google. Mua hàng loạt (tổ chức, gia đình) được Connections xử lý trực tiếp qua hóa đơn và chuyển khoản ngân hàng.',
+            es: '<strong>Nota:</strong> Las suscripciones individuales son procesadas por Apple o Google. Las compras al por mayor (organizaciones, familias) son gestionadas directamente por Connections mediante factura y transferencia bancaria.',
+            zh: '<strong>注意：</strong>个人订阅由 Apple 或 Google 处理。批量购买（组织、家庭）由 Connections 直接通过发票和银行转账处理。',
+            hi: '<strong>ध्यान दें:</strong> व्यक्तिगत सदस्यताएं Apple या Google द्वारा संसाधित की जाती हैं। बल्क खरीद (संगठन, परिवार) का प्रबंधन Connections द्वारा सीधे चालान और बैंक हस्तांतरण के माध्यम से किया जाता है।',
+            ar: '<strong>ملاحظة:</strong> تتم معالجة الاشتراكات الفردية بواسطة Apple أو Google. يتم التعامل مع عمليات الشراء بالجملة (المؤسسات، العائلات) مباشرة بواسطة Connections عبر الفاتورة والتحويل البنكي.'
+        };
+        
+        noticeEl.innerHTML = notices[lang] || notices['en'];
+    }
+    
+    translateNotice();
+    document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setTimeout(translateNotice, 100)));
+});
+</script>
+<!-- END BILLING NOTICE --><h2 id="individualTitle">Individual Subscription Plans</h2>
         <p id="individualSubtitle">Personal plans for individual users</p>
       </div>
 
